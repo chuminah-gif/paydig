@@ -366,13 +366,33 @@ var RATE_EMPLOYMENT_INSURANCE = 0.009;   // 고용보험 실업급여 (근로자
 var MINIMUM_WAGE_2026 = 10320;           // 2026년 최저시급(원)
 var UNEMPLOYMENT_DAILY_CAP_2026 = 66000; // 구직급여 상한액(참고치, 고용노동부 매년 고시)
 
-function calcInsuranceBreakdown(monthlyGrossWon) {
+/* 공적연금 종류별 개인부담 기여율. 공무원·사학·군인연금 가입자는 국민연금 대신
+   각자의 직역연금에 가입하며, 국민연금에 가입할 수 없는 직역연금 가입자·별정우체국
+   직원은 고용보험 가입 대상에서도 제외됩니다(근로복지공단 안내 기준). */
+var PENSION_TYPES = {
+  national: { label: "국민연금 (일반 근로자)", rate: 0.0475, employmentInsurance: true },
+  civilServant: { label: "공무원연금", rate: 0.09, employmentInsurance: false },
+  privateSchool: { label: "사학연금", rate: 0.09, employmentInsurance: false },
+  military: { label: "군인연금", rate: 0.07, employmentInsurance: false }
+};
+
+function calcInsuranceBreakdown(monthlyGrossWon, pensionType) {
   var m = clampNonNegative(monthlyGrossWon);
-  var np = m * RATE_NATIONAL_PENSION;
+  var plan = PENSION_TYPES[pensionType] || PENSION_TYPES.national;
+  var np = m * plan.rate;
   var hi = m * RATE_HEALTH_INSURANCE;
   var ltc = m * RATE_LONG_TERM_CARE;
-  var ei = m * RATE_EMPLOYMENT_INSURANCE;
-  return { nationalPension: np, healthInsurance: hi, longTermCare: ltc, employmentInsurance: ei, total: np + hi + ltc + ei };
+  var ei = plan.employmentInsurance ? m * RATE_EMPLOYMENT_INSURANCE : 0;
+  return {
+    pensionType: pensionType,
+    pensionLabel: plan.label,
+    employmentInsuranceApplicable: plan.employmentInsurance,
+    nationalPension: np,
+    healthInsurance: hi,
+    longTermCare: ltc,
+    employmentInsurance: ei,
+    total: np + hi + ltc + ei
+  };
 }
 
 // 근로소득공제 (국세청 고시 근로소득공제표, 총급여 기준 — 세율표와 달리 매년 잘 바뀌지 않는 안정적인 구조)
@@ -399,10 +419,10 @@ function calcMonthlyIncomeTax(monthlyGrossWon) {
 }
 
 // 연봉 실수령액 (정방향): 월 급여(세전) -> 4대보험·세금 상세 + 월 실수령액
-function calcTakeHomePay(monthlyGrossWon) {
+function calcTakeHomePay(monthlyGrossWon, pensionType) {
   var m = clampNonNegative(monthlyGrossWon);
   if (m <= 0) return { error: "월 급여(세전)를 올바르게 입력해 주세요." };
-  var insurance = calcInsuranceBreakdown(m);
+  var insurance = calcInsuranceBreakdown(m, pensionType);
   var tax = calcMonthlyIncomeTax(m);
   var totalDeduct = insurance.total + tax.incomeTax + tax.localTax;
   return {
@@ -416,16 +436,16 @@ function calcTakeHomePay(monthlyGrossWon) {
 
 // 연봉 실수령액 (역산): 목표 월 실수령액 -> 필요한 세전 월급여 (이분 탐색)
 // 공제액이 급여 구간(누진세율)에 따라 완전한 선형함수가 아니므로 근사적으로 이분 탐색을 사용합니다.
-function solveGrossFromNet(targetMonthlyNetWon) {
+function solveGrossFromNet(targetMonthlyNetWon, pensionType) {
   var target = clampNonNegative(targetMonthlyNetWon);
   if (target <= 0) return { error: "목표 월 실수령액을 올바르게 입력해 주세요." };
   var lo = 0, hi = 500000000;
   for (var i = 0; i < 60; i++) {
     var mid = (lo + hi) / 2;
-    var net = calcTakeHomePay(mid).net;
+    var net = calcTakeHomePay(mid, pensionType).net;
     if (net < target) lo = mid; else hi = mid;
   }
-  return calcTakeHomePay((lo + hi) / 2);
+  return calcTakeHomePay((lo + hi) / 2, pensionType);
 }
 
 /* -------------------------------------------------------------------------
@@ -481,12 +501,17 @@ function calcUnemploymentBenefit(input) {
 
 /* 4대보험·실수령액류 계산기 공통: 상세 내역 HTML */
 function insuranceDeductDetailHtml(insurance, tax) {
+  var pensionLabel = insurance.pensionLabel || "국민연금";
   var html = '<div class="deduct-detail">';
   html += '<div class="d-group-label">4대보험</div>';
-  html += '<div class="d-row"><span>국민연금</span><span>' + formatWon(insurance.nationalPension) + '</span></div>';
+  html += '<div class="d-row"><span>' + pensionLabel + '</span><span>' + formatWon(insurance.nationalPension) + '</span></div>';
   html += '<div class="d-row"><span>건강보험</span><span>' + formatWon(insurance.healthInsurance) + '</span></div>';
   html += '<div class="d-row"><span>장기요양보험</span><span>' + formatWon(insurance.longTermCare) + '</span></div>';
-  html += '<div class="d-row"><span>고용보험</span><span>' + formatWon(insurance.employmentInsurance) + '</span></div>';
+  if (insurance.employmentInsuranceApplicable === false) {
+    html += '<div class="d-row"><span>고용보험</span><span>해당없음</span></div>';
+  } else {
+    html += '<div class="d-row"><span>고용보험</span><span>' + formatWon(insurance.employmentInsurance) + '</span></div>';
+  }
   if (tax) {
     html += '<div class="d-group-label">세금</div>';
     html += '<div class="d-row"><span>소득세</span><span>' + formatWon(tax.incomeTax) + '</span></div>';

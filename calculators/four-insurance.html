@@ -73,6 +73,17 @@
       <p class="card-sub">입력하신 급여 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다.</p>
 
       <div class="field">
+        <label for="pensionType">가입 연금 종류</label>
+        <select id="pensionType">
+          <option value="national">국민연금 (일반 근로자)</option>
+          <option value="civilServant">공무원연금</option>
+          <option value="privateSchool">사학연금</option>
+          <option value="military">군인연금</option>
+        </select>
+        <div class="hint">공무원·사학·군인연금 가입자는 국민연금 대신 직역연금 기여율이 적용되고, 고용보험 대상에서 제외됩니다.</div>
+      </div>
+
+      <div class="field">
         <label for="monthlySalary">월 급여 (세전, 만원)</label>
         <input type="number" id="monthlySalary" placeholder="예: 375" min="0" />
         <div class="hint">보수월액(세전 월급여)을 만원 단위로 입력하세요.</div>
@@ -101,12 +112,14 @@
       <table>
         <tr><th>보험 종류</th><th>2026년 근로자 부담 요율</th></tr>
         <tr><td>국민연금</td><td>4.75% (보수월액 기준)</td></tr>
+        <tr><td>공무원연금 / 사학연금</td><td>9% (기준소득월액 기준)</td></tr>
+        <tr><td>군인연금</td><td>7% (기준소득월액 기준)</td></tr>
         <tr><td>건강보험</td><td>3.595% (보수월액 기준)</td></tr>
         <tr><td>장기요양보험</td><td>0.9448% (보수월액 기준)</td></tr>
-        <tr><td>고용보험</td><td>0.9% (보수월액 기준)</td></tr>
+        <tr><td>고용보험</td><td>0.9% — 공무원·사학·군인연금 가입자는 대상 제외</td></tr>
       </table>
       <div class="info-callout">
-        요율은 매년 1월 새로 고시됩니다. 국민연금은 기준소득월액 상한·하한이 있어 고소득자는 상한액 기준으로 계산되며, 이 계산기는 상한·하한을 반영하지 않은 단순 근사치입니다. 정확한 금액은 국민연금공단·국민건강보험공단·근로복지공단을 통해 확인하세요.
+        요율은 매년 1월 새로 고시됩니다. 국민연금·직역연금은 기준소득월액 상한·하한이 있어 고소득자는 상한액 기준으로 계산되며, 이 계산기는 상한·하한을 반영하지 않은 단순 근사치입니다. 정확한 금액은 국민연금공단·공무원연금공단·사립학교교직원연금공단·국민건강보험공단·근로복지공단을 통해 확인하세요.
       </div>
     </div>
   </div>
@@ -158,7 +171,8 @@ function runFourInsuranceCalc() {
     return;
   }
 
-  var insurance = calcInsuranceBreakdown(manwon * 10000);
+  var pensionType = document.getElementById("pensionType").value;
+  var insurance = calcInsuranceBreakdown(manwon * 10000, pensionType);
   logCalculatorUsage("four-insurance");
 
   var html = "";

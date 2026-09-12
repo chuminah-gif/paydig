@@ -71,6 +71,15 @@
         <button type="button" id="heroTabReverse">실수령액 → 연봉</button>
       </div>
       <div class="field" style="margin-bottom:10px;">
+        <label for="heroPensionType">가입 연금 종류</label>
+        <select id="heroPensionType">
+          <option value="national">국민연금 (일반 근로자)</option>
+          <option value="civilServant">공무원연금</option>
+          <option value="privateSchool">사학연금</option>
+          <option value="military">군인연금</option>
+        </select>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
         <label id="heroInputLabel" for="heroSalary">연봉 (만원)</label>
         <div style="display:flex; gap:10px; align-items:center;">
           <input type="number" id="heroSalary" value="4500" min="0" style="flex:1;" />
@@ -78,7 +87,7 @@
         </div>
       </div>
       <div id="heroResult"></div>
-      <div class="hint" style="margin-top:2px;">시안 화면과 동일한 근사 요율(2026년 기준)을 사용합니다. 자세한 항목별 내역은 실수령액 계산기 페이지에서 확인하세요.</div>
+      <div class="hint" style="margin-top:2px;">2026년 기준 근사 요율을 사용합니다. 공무원·사학·군인연금은 국민연금 대신 직역연금 기여율이, 고용보험은 미적용됩니다. 자세한 항목별 내역은 실수령액 계산기 페이지에서 확인하세요.</div>
       <p style="margin-top:14px;"><a href="calculators/salary-net.html" class="btn btn-secondary" style="width:auto; display:inline-flex; padding:11px 18px;">항목별로 자세히 계산하기 →</a></p>
     </div>
   </div>
@@ -299,11 +308,12 @@
       resultEl.innerHTML = "";
       return;
     }
+    var pensionType = document.getElementById("heroPensionType").value;
     var result;
     if (mode === "forward") {
-      result = calcTakeHomePay((manwon * 10000) / 12);
+      result = calcTakeHomePay((manwon * 10000) / 12, pensionType);
     } else {
-      result = solveGrossFromNet(manwon * 10000);
+      result = solveGrossFromNet(manwon * 10000, pensionType);
     }
     if (result.error) {
       resultEl.innerHTML = '<div class="error-box">⚠ ' + result.error + "</div>";

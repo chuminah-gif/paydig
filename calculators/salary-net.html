@@ -78,6 +78,17 @@
       </div>
 
       <div class="field">
+        <label for="pensionType">가입 연금 종류</label>
+        <select id="pensionType">
+          <option value="national">국민연금 (일반 근로자)</option>
+          <option value="civilServant">공무원연금</option>
+          <option value="privateSchool">사학연금</option>
+          <option value="military">군인연금</option>
+        </select>
+        <div class="hint">공무원·사학·군인연금 가입자는 국민연금 대신 각자의 직역연금 기여율이 적용되고, 고용보험 대상에서도 제외됩니다.</div>
+      </div>
+
+      <div class="field">
         <label id="inputLabel" for="salaryInput">연봉 (만원)</label>
         <input type="number" id="salaryInput" placeholder="예: 4500" min="0" />
         <div class="hint" id="inputHint">세전 연봉을 만원 단위로 입력하세요. (예: 4,500만원 → 4500)</div>
@@ -104,12 +115,13 @@
       <h2>실수령액 계산 방식 안내</h2>
       <p>이 계산기는 <strong>4대보험 근로자 부담분(국민연금·건강보험·장기요양보험·고용보험)</strong>과 <strong>소득세·지방소득세</strong>를 각각 계산해 세전 연봉에서 빼는 방식으로 월 실수령액을 추정합니다. 소득세는 국세청의 근로소득공제표를 적용해 근로소득금액을 구한 뒤, 본인 기본공제만 반영한 단순화된 세율 구조로 계산합니다.</p>
       <ul>
-        <li>4대보험 요율은 2026년 기준 근로자 부담분(국민연금 4.75%, 건강보험 3.595%, 장기요양보험 0.9448%, 고용보험 0.9%)을 사용합니다.</li>
+        <li>일반 근로자(국민연금) 기준 4대보험 요율은 2026년 근로자 부담분(국민연금 4.75%, 건강보험 3.595%, 장기요양보험 0.9448%, 고용보험 0.9%)을 사용합니다.</li>
+        <li><strong>공무원·사학·군인연금 가입자는 국민연금 대신 각자의 직역연금 기여율</strong>(공무원연금·사학연금 9%, 군인연금 7%)이 적용되며, 국민연금에 가입할 수 없는 직역연금 가입자는 <strong>고용보험 가입 대상에서도 제외</strong>되므로 고용보험료가 부과되지 않습니다. 건강보험·장기요양보험은 국민연금 가입자와 동일하게 계산합니다.</li>
         <li>실제 급여명세서의 소득세는 국세청 간이세액표(부양가족 수 등 반영)를 따르며, 이 계산기의 근사치와 차이가 있을 수 있습니다.</li>
         <li>"실수령액 → 연봉" 역산은 위 계산을 반대로 탐색하는 방식으로, 정확한 세전 연봉이 아닌 근사치입니다.</li>
       </ul>
       <div class="info-callout">
-        비과세 항목(식대, 자가운전보조금 등)이나 부양가족 공제는 반영되어 있지 않습니다. 정확한 금액은 국민연금공단, 국민건강보험공단, 근로복지공단, 국세청 홈택스를 통해 확인하세요.
+        비과세 항목(식대, 자가운전보조금 등)이나 부양가족 공제는 반영되어 있지 않습니다. 정확한 금액은 국민연금공단, 공무원연금공단, 사립학교교직원연금공단, 국민건강보험공단, 근로복지공단, 국세청 홈택스를 통해 확인하세요.
       </div>
 
       <h2>자주 묻는 질문</h2>
@@ -186,9 +198,10 @@ function runSalaryNetCalc() {
     return;
   }
 
+  var pensionType = document.getElementById("pensionType").value;
   var result = salaryMode === "forward"
-    ? calcTakeHomePay((manwon * 10000) / 12)
-    : solveGrossFromNet(manwon * 10000);
+    ? calcTakeHomePay((manwon * 10000) / 12, pensionType)
+    : solveGrossFromNet(manwon * 10000, pensionType);
 
   if (result.error) {
     showError("resultCard", result.error);
