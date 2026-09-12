@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://pension-lab-phi.vercel.app/index.html</loc><priority>1.0</priority></url>
+  <url><loc>https://pension-lab-phi.vercel.app/calculators/salary-net.html</loc><priority>0.95</priority></url>
+  <url><loc>https://pension-lab-phi.vercel.app/calculators/minimum-wage.html</loc><priority>0.95</priority></url>
+  <url><loc>https://pension-lab-phi.vercel.app/calculators/four-insurance.html</loc><priority>0.9</priority></url>
+  <url><loc>https://pension-lab-phi.vercel.app/calculators/health-insurance.html</loc><priority>0.9</priority></url>
+  <url><loc>https://pension-lab-phi.vercel.app/calculators/employment-insurance.html</loc><priority>0.9</priority></url>
   <url><loc>https://pension-lab-phi.vercel.app/calculators/national-pension.html</loc><priority>0.9</priority></url>
   <url><loc>https://pension-lab-phi.vercel.app/calculators/civil-servant-pension.html</loc><priority>0.9</priority></url>
   <url><loc>https://pension-lab-phi.vercel.app/calculators/military-pension.html</loc><priority>0.9</priority></url>

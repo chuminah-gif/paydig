@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="google-adsense-account" content="ca-pub-9392282410784308">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9392282410784308" crossorigin="anonymous"></script>
+<title>연봉 실수령액 계산기 | 연봉 ↔ 실수령액 역산 - 페이딕</title>
+<meta name="description" content="연봉을 입력하면 국민연금·건강보험·고용보험 등 4대보험과 소득세·지방소득세를 항목별로 반영한 월 실수령액을 계산합니다. 원하는 실수령액에 필요한 세전 연봉도 역산할 수 있습니다." />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="../index.html" class="logo"><svg viewBox="0 0 32 32" class="logo-mark" aria-hidden="true"><circle cx="13" cy="13" r="8" fill="none" stroke="#1E3A5F" stroke-width="3"/><line x1="19" y1="19" x2="26" y2="26" stroke="#1E3A5F" stroke-width="3" stroke-linecap="round"/><text x="13" y="16.5" font-size="9" font-weight="800" fill="#C43F32" text-anchor="middle">&#8361;</text></svg> 페이딕</a>
+    <nav class="main-nav">
+      <a href="../index.html">홈</a>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">실수령액 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="salary-net.html">연봉 실수령액·역산</a>
+          <a href="minimum-wage.html">최저시급 계산기</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">4대보험 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="national-pension.html">국민연금</a>
+          <a href="health-insurance.html">건강보험료</a>
+          <a href="employment-insurance.html">고용보험 실업급여</a>
+          <a href="four-insurance.html">4대보험 통합계산기</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">연금 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <div class="dropdown-heading">공적연금</div>
+          <a href="national-pension.html">국민연금</a>
+          <a href="civil-servant-pension.html">공무원연금</a>
+          <a href="military-pension.html">군인연금</a>
+          <a href="private-school-pension.html">사학연금</a>
+          <div class="dropdown-heading">퇴직연금</div>
+          <a href="retirement-db.html">DB형(확정급여형)</a>
+          <a href="retirement-dc.html">DC형(확정기여형)</a>
+          <a href="irp.html">IRP</a>
+          <div class="dropdown-heading">개인연금</div>
+          <a href="pension-savings.html">연금저축</a>
+          <a href="personal-pension.html">연금보험</a>
+          <a href="../simulation.html">통합 시뮬레이션</a>
+        </div>
+      </div>
+      <a href="../guide/index.html">가이드</a>
+      <a href="../about.html">사이트소개</a>
+    </nav>
+    <button class="nav-toggle" aria-label="메뉴 열기" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="breadcrumb"><a href="../index.html">홈</a> / 연봉 실수령액 계산기</p>
+    <h1>연봉 실수령액 계산기</h1>
+    <p>연봉(세전)을 입력하면 4대보험과 세금을 항목별로 반영한 월 실수령액을 계산합니다. 반대로 원하는 실수령액을 입력하면 필요한 세전 연봉도 역산해 드립니다.</p>
+  </div>
+</section>
+
+<div class="container section">
+  <div class="calc-layout">
+    <div class="card">
+      <h2>정보 입력</h2>
+      <p class="card-sub">입력하신 급여 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다. 어떤 계산기를 이용했는지에 대한 익명 통계만 별도로 수집됩니다.</p>
+
+      <div class="calc-tabs">
+        <button type="button" class="active" id="tabForward">연봉 → 실수령액</button>
+        <button type="button" id="tabReverse">실수령액 → 연봉</button>
+      </div>
+
+      <div class="field">
+        <label id="inputLabel" for="salaryInput">연봉 (만원)</label>
+        <input type="number" id="salaryInput" placeholder="예: 4500" min="0" />
+        <div class="hint" id="inputHint">세전 연봉을 만원 단위로 입력하세요. (예: 4,500만원 → 4500)</div>
+      </div>
+
+      <button class="btn btn-primary" onclick="runSalaryNetCalc()">계산하기</button>
+    </div>
+
+    <div class="result-panel">
+      <div class="card" id="resultCard">
+        <div class="result-empty">
+          <div class="icon">🧮</div>
+          <p>왼쪽 정보를 입력하고 계산하기 버튼을 눌러주세요.</p>
+        </div>
+      </div>
+      <div class="ad-slot">광고 영역 (Google AdSense 승인 후 게재)</div>
+    </div>
+  </div>
+</div>
+
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="card prose">
+      <h2>실수령액 계산 방식 안내</h2>
+      <p>이 계산기는 <strong>4대보험 근로자 부담분(국민연금·건강보험·장기요양보험·고용보험)</strong>과 <strong>소득세·지방소득세</strong>를 각각 계산해 세전 연봉에서 빼는 방식으로 월 실수령액을 추정합니다. 소득세는 국세청의 근로소득공제표를 적용해 근로소득금액을 구한 뒤, 본인 기본공제만 반영한 단순화된 세율 구조로 계산합니다.</p>
+      <ul>
+        <li>4대보험 요율은 2026년 기준 근로자 부담분(국민연금 4.75%, 건강보험 3.595%, 장기요양보험 0.9448%, 고용보험 0.9%)을 사용합니다.</li>
+        <li>실제 급여명세서의 소득세는 국세청 간이세액표(부양가족 수 등 반영)를 따르며, 이 계산기의 근사치와 차이가 있을 수 있습니다.</li>
+        <li>"실수령액 → 연봉" 역산은 위 계산을 반대로 탐색하는 방식으로, 정확한 세전 연봉이 아닌 근사치입니다.</li>
+      </ul>
+      <div class="info-callout">
+        비과세 항목(식대, 자가운전보조금 등)이나 부양가족 공제는 반영되어 있지 않습니다. 정확한 금액은 국민연금공단, 국민건강보험공단, 근로복지공단, 국세청 홈택스를 통해 확인하세요.
+      </div>
+
+      <h2>자주 묻는 질문</h2>
+      <h3>Q. 왜 연봉 실수령액이 회사마다 조금씩 다른가요?</h3>
+      <p>비과세 항목(식대·자가운전보조금 등)이 얼마나 포함되어 있는지, 부양가족 수에 따른 소득세 공제가 어떻게 적용되는지에 따라 실수령액이 달라집니다. 이 계산기는 비과세·부양가족 공제를 반영하지 않은 단순화된 근사치입니다.</p>
+      <h3>Q. 4대보험료는 매년 바뀌나요?</h3>
+      <p>네. 국민연금·건강보험·장기요양보험·고용보험 요율은 매년 1월 새로 고시됩니다. 이 계산기는 2026년 기준 요율을 사용하며, 연도가 바뀌면 실제 요율과 차이가 발생할 수 있습니다.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>페이딕</h4>
+        <p>4대보험·실수령액·연말정산부터 공적연금·퇴직연금·개인연금까지, 내 월급과 관련된 모든 계산을 무료로 해볼 수 있는 정보 제공 사이트입니다. 본 사이트는 특정 금융상품을 권유하거나 투자자문을 제공하지 않습니다.</p>
+      </div>
+      <div>
+        <h4>계산기</h4>
+        <ul>
+          <li><a href="salary-net.html">연봉 실수령액 계산기</a></li>
+          <li><a href="four-insurance.html">4대보험 통합 계산기</a></li>
+          <li><a href="national-pension.html">국민연금 계산기</a></li>
+          <li><a href="../simulation.html">통합 시뮬레이션</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>사이트 정보</h4>
+        <ul>
+          <li><a href="../about.html">사이트 소개</a></li>
+          <li><a href="../guide/index.html">연금 가이드</a></li>
+          <li><a href="../contact.html">문의하기</a></li>
+          <li><a href="../privacy.html">개인정보처리방침</a></li>
+          <li><a href="../terms.html">이용약관</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 페이딕. All rights reserved.</span>
+      <span>본 사이트의 계산 결과는 참고용이며 법적 효력이 없습니다.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/calculators.js"></script>
+<script src="../js/main.js"></script>
+<script>
+var salaryMode = "forward";
+
+document.getElementById("tabForward").addEventListener("click", function () {
+  salaryMode = "forward";
+  this.classList.add("active");
+  document.getElementById("tabReverse").classList.remove("active");
+  document.getElementById("inputLabel").textContent = "연봉 (만원)";
+  document.getElementById("inputHint").textContent = "세전 연봉을 만원 단위로 입력하세요. (예: 4,500만원 → 4500)";
+  document.getElementById("salaryInput").placeholder = "예: 4500";
+});
+document.getElementById("tabReverse").addEventListener("click", function () {
+  salaryMode = "reverse";
+  this.classList.add("active");
+  document.getElementById("tabForward").classList.remove("active");
+  document.getElementById("inputLabel").textContent = "원하는 월 실수령액 (만원)";
+  document.getElementById("inputHint").textContent = "매달 손에 쥐고 싶은 실수령액을 만원 단위로 입력하세요. (예: 325만원 → 325)";
+  document.getElementById("salaryInput").placeholder = "예: 325";
+});
+
+function runSalaryNetCalc() {
+  var manwon = getNumberValue("salaryInput");
+  if (!(manwon > 0)) {
+    showError("resultCard", salaryMode === "forward" ? "연봉을 올바르게 입력해 주세요." : "원하는 월 실수령액을 올바르게 입력해 주세요.");
+    return;
+  }
+
+  var result = salaryMode === "forward"
+    ? calcTakeHomePay((manwon * 10000) / 12)
+    : solveGrossFromNet(manwon * 10000);
+
+  if (result.error) {
+    showError("resultCard", result.error);
+    return;
+  }
+
+  logCalculatorUsage("salary-net-" + salaryMode);
+
+  var html = "";
+  html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
+
+  if (salaryMode === "forward") {
+    html += '<div class="result-headline">';
+    html += '<div class="label">월 실수령액</div>';
+    html += '<div class="amount">' + formatWon(result.net) + '</div>';
+    html += '<div class="amount-yearly">세전 연봉 ' + formatManwon(manwon) + ' 기준</div>';
+    html += '</div>';
+  } else {
+    html += '<div class="result-headline">';
+    html += '<div class="label">필요한 세전 연봉</div>';
+    html += '<div class="amount">' + formatManwon((result.monthlyGross * 12) / 10000) + '</div>';
+    html += '<div class="amount-yearly">월 실수령액 ' + formatManwon(manwon) + ' 기준(근사치)</div>';
+    html += '</div>';
+  }
+
+  html += insuranceDeductDetailHtml(result.insurance, result.tax);
+
+  if (salaryMode === "reverse") {
+    html += '<table class="result-table"><tr><th>세전 월급여(근사)</th><td>' + formatWon(result.monthlyGross) + '</td></tr></table>';
+  }
+
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>4대보험은 2026년 근로자 부담 요율, 소득세는 근로소득공제표를 적용한 근사치입니다. 비과세 항목·부양가족 공제는 반영되지 않았으므로 정확한 금액은 국세청 홈택스 등에서 확인하세요.</span></div>';
+
+  document.getElementById("resultCard").innerHTML = html;
+}
+</script>
+</body>
+</html>

@@ -6,8 +6,8 @@
 <meta name="google-adsense-account" content="ca-pub-9392282410784308">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9392282410784308" crossorigin="anonymous"></script>
 <meta name="google-site-verification" content="taws8Vi_db6beMjg8v1YSJ7HPuG9zz40TliK-jmaXKs" />
-<title>연금랩 | 국민연금부터 퇴직연금·개인연금까지 통합 노후자산 계산기</title>
-<meta name="description" content="국민연금·공무원연금·군인연금·사학연금 같은 공적연금부터 퇴직연금(DB/DC/IRP), 개인연금(연금저축·연금보험)까지 — 세전/세후 예상 수급액을 계산하고 통합 시뮬레이션으로 한눈에 확인할 수 있는 무료 노후자산 계산기입니다." />
+<title>페이딕 | 4대보험·실수령액부터 연금까지 급여 통합 계산기</title>
+<meta name="description" content="연봉 실수령액·연봉 역산·최저시급부터 국민연금·건강보험·고용보험 등 4대보험, 공적연금·퇴직연금·개인연금까지 — 내 월급과 관련된 모든 계산을 한 곳에서 할 수 있는 무료 통합 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="css/style.css" />
 </head>
@@ -15,35 +15,44 @@
 
 <header class="site-header">
   <div class="container">
-    <a href="index.html" class="logo"><span class="logo-mark">&#8361;</span> 연금랩</a>
+    <a href="index.html" class="logo"><svg viewBox="0 0 32 32" class="logo-mark" aria-hidden="true"><circle cx="13" cy="13" r="8" fill="none" stroke="#1E3A5F" stroke-width="3"/><line x1="19" y1="19" x2="26" y2="26" stroke="#1E3A5F" stroke-width="3" stroke-linecap="round"/><text x="13" y="16.5" font-size="9" font-weight="800" fill="#C43F32" text-anchor="middle">&#8361;</text></svg> 페이딕</a>
     <nav class="main-nav">
       <a href="index.html">홈</a>
       <div class="nav-item">
-        <a href="#" class="dropdown-toggle">공적연금 <span class="caret">▾</span></a>
+        <a href="#" class="dropdown-toggle">실수령액 <span class="caret">▾</span></a>
         <div class="dropdown-menu">
+          <a href="calculators/salary-net.html">연봉 실수령액·역산</a>
+          <a href="calculators/minimum-wage.html">최저시급 계산기</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">4대보험 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="calculators/national-pension.html">국민연금</a>
+          <a href="calculators/health-insurance.html">건강보험료</a>
+          <a href="calculators/employment-insurance.html">고용보험 실업급여</a>
+          <a href="calculators/four-insurance.html">4대보험 통합계산기</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">연금 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <div class="dropdown-heading">공적연금</div>
           <a href="calculators/national-pension.html">국민연금</a>
           <a href="calculators/civil-servant-pension.html">공무원연금</a>
           <a href="calculators/military-pension.html">군인연금</a>
           <a href="calculators/private-school-pension.html">사학연금</a>
-        </div>
-      </div>
-      <div class="nav-item">
-        <a href="#" class="dropdown-toggle">퇴직연금 <span class="caret">▾</span></a>
-        <div class="dropdown-menu">
+          <div class="dropdown-heading">퇴직연금</div>
           <a href="calculators/retirement-db.html">DB형(확정급여형)</a>
           <a href="calculators/retirement-dc.html">DC형(확정기여형)</a>
           <a href="calculators/irp.html">IRP</a>
-        </div>
-      </div>
-      <div class="nav-item">
-        <a href="#" class="dropdown-toggle">개인연금 <span class="caret">▾</span></a>
-        <div class="dropdown-menu">
+          <div class="dropdown-heading">개인연금</div>
           <a href="calculators/pension-savings.html">연금저축</a>
           <a href="calculators/personal-pension.html">연금보험</a>
+          <a href="simulation.html">통합 시뮬레이션</a>
         </div>
       </div>
-      <a href="simulation.html">통합시뮬레이션</a>
-      <a href="guide/index.html">연금가이드</a>
+      <a href="guide/index.html">가이드</a>
       <a href="about.html">사이트소개</a>
     </nav>
     <button class="nav-toggle" aria-label="메뉴 열기" aria-expanded="false">☰</button>
@@ -52,16 +61,84 @@
 
 <section class="hero">
   <div class="container">
-    <p class="breadcrumb">무료 노후자산 통합 계산기</p>
-    <h1>내 노후자산, 전부 모아 계산해보세요</h1>
-    <p>국민연금 같은 공적연금부터 퇴직연금(DB·DC·IRP), 개인연금(연금저축·연금보험)까지 — 세전은 물론 세후 실수령액까지 각각 계산하고, <strong>통합 시뮬레이션</strong>으로 은퇴 후 총 월 수령액을 한눈에 확인할 수 있습니다.</p>
-    <p style="margin-top:18px;"><a href="simulation.html" class="btn btn-primary" style="display:inline-flex; width:auto; padding:14px 28px;">통합 시뮬레이션 바로 해보기 →</a></p>
+    <p class="breadcrumb">급여 · 4대보험 · 연금 통합 계산</p>
+    <h1>내 월급, 한 톨까지 파헤쳐 드립니다</h1>
+    <p>연봉을 입력하면 4대보험 공제액과 실수령액을 바로 확인하고, 원하는 실수령액을 위해 필요한 연봉도 역산할 수 있습니다. 아래에서 바로 계산해보세요.</p>
+
+    <div class="card" style="max-width:640px; margin-top:22px;" id="heroCalc">
+      <div class="calc-tabs">
+        <button type="button" class="active" id="heroTabForward">연봉 → 실수령액</button>
+        <button type="button" id="heroTabReverse">실수령액 → 연봉</button>
+      </div>
+      <div class="field" style="margin-bottom:10px;">
+        <label id="heroInputLabel" for="heroSalary">연봉 (만원)</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="number" id="heroSalary" value="4500" min="0" style="flex:1;" />
+          <button type="button" class="btn btn-primary" style="width:auto; padding:11px 20px;" id="heroCalcBtn">계산하기</button>
+        </div>
+      </div>
+      <div id="heroResult"></div>
+      <div class="hint" style="margin-top:2px;">시안 화면과 동일한 근사 요율(2026년 기준)을 사용합니다. 자세한 항목별 내역은 실수령액 계산기 페이지에서 확인하세요.</div>
+      <p style="margin-top:14px;"><a href="calculators/salary-net.html" class="btn btn-secondary" style="width:auto; display:inline-flex; padding:11px 18px;">항목별로 자세히 계산하기 →</a></p>
+    </div>
   </div>
 </section>
 
 <div class="container section">
-  <h2 class="section-title">공적연금</h2>
-  <p class="section-desc">국민연금과 직역연금(공무원·군인·사학)의 예상 월 수급액을 계산합니다.</p>
+  <h2 class="section-title">4대보험</h2>
+  <p class="section-desc">국민연금·건강보험·고용보험·산재보험, 내 급여에서 각각 얼마가 빠지는지 계산합니다.</p>
+  <div class="pension-grid" style="margin-top:0;">
+    <a class="pension-card" href="calculators/four-insurance.html">
+      <div class="icon">🧮</div>
+      <h3>4대보험 통합 계산기</h3>
+      <p>월 급여를 입력하면 국민연금·건강보험·고용보험 공제액을 한 화면에서 계산합니다.</p>
+      <span class="go">계산하러 가기 →</span>
+    </a>
+    <a class="pension-card" href="calculators/national-pension.html">
+      <div class="icon">🏢</div>
+      <h3>국민연금 계산기</h3>
+      <p>가입기간과 평균소득을 입력해 예상 노령연금 월 수급액을 계산합니다.</p>
+      <span class="go">계산하러 가기 →</span>
+    </a>
+    <a class="pension-card" href="calculators/health-insurance.html">
+      <div class="icon">🏥</div>
+      <h3>건강보험료 계산기</h3>
+      <p>보수월액 기준 직장가입자 건강보험료·장기요양보험료를 계산합니다.</p>
+      <span class="go">계산하러 가기 →</span>
+    </a>
+    <a class="pension-card" href="calculators/employment-insurance.html">
+      <div class="icon">💼</div>
+      <h3>고용보험 실업급여 계산기</h3>
+      <p>평균임금·가입기간·연령으로 예상 구직급여를 계산합니다.</p>
+      <span class="go">계산하러 가기 →</span>
+    </a>
+  </div>
+</div>
+
+<div class="container section" style="padding-top:0;">
+  <h2 class="section-title">실수령액 · 최저시급</h2>
+  <p class="section-desc">연봉·시급을 실제 손에 쥐는 금액으로 환산하고, 최저임금 기준도 함께 확인합니다.</p>
+  <div class="pension-grid" style="margin-top:0;">
+    <a class="pension-card" href="calculators/salary-net.html">
+      <div class="icon">💵</div>
+      <h3>연봉 실수령액 계산기</h3>
+      <p>4대보험·세금을 항목별로 반영한 월 실수령액을 계산하고, 반대로 역산도 할 수 있습니다.</p>
+      <span class="go">계산하러 가기 →</span>
+    </a>
+    <a class="pension-card" href="calculators/minimum-wage.html">
+      <div class="icon">📋</div>
+      <h3>최저시급 계산기</h3>
+      <p>주휴수당을 포함한 주급·월급을 계산하고 최저임금 준수 여부를 확인합니다.</p>
+      <span class="go">계산하러 가기 →</span>
+    </a>
+  </div>
+</div>
+
+<div class="container section" style="padding-top:0;">
+  <h2 class="section-title">연금</h2>
+  <p class="section-desc">공적연금부터 퇴직연금, 개인연금까지 — 세전/세후 예상 수령액을 계산하고 통합 시뮬레이션으로 합산해 볼 수 있습니다.</p>
+
+  <h3 style="font-size:1.02rem; margin:28px 0 4px;">공적연금</h3>
   <div class="pension-grid" style="margin-top:0;">
     <a class="pension-card" href="calculators/national-pension.html">
       <div class="icon">🏢</div>
@@ -88,11 +165,8 @@
       <span class="go">계산하러 가기 →</span>
     </a>
   </div>
-</div>
 
-<div class="container section" style="padding-top:0;">
-  <h2 class="section-title">퇴직연금</h2>
-  <p class="section-desc">회사가 적립하는 DB형·DC형과 개인이 직접 운용하는 IRP까지, 세전/세후 예상 수령액을 계산합니다.</p>
+  <h3 style="font-size:1.02rem; margin:28px 0 4px;">퇴직연금</h3>
   <div class="pension-grid" style="margin-top:0;">
     <a class="pension-card" href="calculators/retirement-db.html">
       <div class="icon">🏦</div>
@@ -113,11 +187,8 @@
       <span class="go">계산하러 가기 →</span>
     </a>
   </div>
-</div>
 
-<div class="container section" style="padding-top:0;">
-  <h2 class="section-title">개인연금</h2>
-  <p class="section-desc">세액공제형 연금저축과 비과세형 연금보험, 목적에 맞게 계산해보세요.</p>
+  <h3 style="font-size:1.02rem; margin:28px 0 4px;">개인연금</h3>
   <div class="pension-grid" style="margin-top:0;">
     <a class="pension-card" href="calculators/pension-savings.html">
       <div class="icon">💰</div>
@@ -131,29 +202,29 @@
       <p>10년 이상 유지 시 비과세 혜택을 받는 연금보험을 계산합니다.</p>
       <span class="go">계산하러 가기 →</span>
     </a>
-    <a class="pension-card" href="simulation.html" style="background:linear-gradient(135deg, var(--color-primary-dark), var(--color-accent-dark)); border:none;">
-      <div class="icon" style="background:rgba(255,255,255,0.15); color:#fff;">🧮</div>
-      <h3 style="color:#fff;">통합 시뮬레이션</h3>
-      <p style="color:#dbe9f5;">해당하는 연금을 모두 체크해 은퇴 후 총 월 수령액을 한 번에 계산합니다.</p>
-      <span class="go" style="color:#fff;">지금 계산하기 →</span>
+    <a class="pension-card" href="simulation.html">
+      <div class="icon">🧮</div>
+      <h3>통합 시뮬레이션</h3>
+      <p>해당하는 연금을 모두 체크해 은퇴 후 총 월 수령액을 한 번에 계산합니다.</p>
+      <span class="go">지금 계산하기 →</span>
     </a>
   </div>
 </div>
 
 <section class="section">
   <div class="container">
-    <h2 class="section-title">왜 연금랩인가요?</h2>
-    <p class="section-desc">공적연금부터 퇴직연금, 개인연금까지 하나의 사이트에서 비교하고, 로그인이나 개인정보 제공 없이 간편하게 세전/세후 예상 수령액을 확인할 수 있습니다.</p>
+    <h2 class="section-title">왜 페이딕인가요?</h2>
+    <p class="section-desc">4대보험과 실수령액부터 공적연금·퇴직연금·개인연금까지 하나의 사이트에서 계산하고, 로그인이나 개인정보 제공 없이 간편하게 확인할 수 있습니다.</p>
     <div class="pension-grid" style="margin-top:0;">
       <div class="pension-card">
         <div class="icon">🔒</div>
         <h3>회원가입 없이 이용</h3>
-        <p>출생연도·소득·가입기간 등 계산에 입력한 구체적인 정보는 서버로 전송되지 않고 브라우저에서만 처리됩니다.</p>
+        <p>급여·소득·가입기간 등 계산에 입력한 구체적인 정보는 서버로 전송되지 않고 브라우저에서만 처리됩니다.</p>
       </div>
       <div class="pension-card">
         <div class="icon">🧾</div>
-        <h3>세전/세후 함께 확인</h3>
-        <p>연금소득세·퇴직소득세 등 연금별 세제를 반영해 실수령액에 가까운 세후 금액까지 보여드립니다.</p>
+        <h3>항목별로 자세히 확인</h3>
+        <p>국민연금·건강보험·장기요양보험·고용보험·소득세·지방소득세까지, 공제 항목을 하나하나 나눠서 보여드립니다.</p>
       </div>
       <div class="pension-card">
         <div class="icon">🧮</div>
@@ -172,7 +243,7 @@
   <div class="container">
     <div class="disclaimer-box" style="max-width:760px;">
       <span class="mark">ℹ</span>
-      <span>본 사이트의 모든 계산 결과(세전·세후 포함)는 공개된 산정 공식과 세법을 바탕으로 한 <strong>참고용 추정치</strong>이며, 법적 효력이 없습니다. 실제 수급액과 세액은 개인의 소득 이력, 재평가율, 물가상승률, 다른 소득 유무 등에 따라 달라질 수 있으므로 정확한 금액은 반드시 국민연금공단, 공무원연금공단, 군인연금과, 사립학교교직원연금공단, 국세청 등 관할 기관을 통해 확인하시기 바랍니다.</span>
+      <span>본 사이트의 모든 계산 결과(세전·세후 포함)는 공개된 산정 공식과 세법을 바탕으로 한 <strong>참고용 추정치</strong>이며, 법적 효력이 없습니다. 실제 수급액과 공제액·세액은 개인의 소득 이력, 재평가율, 물가상승률, 다른 소득 유무 등에 따라 달라질 수 있으므로 정확한 금액은 반드시 국민연금공단, 국민건강보험공단, 근로복지공단, 공무원연금공단, 군인연금과, 사립학교교직원연금공단, 국세청 등 관할 기관을 통해 확인하시기 바랍니다.</span>
     </div>
   </div>
 </section>
@@ -181,15 +252,15 @@
   <div class="container">
     <div class="footer-grid">
       <div>
-        <h4>연금랩</h4>
-        <p>공적연금부터 퇴직연금·개인연금까지, 세전/세후 예상 수령액과 통합 시뮬레이션을 누구나 쉽게 계산해볼 수 있는 무료 정보 제공 사이트입니다. 본 사이트는 특정 금융상품을 권유하거나 투자자문을 제공하지 않습니다.</p>
+        <h4>페이딕</h4>
+        <p>4대보험·실수령액·연말정산부터 공적연금·퇴직연금·개인연금까지, 내 월급과 관련된 모든 계산을 무료로 해볼 수 있는 정보 제공 사이트입니다. 본 사이트는 특정 금융상품을 권유하거나 투자자문을 제공하지 않습니다.</p>
       </div>
       <div>
-        <h4>연금 계산기</h4>
+        <h4>계산기</h4>
         <ul>
+          <li><a href="calculators/salary-net.html">연봉 실수령액 계산기</a></li>
+          <li><a href="calculators/four-insurance.html">4대보험 통합 계산기</a></li>
           <li><a href="calculators/national-pension.html">국민연금 계산기</a></li>
-          <li><a href="calculators/retirement-dc.html">퇴직연금 DC형 계산기</a></li>
-          <li><a href="calculators/pension-savings.html">연금저축 계산기</a></li>
           <li><a href="simulation.html">통합 시뮬레이션</a></li>
         </ul>
       </div>
@@ -205,12 +276,72 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <span>© 2026 연금랩. All rights reserved.</span>
+      <span>© 2026 페이딕. All rights reserved.</span>
       <span>본 사이트의 계산 결과는 참고용이며 법적 효력이 없습니다.</span>
     </div>
   </div>
 </footer>
 
+<script src="js/calculators.js"></script>
 <script src="js/main.js"></script>
+<script>
+(function () {
+  var mode = "forward";
+  var input = document.getElementById("heroSalary");
+  var label = document.getElementById("heroInputLabel");
+  var resultEl = document.getElementById("heroResult");
+  var tabForward = document.getElementById("heroTabForward");
+  var tabReverse = document.getElementById("heroTabReverse");
+
+  function render() {
+    var manwon = parseFloat(input.value);
+    if (!manwon || manwon <= 0) {
+      resultEl.innerHTML = "";
+      return;
+    }
+    var result;
+    if (mode === "forward") {
+      result = calcTakeHomePay((manwon * 10000) / 12);
+    } else {
+      result = solveGrossFromNet(manwon * 10000);
+    }
+    if (result.error) {
+      resultEl.innerHTML = '<div class="error-box">⚠ ' + result.error + "</div>";
+      return;
+    }
+    var html = insuranceDeductDetailHtml(result.insurance, result.tax);
+    if (mode === "forward") {
+      html += '<div class="net-highlight"><span class="k">월 실수령액</span><span class="v">' + formatWon(result.net) + "</span></div>";
+    } else {
+      html += '<div class="net-highlight"><span class="k">필요한 세전 연봉</span><span class="v">' + formatManwon((result.monthlyGross * 12) / 10000) + "</span></div>";
+    }
+    resultEl.innerHTML = html;
+  }
+
+  document.getElementById("heroCalcBtn").addEventListener("click", render);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") render();
+  });
+
+  tabForward.addEventListener("click", function () {
+    mode = "forward";
+    tabForward.classList.add("active");
+    tabReverse.classList.remove("active");
+    label.textContent = "연봉 (만원)";
+    input.value = 4500;
+    render();
+  });
+  tabReverse.addEventListener("click", function () {
+    mode = "reverse";
+    tabReverse.classList.add("active");
+    tabForward.classList.remove("active");
+    label.textContent = "원하는 월 실수령액 (만원)";
+    input.value = 325;
+    render();
+  });
+
+  render();
+})();
+</script>
 </body>
 </html>

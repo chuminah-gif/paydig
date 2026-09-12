@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="google-adsense-account" content="ca-pub-9392282410784308">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9392282410784308" crossorigin="anonymous"></script>
+<title>고용보험 실업급여 계산기 | 구직급여 예상액 - 페이딕</title>
+<meta name="description" content="이직 전 평균 월급여와 고용보험 가입기간, 연령을 입력하면 예상 구직급여(실업급여) 일액과 총 수급액을 계산해주는 무료 실업급여 계산기입니다." />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="../index.html" class="logo"><svg viewBox="0 0 32 32" class="logo-mark" aria-hidden="true"><circle cx="13" cy="13" r="8" fill="none" stroke="#1E3A5F" stroke-width="3"/><line x1="19" y1="19" x2="26" y2="26" stroke="#1E3A5F" stroke-width="3" stroke-linecap="round"/><text x="13" y="16.5" font-size="9" font-weight="800" fill="#C43F32" text-anchor="middle">&#8361;</text></svg> 페이딕</a>
+    <nav class="main-nav">
+      <a href="../index.html">홈</a>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">실수령액 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="salary-net.html">연봉 실수령액·역산</a>
+          <a href="minimum-wage.html">최저시급 계산기</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">4대보험 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="national-pension.html">국민연금</a>
+          <a href="health-insurance.html">건강보험료</a>
+          <a href="employment-insurance.html">고용보험 실업급여</a>
+          <a href="four-insurance.html">4대보험 통합계산기</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">연금 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <div class="dropdown-heading">공적연금</div>
+          <a href="national-pension.html">국민연금</a>
+          <a href="civil-servant-pension.html">공무원연금</a>
+          <a href="military-pension.html">군인연금</a>
+          <a href="private-school-pension.html">사학연금</a>
+          <div class="dropdown-heading">퇴직연금</div>
+          <a href="retirement-db.html">DB형(확정급여형)</a>
+          <a href="retirement-dc.html">DC형(확정기여형)</a>
+          <a href="irp.html">IRP</a>
+          <div class="dropdown-heading">개인연금</div>
+          <a href="pension-savings.html">연금저축</a>
+          <a href="personal-pension.html">연금보험</a>
+          <a href="../simulation.html">통합 시뮬레이션</a>
+        </div>
+      </div>
+      <a href="../guide/index.html">가이드</a>
+      <a href="../about.html">사이트소개</a>
+    </nav>
+    <button class="nav-toggle" aria-label="메뉴 열기" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="breadcrumb"><a href="../index.html">홈</a> / 고용보험 실업급여 계산기</p>
+    <h1>고용보험 실업급여 계산기</h1>
+    <p>이직 전 평균 월급여와 고용보험 가입기간, 연령을 입력하면 예상 구직급여(실업급여) 일액과 총 수급 예상액을 계산합니다.</p>
+  </div>
+</section>
+
+<div class="container section">
+  <div class="calc-layout">
+    <div class="card">
+      <h2>정보 입력</h2>
+      <p class="card-sub">입력하신 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다.</p>
+
+      <div class="field">
+        <label for="avgMonthlyWage">이직 전 평균 월급여 (세전, 만원)</label>
+        <input type="number" id="avgMonthlyWage" placeholder="예: 300" min="0" />
+        <div class="hint">이직 전 3개월간 평균 월급여를 만원 단위로 입력하세요.</div>
+      </div>
+
+      <div class="field">
+        <label for="insuredYears">고용보험 가입기간 (년)</label>
+        <input type="number" id="insuredYears" placeholder="예: 4" min="0" max="50" />
+      </div>
+
+      <div class="field">
+        <label for="age">연령 (만)</label>
+        <input type="number" id="age" placeholder="예: 35" min="15" max="100" />
+      </div>
+
+      <button class="btn btn-primary" onclick="runUnemploymentCalc()">계산하기</button>
+    </div>
+
+    <div class="result-panel">
+      <div class="card" id="resultCard">
+        <div class="result-empty">
+          <div class="icon">💼</div>
+          <p>왼쪽 정보를 입력하고 계산하기 버튼을 눌러주세요.</p>
+        </div>
+      </div>
+      <div class="ad-slot">광고 영역 (Google AdSense 승인 후 게재)</div>
+    </div>
+  </div>
+</div>
+
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="card prose">
+      <h2>실업급여 계산 방식 안내</h2>
+      <p>구직급여(실업급여)는 <strong>이직 전 평균임금의 60%</strong>를 하루 단위(구직급여일액)로 계산하며, 이를 <strong>소정급여일수</strong>만큼 지급합니다. 소정급여일수는 고용보험 가입기간과 연령(50세 기준)에 따라 아래와 같이 정해집니다.</p>
+      <table>
+        <tr><th>가입기간</th><th>50세 미만</th><th>50세 이상 · 장애인</th></tr>
+        <tr><td>1년 미만</td><td>120일</td><td>120일</td></tr>
+        <tr><td>1~3년</td><td>150일</td><td>180일</td></tr>
+        <tr><td>3~5년</td><td>180일</td><td>210일</td></tr>
+        <tr><td>5~10년</td><td>210일</td><td>240일</td></tr>
+        <tr><td>10년 이상</td><td>240일</td><td>270일</td></tr>
+      </table>
+      <div class="info-callout">
+        실업급여는 <strong>비자발적 이직</strong>(권고사직, 계약만료, 정리해고 등)인 경우에만 수급 대상입니다. 자발적 퇴사는 정당한 사유(임금체불, 괴롭힘 등 법령상 인정 사유)가 있는 경우에만 예외적으로 대상이 됩니다. 이 계산기는 수급 자격이 있다고 가정한 예상 금액입니다.
+      </div>
+      <h2>자주 묻는 질문</h2>
+      <h3>Q. 구직급여 상한액·하한액이 있나요?</h3>
+      <p>네. 구직급여일액은 상한액(고용노동부 매년 고시, 이 계산기는 66,000원 수준으로 근사 적용)을 넘을 수 없고, 최저임금의 80%를 하한액으로 보장합니다. 이 계산기는 상한액만 단순 반영했습니다.</p>
+      <h3>Q. 실업급여를 받으려면 어떻게 해야 하나요?</h3>
+      <p>퇴사 후 고용센터에 실업 신고를 하고 구직활동을 하면서 정기적으로 실업인정을 받아야 합니다. 자세한 절차는 고용노동부 워크넷·고용보험 홈페이지에서 확인할 수 있습니다.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>페이딕</h4>
+        <p>4대보험·실수령액·연말정산부터 공적연금·퇴직연금·개인연금까지, 내 월급과 관련된 모든 계산을 무료로 해볼 수 있는 정보 제공 사이트입니다. 본 사이트는 특정 금융상품을 권유하거나 투자자문을 제공하지 않습니다.</p>
+      </div>
+      <div>
+        <h4>계산기</h4>
+        <ul>
+          <li><a href="salary-net.html">연봉 실수령액 계산기</a></li>
+          <li><a href="four-insurance.html">4대보험 통합 계산기</a></li>
+          <li><a href="national-pension.html">국민연금 계산기</a></li>
+          <li><a href="../simulation.html">통합 시뮬레이션</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>사이트 정보</h4>
+        <ul>
+          <li><a href="../about.html">사이트 소개</a></li>
+          <li><a href="../guide/index.html">연금 가이드</a></li>
+          <li><a href="../contact.html">문의하기</a></li>
+          <li><a href="../privacy.html">개인정보처리방침</a></li>
+          <li><a href="../terms.html">이용약관</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 페이딕. All rights reserved.</span>
+      <span>본 사이트의 계산 결과는 참고용이며 법적 효력이 없습니다.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/calculators.js"></script>
+<script src="../js/main.js"></script>
+<script>
+function runUnemploymentCalc() {
+  var avgMonthlyManwon = getNumberValue("avgMonthlyWage");
+  var insuredYears = getNumberValue("insuredYears");
+  var age = getNumberValue("age");
+
+  var result = calcUnemploymentBenefit({ avgMonthlyWageManwon: avgMonthlyManwon, insuredYears: insuredYears, age: age });
+  if (result.error) {
+    showError("resultCard", result.error);
+    return;
+  }
+
+  logCalculatorUsage("employment-insurance");
+
+  var html = "";
+  html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
+  html += '<div class="result-headline">';
+  html += '<div class="label">예상 구직급여 총액</div>';
+  html += '<div class="amount">' + formatWon(result.total) + '</div>';
+  html += '<div class="amount-yearly">소정급여일수 ' + result.days + '일 기준</div>';
+  html += '</div>';
+
+  html += '<table class="result-table">';
+  html += '<tr><th>구직급여일액</th><td>' + formatWon(result.dailyBenefit) + '</td></tr>';
+  html += '<tr><th>소정급여일수</th><td>' + result.days + '일</td></tr>';
+  html += '<tr><th>예상 총 수급액</th><td><strong>' + formatWon(result.total) + '</strong></td></tr>';
+  html += '</table>';
+
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>비자발적 이직으로 수급 자격이 있다고 가정한 참고용 추정치이며, 상한액은 근사치를 적용했습니다. 정확한 금액과 수급 자격은 고용센터·고용보험 홈페이지를 통해 확인하세요.</span></div>';
+
+  document.getElementById("resultCard").innerHTML = html;
+}
+</script>
+</body>
+</html>

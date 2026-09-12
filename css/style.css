@@ -3,17 +3,19 @@
    ========================================================================== */
 
 :root {
-  --color-primary: #163a5f;
-  --color-primary-dark: #0d2740;
-  --color-primary-light: #3b6ea5;
-  --color-accent: #0d9488;
-  --color-accent-dark: #0b7a70;
-  --color-bg: #f5f7fa;
+  --color-primary: #1E3A5F;
+  --color-primary-dark: #14243B;
+  --color-primary-light: #4C7AAE;
+  --color-accent: #F0665A;
+  --color-accent-dark: #C43F32;
+  --color-accent-soft: #FDEEEC;
+  --color-chip-bg: #F4F5F7;
+  --color-bg: #FBFBFA;
   --color-surface: #ffffff;
-  --color-text: #1f2937;
-  --color-text-muted: #6b7280;
-  --color-text-faint: #9aa4b2;
-  --color-border: #e3e8ef;
+  --color-text: #1a1f2b;
+  --color-text-muted: #5b6472;
+  --color-text-faint: #94a0b0;
+  --color-border: #e6e8ec;
   --color-success: #16a34a;
   --color-warning-bg: #fff8e6;
   --color-warning-border: #f2cd7a;
@@ -102,16 +104,9 @@ h1, h2, h3, h4 {
 
 .logo .logo-mark {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
-  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.55);
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 800;
+  flex: none;
+  width: 30px;
+  height: 30px;
 }
 
 .main-nav {
@@ -135,7 +130,20 @@ h1, h2, h3, h4 {
 
 .main-nav a.active {
   color: var(--color-accent-dark);
-  background: #e6f5f3;
+  background: var(--color-accent-soft);
+}
+
+.dropdown-heading {
+  padding: 10px 10px 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.dropdown-heading:first-child {
+  padding-top: 4px;
 }
 
 .nav-toggle {
@@ -254,52 +262,57 @@ h1, h2, h3, h4 {
   }
 }
 
-/* ---------- 히어로 ---------- */
+/* ---------- 히어로 ----------
+   숫자를 많이 다루는 계산기 사이트라 밝은 배경이 스캔하기 편하고 신뢰감도
+   더 준다는 판단에 따라, 히어로도 짙은 색으로 전체를 채우지 않고 옅은
+   배경 위에 남색 텍스트만 쓴다. 포인트 색(코랄)은 강조 텍스트에만 사용. */
 .hero {
-  background: linear-gradient(160deg, var(--color-primary-dark) 0%, var(--color-primary) 55%, var(--color-accent-dark) 100%);
-  color: #fff;
-  padding: 56px 0 64px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding: 56px 0 40px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .hero h1 {
-  color: #fff;
+  color: var(--color-primary-dark);
   font-size: clamp(1.7rem, 3.2vw, 2.5rem);
   margin: 0 0 14px;
 }
 
 .hero p {
-  color: #dbe9f5;
+  color: var(--color-text-muted);
   font-size: 1.05rem;
   max-width: 640px;
   margin: 0 0 0;
 }
 
 .page-hero {
-  background: linear-gradient(160deg, var(--color-primary-dark) 0%, var(--color-primary) 100%);
-  color: #fff;
+  background: var(--color-bg);
+  color: var(--color-text);
   padding: 40px 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .page-hero h1 {
-  color: #fff;
+  color: var(--color-primary-dark);
   font-size: clamp(1.5rem, 2.6vw, 2.1rem);
   margin: 0 0 8px;
 }
 
 .page-hero p {
-  color: #dbe9f5;
+  color: var(--color-text-muted);
   margin: 0;
   max-width: 680px;
 }
 
 .breadcrumb {
   font-size: 0.85rem;
-  color: #b9d3e7;
+  color: var(--color-text-faint);
   margin-bottom: 10px;
 }
 
 .breadcrumb a {
-  color: #d7e9f5;
+  color: var(--color-primary);
 }
 
 /* ---------- 섹션 ---------- */
@@ -353,8 +366,7 @@ h1, h2, h3, h4 {
   justify-content: center;
   font-size: 1.3rem;
   margin-bottom: 14px;
-  background: #e6f5f3;
-  color: var(--color-accent-dark);
+  background: var(--color-chip-bg);
 }
 
 .pension-card h3 {
@@ -371,7 +383,7 @@ h1, h2, h3, h4 {
 .pension-card .go {
   font-size: 0.85rem;
   font-weight: 700;
-  color: var(--color-accent-dark);
+  color: var(--color-primary);
 }
 
 /* ---------- 계산기 폼 ---------- */
@@ -460,8 +472,8 @@ h1, h2, h3, h4 {
 .field textarea:focus,
 .field select:focus {
   outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.15);
   background: #fff;
 }
 
@@ -491,13 +503,13 @@ h1, h2, h3, h4 {
 }
 
 .radio-group input {
-  accent-color: var(--color-accent);
+  accent-color: var(--color-primary);
 }
 
 .radio-group label:has(input:checked) {
-  border-color: var(--color-accent);
-  color: var(--color-accent-dark);
-  background: #e6f5f3;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-chip-bg);
 }
 
 .btn {
@@ -515,13 +527,13 @@ h1, h2, h3, h4 {
 }
 
 .btn-primary {
-  background: var(--color-accent);
+  background: var(--color-primary);
   color: #fff;
   width: 100%;
 }
 
 .btn-primary:hover {
-  background: var(--color-accent-dark);
+  background: var(--color-primary-dark);
 }
 
 .btn-secondary {
@@ -800,7 +812,7 @@ h1, h2, h3, h4 {
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--color-accent-dark);
-  background: #e6f5f3;
+  background: var(--color-accent-soft);
   padding: 3px 9px;
   border-radius: 999px;
   margin-bottom: 10px;
@@ -909,4 +921,102 @@ h1, h2, h3, h4 {
   color: #8ba0b5;
   margin-bottom: 14px;
   line-height: 1.7;
+}
+
+/* ---------- 계산 모드 탭 (정방향/역산 등) ---------- */
+.calc-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--color-chip-bg);
+  border-radius: 10px;
+  padding: 4px;
+  width: fit-content;
+  margin-bottom: 20px;
+}
+
+.calc-tabs button {
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 9px 16px;
+  border-radius: 7px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.calc-tabs button.active {
+  background: #fff;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- 상세 공제 내역 (실수령액류 계산기 결과) ---------- */
+.deduct-detail {
+  margin-bottom: 18px;
+}
+
+.deduct-detail .d-group-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 14px;
+}
+
+.deduct-detail .d-group-label:first-child {
+  margin-top: 0;
+}
+
+.deduct-detail .d-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.deduct-detail .d-row span:last-child {
+  font-weight: 700;
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.deduct-detail .d-row.total {
+  border-bottom: none;
+  border-top: 1px solid var(--color-border);
+  margin-top: 4px;
+  padding-top: 12px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.deduct-detail .d-row.total span:last-child {
+  color: var(--color-primary);
+}
+
+.net-highlight {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 16px 18px;
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-md);
+  margin-bottom: 18px;
+}
+
+.net-highlight .k {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.net-highlight .v {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-accent-dark);
+  font-variant-numeric: tabular-nums;
 }

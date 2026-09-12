@@ -351,3 +351,149 @@ function showError(panelId, message) {
     '<div class="error-box">⚠ ' + message + "</div>" +
     '<div class="result-empty"><div class="icon">🧮</div><p>입력값을 확인한 뒤 다시 계산해 주세요.</p></div>';
 }
+
+/* -------------------------------------------------------------------------
+   4대보험 · 실수령액 · 최저시급 · 실업급여 (페이딕 확장분)
+   요율은 2026년 기준(국민연금 9.5%/장기요양 0.9448%/건강보험 7.19%/
+   고용보험 1.8%, 각 근로자 부담분)이며, 매년 고시되는 값이므로 실제
+   급여명세서와 차이가 있을 수 있는 참고용 추정치입니다.
+   ------------------------------------------------------------------------- */
+
+var RATE_NATIONAL_PENSION = 0.0475;      // 국민연금 (근로자 부담분, 2026)
+var RATE_HEALTH_INSURANCE = 0.03595;     // 건강보험 (근로자 부담분, 2026)
+var RATE_LONG_TERM_CARE = 0.009448;      // 장기요양보험 (보수월액 대비, 2026)
+var RATE_EMPLOYMENT_INSURANCE = 0.009;   // 고용보험 실업급여 (근로자 부담분, 2026)
+var MINIMUM_WAGE_2026 = 10320;           // 2026년 최저시급(원)
+var UNEMPLOYMENT_DAILY_CAP_2026 = 66000; // 구직급여 상한액(참고치, 고용노동부 매년 고시)
+
+function calcInsuranceBreakdown(monthlyGrossWon) {
+  var m = clampNonNegative(monthlyGrossWon);
+  var np = m * RATE_NATIONAL_PENSION;
+  var hi = m * RATE_HEALTH_INSURANCE;
+  var ltc = m * RATE_LONG_TERM_CARE;
+  var ei = m * RATE_EMPLOYMENT_INSURANCE;
+  return { nationalPension: np, healthInsurance: hi, longTermCare: ltc, employmentInsurance: ei, total: np + hi + ltc + ei };
+}
+
+// 근로소득공제 (국세청 고시 근로소득공제표, 총급여 기준 — 세율표와 달리 매년 잘 바뀌지 않는 안정적인 구조)
+function laborIncomeDeduction(annualGrossWon) {
+  var g = clampNonNegative(annualGrossWon);
+  if (g <= 5000000) return g * 0.7;
+  if (g <= 15000000) return 3500000 + (g - 5000000) * 0.4;
+  if (g <= 45000000) return 7500000 + (g - 15000000) * 0.15;
+  if (g <= 100000000) return 12000000 + (g - 45000000) * 0.05;
+  return 14750000 + (g - 100000000) * 0.02;
+}
+
+// 월 소득세·지방소득세 근사 (근로소득공제 → 근로소득금액 → 기본공제(본인만, 단순화) → 종합소득세 기본세율)
+function calcMonthlyIncomeTax(monthlyGrossWon) {
+  var annualGross = clampNonNegative(monthlyGrossWon) * 12;
+  var deduction = laborIncomeDeduction(annualGross);
+  var laborIncome = clampNonNegative(annualGross - deduction);
+  var basicDeduction = 1500000; // 본인 기본공제만 반영 (배우자·부양가족 공제 등은 미반영)
+  var taxBase = clampNonNegative(laborIncome - basicDeduction);
+  var annualTax = progressiveIncomeTax(taxBase);
+  var incomeTax = clampNonNegative(annualTax / 12);
+  var localTax = incomeTax * 0.1; // 지방소득세 = 소득세의 10% (법정 비율)
+  return { incomeTax: incomeTax, localTax: localTax };
+}
+
+// 연봉 실수령액 (정방향): 월 급여(세전) -> 4대보험·세금 상세 + 월 실수령액
+function calcTakeHomePay(monthlyGrossWon) {
+  var m = clampNonNegative(monthlyGrossWon);
+  if (m <= 0) return { error: "월 급여(세전)를 올바르게 입력해 주세요." };
+  var insurance = calcInsuranceBreakdown(m);
+  var tax = calcMonthlyIncomeTax(m);
+  var totalDeduct = insurance.total + tax.incomeTax + tax.localTax;
+  return {
+    monthlyGross: m,
+    insurance: insurance,
+    tax: tax,
+    totalDeduct: totalDeduct,
+    net: clampNonNegative(m - totalDeduct)
+  };
+}
+
+// 연봉 실수령액 (역산): 목표 월 실수령액 -> 필요한 세전 월급여 (이분 탐색)
+// 공제액이 급여 구간(누진세율)에 따라 완전한 선형함수가 아니므로 근사적으로 이분 탐색을 사용합니다.
+function solveGrossFromNet(targetMonthlyNetWon) {
+  var target = clampNonNegative(targetMonthlyNetWon);
+  if (target <= 0) return { error: "목표 월 실수령액을 올바르게 입력해 주세요." };
+  var lo = 0, hi = 500000000;
+  for (var i = 0; i < 60; i++) {
+    var mid = (lo + hi) / 2;
+    var net = calcTakeHomePay(mid).net;
+    if (net < target) lo = mid; else hi = mid;
+  }
+  return calcTakeHomePay((lo + hi) / 2);
+}
+
+/* -------------------------------------------------------------------------
+   최저시급 계산기
+   주 15시간 이상 근무 시 주휴수당(법정 최대 8시간/주)을 포함해 계산합니다.
+   ------------------------------------------------------------------------- */
+function calcMinimumWage(input) {
+  var hourly = input.hourlyWage > 0 ? input.hourlyWage : MINIMUM_WAGE_2026;
+  var weeklyHours = input.weeklyHours;
+  if (!(weeklyHours > 0)) return { error: "주 근로시간을 올바르게 입력해 주세요." };
+
+  var weeklyHolidayHours = weeklyHours >= 15 ? Math.min(weeklyHours, 40) / 5 : 0;
+  var weeklyPay = hourly * (weeklyHours + weeklyHolidayHours);
+  var monthlyPay = weeklyPay * (365 / 7 / 12);
+
+  return {
+    hourly: hourly,
+    weeklyHours: weeklyHours,
+    weeklyHolidayHours: weeklyHolidayHours,
+    weeklyPay: weeklyPay,
+    monthlyPay: monthlyPay,
+    belowMinimum: hourly < MINIMUM_WAGE_2026,
+    minimumWage: MINIMUM_WAGE_2026
+  };
+}
+
+/* -------------------------------------------------------------------------
+   고용보험 실업급여 (구직급여) 계산기
+   소정급여일수는 고용보험법 시행령 별표1 기준(안정적으로 유지되는 법정 표)을 그대로 반영.
+   ------------------------------------------------------------------------- */
+function unemploymentBenefitDays(insuredYears, age) {
+  var bracket;
+  if (insuredYears < 1) bracket = 0;
+  else if (insuredYears < 3) bracket = 1;
+  else if (insuredYears < 5) bracket = 2;
+  else if (insuredYears < 10) bracket = 3;
+  else bracket = 4;
+  var under50 = [120, 150, 180, 210, 240];
+  var over50 = [120, 180, 210, 240, 270];
+  return (age >= 50 ? over50 : under50)[bracket];
+}
+
+function calcUnemploymentBenefit(input) {
+  var avgMonthlyWon = input.avgMonthlyWageManwon * 10000;
+  if (avgMonthlyWon <= 0 || !(input.insuredYears >= 0) || !input.age) {
+    return { error: "이직 전 평균 월급여, 고용보험 가입기간, 연령을 올바르게 입력해 주세요." };
+  }
+  var avgDailyWage = avgMonthlyWon / 30; // 평균임금 산정을 30일 기준으로 단순화한 근사치
+  var dailyBenefit = Math.min(avgDailyWage * 0.6, UNEMPLOYMENT_DAILY_CAP_2026);
+  var days = unemploymentBenefitDays(input.insuredYears, input.age);
+  return { dailyBenefit: dailyBenefit, days: days, total: dailyBenefit * days };
+}
+
+/* 4대보험·실수령액류 계산기 공통: 상세 내역 HTML */
+function insuranceDeductDetailHtml(insurance, tax) {
+  var html = '<div class="deduct-detail">';
+  html += '<div class="d-group-label">4대보험</div>';
+  html += '<div class="d-row"><span>국민연금</span><span>' + formatWon(insurance.nationalPension) + '</span></div>';
+  html += '<div class="d-row"><span>건강보험</span><span>' + formatWon(insurance.healthInsurance) + '</span></div>';
+  html += '<div class="d-row"><span>장기요양보험</span><span>' + formatWon(insurance.longTermCare) + '</span></div>';
+  html += '<div class="d-row"><span>고용보험</span><span>' + formatWon(insurance.employmentInsurance) + '</span></div>';
+  if (tax) {
+    html += '<div class="d-group-label">세금</div>';
+    html += '<div class="d-row"><span>소득세</span><span>' + formatWon(tax.incomeTax) + '</span></div>';
+    html += '<div class="d-row"><span>지방소득세</span><span>' + formatWon(tax.localTax) + '</span></div>';
+  }
+  var total = insurance.total + (tax ? tax.incomeTax + tax.localTax : 0);
+  html += '<div class="d-row total"><span>공제 합계</span><span>' + formatWon(total) + '</span></div>';
+  html += '</div>';
+  return html;
+}
