@@ -757,12 +757,20 @@ function calcWorkInjuryLeaveBenefit(input) {
 }
 
 /* -------------------------------------------------------------------------
-   연말정산 예상세액 계산기
-   총급여 -> 근로소득공제 -> 근로소득금액 -> 인적공제·4대보험료(특별소득공제) ->
-   과세표준 -> 산출세액 -> 근로소득세액공제·연금계좌세액공제 -> 결정세액
-   국세청 고시 근로소득세액공제 한도표, 연금계좌세액공제율(16.5%/13.2%, 900만원
-   한도)은 최근 몇 년간 안정적으로 유지되어 온 구조를 그대로 반영했습니다.
-   신용카드 사용액, 의료비, 월세 등 그 밖의 공제 항목은 반영되어 있지 않습니다.
+   연말정산 예상세액 계산기 (종합판)
+   총급여 -> 근로소득공제 -> 근로소득금액
+     -> 소득공제: 인적공제, 4대보험료(특별소득공제), 신용카드 등 사용액,
+        주택마련저축·주택저당차입금이자(주택자금)
+   -> 과세표준 -> 산출세액
+     -> 세액공제: 근로소득세액공제, 자녀세액공제, 연금계좌세액공제,
+        보험료·의료비·교육비·기부금(특별세액공제), 월세액
+   -> 결정세액
+   국세청 고시 한도표·공제율은 2026년 기준으로 웹 검색을 통해 재확인한
+   값을 사용했습니다(신용카드 15%/30%/40%, 월세 17%/15%, 기부금 15%/30%/40%
+   등). 다만 신용카드 추가한도의 항목별 세부 한도, 의료비 한도없는 대상과
+   일반 대상의 배분 순서 등은 실제 국세청 계산 방식을 단순화했습니다.
+   자녀세액공제는 2026년 세법개정안(자녀당 10만원 인상)이 아직 국회 심의
+   중이라 현재 시행 중인 금액을 사용했습니다.
    ------------------------------------------------------------------------- */
 function laborIncomeTaxCredit(computedTax, totalGrossWon) {
   var credit = computedTax <= 500000 ? computedTax * 0.55 : 275000 + (computedTax - 500000) * 0.3;
@@ -781,9 +789,96 @@ function pensionAccountTaxCredit(contributionWon, totalGrossWon) {
   return capped * rate;
 }
 
+// 자녀세액공제 (기본공제대상 8세 이상 자녀 수 기준, 2026년 현재 시행 중인 금액)
+function childTaxCredit(childCount) {
+  if (!(childCount > 0)) return 0;
+  if (childCount === 1) return 150000;
+  if (childCount === 2) return 350000;
+  return 350000 + (childCount - 2) * 300000;
+}
+
+// 신용카드 등 사용액 소득공제
+// 낮은 공제율 항목부터 총급여의 25% 초과 기준선을 소진시키는 국세청 계산 순서를 반영합니다.
+function creditCardDeduction(input, totalGrossWon) {
+  var categories = [
+    { amount: input.creditCardWon || 0, rate: 0.15 },
+    { amount: input.debitCardWon || 0, rate: 0.30 },
+    { amount: input.booksCultureWon || 0, rate: 0.30 },
+    { amount: input.traditionalMarketWon || 0, rate: 0.40 },
+    { amount: input.publicTransportWon || 0, rate: 0.40 }
+  ];
+  var totalUsage = categories.reduce(function (sum, c) { return sum + c.amount; }, 0);
+  var threshold = totalGrossWon * 0.25;
+  if (totalUsage <= threshold || totalUsage <= 0) return { deduction: 0, totalUsage: totalUsage };
+
+  var remainingThreshold = threshold;
+  var baseAmount = 0; // 신용카드·체크카드 등(기본한도 대상)
+  var specialAmount = 0; // 전통시장·대중교통·도서공연(추가한도 대상)
+
+  categories.forEach(function (cat, idx) {
+    var eligible = Math.max(0, cat.amount - remainingThreshold);
+    remainingThreshold = Math.max(0, remainingThreshold - cat.amount);
+    var isSpecial = idx >= 2; // 도서공연/전통시장/대중교통
+    var value = eligible * cat.rate;
+    if (isSpecial) specialAmount += value; else baseAmount += value;
+  });
+
+  var baseCap = totalGrossWon <= 70000000 ? 3000000 : (totalGrossWon <= 120000000 ? 2500000 : 2000000);
+  var specialCap = 3000000; // 전통시장+대중교통+도서공연 합산 추가한도(단순화)
+
+  var deduction = Math.min(baseAmount, baseCap) + Math.min(specialAmount, specialCap);
+  return { deduction: deduction, totalUsage: totalUsage };
+}
+
+// 의료비 세액공제: 총급여 3% 초과분에 15% (한도없는 대상 우선 적용 후 일반 대상 700만원 한도)
+function medicalExpenseCredit(normalMedicalWon, unlimitedMedicalWon, totalGrossWon) {
+  var total = (normalMedicalWon || 0) + (unlimitedMedicalWon || 0);
+  var floor = totalGrossWon * 0.03;
+  var excess = clampNonNegative(total - floor);
+  if (excess <= 0) return 0;
+  var unlimitedPart = Math.min(excess, unlimitedMedicalWon || 0);
+  var normalPart = Math.min(clampNonNegative(excess - unlimitedPart), 7000000);
+  return (unlimitedPart + normalPart) * 0.15;
+}
+
+// 보험료 세액공제: 일반보장성 100만원 한도 12%, 장애인전용보장성 100만원 한도 15%
+function insurancePremiumCredit(generalWon, disabledWon) {
+  return Math.min(generalWon || 0, 1000000) * 0.12 + Math.min(disabledWon || 0, 1000000) * 0.15;
+}
+
+// 교육비 세액공제 15% (본인·대학생·취학전~고교 인당 한도는 입력 시점에 이미 반영되었다고 가정)
+function educationExpenseCredit(totalEducationWon) {
+  return (totalEducationWon || 0) * 0.15;
+}
+
+// 월세 세액공제: 총급여 5,500만원 이하 17%, 5,500만~8,000만원 15%, 8,000만원 초과는 대상 아님. 한도 750만원.
+function monthlyRentCredit(rentWon, totalGrossWon) {
+  if (!(rentWon > 0) || totalGrossWon > 80000000) return 0;
+  var rate = totalGrossWon <= 55000000 ? 0.17 : 0.15;
+  return Math.min(rentWon, 7500000) * rate;
+}
+
+// 기부금 세액공제: 1천만원 이하 15%, 1천만~3천만원 30%, 3천만원 초과 40%
+function donationCredit(donationWon) {
+  var d = donationWon || 0;
+  if (d <= 0) return 0;
+  if (d <= 10000000) return d * 0.15;
+  if (d <= 30000000) return 10000000 * 0.15 + (d - 10000000) * 0.3;
+  return 10000000 * 0.15 + 20000000 * 0.3 + (d - 30000000) * 0.4;
+}
+
+// 주택자금: 청약저축 등 소득공제(무주택세대주, 총급여 7천만원 이하, 300만원 한도 40%)
+//           + 장기주택저당차입금 이자상환액 소득공제(단순화하여 한도 2000만원 전액)
+function housingFundDeduction(input) {
+  var savings = Math.min(input.housingSavingsWon || 0, 3000000) * 0.4;
+  var mortgageInterest = Math.min(input.mortgageInterestWon || 0, 20000000);
+  return savings + mortgageInterest;
+}
+
 function calcYearEndTax(input) {
   var totalGross = input.totalGrossManwon * 10000;
   var dependents = input.dependents || 0;
+  var childCount = input.childCount || 0;
   var pensionContribution = (input.pensionContributionManwon || 0) * 10000;
   var withheldTax = (input.withheldTaxManwon || 0) * 10000;
 
@@ -792,16 +887,46 @@ function calcYearEndTax(input) {
   var laborDeduction = laborIncomeDeduction(totalGross);
   var laborIncome = clampNonNegative(totalGross - laborDeduction);
 
+  // ---- 소득공제 ----
   var personalDeduction = (1 + dependents) * 1500000;
   var insuranceAnnual = calcInsuranceBreakdown(totalGross / 12, "national").total * 12;
+  var cardResult = creditCardDeduction({
+    creditCardWon: (input.creditCardManwon || 0) * 10000,
+    debitCardWon: (input.debitCardManwon || 0) * 10000,
+    booksCultureWon: (input.booksCultureManwon || 0) * 10000,
+    traditionalMarketWon: (input.traditionalMarketManwon || 0) * 10000,
+    publicTransportWon: (input.publicTransportManwon || 0) * 10000
+  }, totalGross);
+  var housingDeduction = housingFundDeduction({
+    housingSavingsWon: (input.housingSavingsManwon || 0) * 10000,
+    mortgageInterestWon: (input.mortgageInterestManwon || 0) * 10000
+  });
 
-  var taxBase = clampNonNegative(laborIncome - personalDeduction - insuranceAnnual);
+  var totalIncomeDeduction = personalDeduction + insuranceAnnual + cardResult.deduction + housingDeduction;
+  var taxBase = clampNonNegative(laborIncome - totalIncomeDeduction);
   var computedTax = progressiveIncomeTax(taxBase);
 
+  // ---- 세액공제 ----
   var earnedIncomeCredit = laborIncomeTaxCredit(computedTax, totalGross);
+  var childCredit = childTaxCredit(childCount);
   var pensionCredit = pensionAccountTaxCredit(pensionContribution, totalGross);
+  var medicalCredit = medicalExpenseCredit(
+    (input.normalMedicalManwon || 0) * 10000,
+    (input.unlimitedMedicalManwon || 0) * 10000,
+    totalGross
+  );
+  var insuranceCredit = insurancePremiumCredit(
+    (input.generalInsuranceManwon || 0) * 10000,
+    (input.disabledInsuranceManwon || 0) * 10000
+  );
+  var educationCredit = educationExpenseCredit((input.educationManwon || 0) * 10000);
+  var rentCredit = monthlyRentCredit((input.monthlyRentManwon || 0) * 10000, totalGross);
+  var donationCreditAmount = donationCredit((input.donationManwon || 0) * 10000);
 
-  var finalTax = clampNonNegative(computedTax - earnedIncomeCredit - pensionCredit);
+  var totalTaxCredit = earnedIncomeCredit + childCredit + pensionCredit + medicalCredit +
+    insuranceCredit + educationCredit + rentCredit + donationCreditAmount;
+
+  var finalTax = clampNonNegative(computedTax - totalTaxCredit);
   var finalLocalTax = finalTax * 0.1;
   var finalTotal = finalTax + finalLocalTax;
 
@@ -814,10 +939,21 @@ function calcYearEndTax(input) {
     laborIncome: laborIncome,
     personalDeduction: personalDeduction,
     insuranceAnnual: insuranceAnnual,
+    cardDeduction: cardResult.deduction,
+    cardTotalUsage: cardResult.totalUsage,
+    housingDeduction: housingDeduction,
+    totalIncomeDeduction: totalIncomeDeduction,
     taxBase: taxBase,
     computedTax: computedTax,
     earnedIncomeCredit: earnedIncomeCredit,
+    childCredit: childCredit,
     pensionCredit: pensionCredit,
+    medicalCredit: medicalCredit,
+    insuranceCredit: insuranceCredit,
+    educationCredit: educationCredit,
+    rentCredit: rentCredit,
+    donationCredit: donationCreditAmount,
+    totalTaxCredit: totalTaxCredit,
     finalTax: finalTax,
     finalLocalTax: finalLocalTax,
     finalTotal: finalTotal,

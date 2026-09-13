@@ -5,20 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="google-adsense-account" content="ca-pub-9392282410784308">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9392282410784308" crossorigin="anonymous"></script>
-<title>연말정산 예상세액 계산기 | 환급·추가납부 미리 확인 - 페이딕</title>
-<meta name="description" content="총급여, 부양가족 수, 연금저축·IRP 납입액을 입력하면 연말정산 예상 결정세액과 환급·추가납부 예상액을 계산해주는 무료 연말정산 계산기입니다." />
+<title>연말정산 예상세액 계산기 | 신용카드·의료비·월세·기부금 다 반영 - 페이딕</title>
+<meta name="description" content="총급여부터 신용카드 사용액, 의료비, 보험료, 교육비, 월세, 기부금, 자녀·연금계좌 세액공제까지 반영해 연말정산 예상 결정세액과 환급·추가납부액을 계산하는 무료 연말정산 계산기입니다." /><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<link rel="stylesheet" href="../css/style.css" />
 <link rel="canonical" href="https://pension-lab-phi.vercel.app/calculators/year-end-tax.html" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="페이딕" />
-<meta property="og:title" content="연말정산 예상세액 계산기 | 환급·추가납부 미리 확인 - 페이딕" />
-<meta property="og:description" content="총급여, 부양가족 수, 연금저축·IRP 납입액을 입력하면 연말정산 예상 결정세액과 환급·추가납부 예상액을 계산해주는 무료 연말정산 계산기입니다." />
+<meta property="og:title" content="연말정산 예상세액 계산기 | 신용카드·의료비·월세·기부금 다 반영 - 페이딕" />
+<meta property="og:description" content="총급여부터 신용카드 사용액, 의료비, 보험료, 교육비, 월세, 기부금, 자녀·연금계좌 세액공제까지 반영해 연말정산 예상 결정세액과 환급·추가납부액을 계산하는 무료 연말정산 계산기입니다." />
 <meta property="og:url" content="https://pension-lab-phi.vercel.app/calculators/year-end-tax.html" />
 <meta property="og:locale" content="ko_KR" />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="연말정산 예상세액 계산기 | 환급·추가납부 미리 확인 - 페이딕" />
-<meta name="twitter:description" content="총급여, 부양가족 수, 연금저축·IRP 납입액을 입력하면 연말정산 예상 결정세액과 환급·추가납부 예상액을 계산해주는 무료 연말정산 계산기입니다." />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
-<link rel="stylesheet" href="../css/style.css" />
+<meta name="twitter:title" content="연말정산 예상세액 계산기 | 신용카드·의료비·월세·기부금 다 반영 - 페이딕" />
+<meta name="twitter:description" content="총급여부터 신용카드 사용액, 의료비, 보험료, 교육비, 월세, 기부금, 자녀·연금계좌 세액공제까지 반영해 연말정산 예상 결정세액과 환급·추가납부액을 계산하는 무료 연말정산 계산기입니다." />
 </head>
 <body>
 
@@ -91,38 +90,116 @@
   <div class="container">
     <p class="breadcrumb"><a href="../index.html">홈</a> / 연말정산 예상세액 계산기</p>
     <h1>연말정산 예상세액 계산기</h1>
-    <p>총급여와 부양가족 수, 연금저축·IRP 납입액을 입력하면 예상 결정세액과 환급·추가납부 예상액을 계산합니다.</p>
+    <p>신용카드 사용액, 의료비, 보험료, 교육비, 월세, 기부금, 자녀·연금계좌 세액공제까지 반영해 연말정산 예상 결정세액과 환급·추가납부액을 계산합니다.</p>
   </div>
 </section>
 
 <div class="container section">
-  <div class="calc-layout">
-    <div class="card">
-      <h2>정보 입력</h2>
-      <p class="card-sub">입력하신 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다.</p>
+  <div class="calc-layout" style="grid-template-columns: minmax(0,480px) minmax(0,1fr);">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="margin-bottom:4px;">기본 정보</h2>
+        <p class="card-sub">입력하신 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다.</p>
 
-      <div class="field">
-        <label for="totalGross">연간 총급여 (세전, 만원)</label>
-        <input type="number" id="totalGross" placeholder="예: 4500" min="0" />
-        <div class="hint">1년 동안 받은 세전 급여 합계(비과세 제외)를 만원 단위로 입력하세요.</div>
+        <div class="field">
+          <label for="totalGross">연간 총급여 (세전, 만원)</label>
+          <input type="number" id="totalGross" placeholder="예: 4500" min="0" />
+        </div>
+        <div class="field">
+          <label for="dependents">부양가족 수 (본인 제외)</label>
+          <input type="number" id="dependents" placeholder="예: 1" min="0" value="0" />
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="childCount">기본공제대상 자녀 수 (8세 이상)</label>
+          <input type="number" id="childCount" placeholder="예: 1" min="0" value="0" />
+        </div>
       </div>
 
-      <div class="field">
-        <label for="dependents">부양가족 수 (본인 제외)</label>
-        <input type="number" id="dependents" placeholder="예: 1" min="0" value="0" />
-        <div class="hint">배우자·자녀·부모 등 기본공제 대상 부양가족 수입니다.</div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="margin-bottom:4px;">신용카드 등 사용액 (연간, 만원)</h2>
+        <p class="card-sub">총급여의 25%를 초과한 사용액부터 공제 대상입니다.</p>
+        <div class="field">
+          <label for="creditCard">신용카드</label>
+          <input type="number" id="creditCard" placeholder="예: 1500" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="debitCard">체크카드·현금영수증</label>
+          <input type="number" id="debitCard" placeholder="예: 500" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="traditionalMarket">전통시장 사용액</label>
+          <input type="number" id="traditionalMarket" placeholder="예: 50" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="publicTransport">대중교통 사용액</label>
+          <input type="number" id="publicTransport" placeholder="예: 50" min="0" value="0" />
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="booksCulture">도서·공연·박물관·미술관 (총급여 7천만원 이하만 해당)</label>
+          <input type="number" id="booksCulture" placeholder="예: 30" min="0" value="0" />
+        </div>
       </div>
 
-      <div class="field">
-        <label for="pensionContribution">연금저축·IRP 연간 납입액 (만원)</label>
-        <input type="number" id="pensionContribution" placeholder="예: 400" min="0" value="0" />
-        <div class="hint">세액공제를 받는 연금저축·IRP 납입액 합계입니다. (한도 900만원)</div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="margin-bottom:4px;">보험료·의료비·교육비 (연간, 만원)</h2>
+        <div class="field">
+          <label for="generalInsurance">일반보장성보험료 (한도 100만원)</label>
+          <input type="number" id="generalInsurance" placeholder="예: 80" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="disabledInsurance">장애인전용보장성보험료 (한도 100만원)</label>
+          <input type="number" id="disabledInsurance" placeholder="예: 0" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="normalMedical">의료비 (일반, 한도 700만원)</label>
+          <input type="number" id="normalMedical" placeholder="예: 100" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="unlimitedMedical">의료비 (본인·65세이상·장애인·6세이하, 한도없음)</label>
+          <input type="number" id="unlimitedMedical" placeholder="예: 0" min="0" value="0" />
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="education">교육비 (본인·부양가족, 인당 한도 적용 후 합계)</label>
+          <input type="number" id="education" placeholder="예: 200" min="0" value="0" />
+          <div class="hint">대학생 900만원, 취학전~고교 300만원(1인당) 한도를 미리 적용한 합계를 입력하세요.</div>
+        </div>
       </div>
 
-      <div class="field">
-        <label for="withheldTax">이미 원천징수된 소득세 (연간, 만원)</label>
-        <input type="number" id="withheldTax" placeholder="예: 150" min="0" value="0" />
-        <div class="hint">급여명세서 기준 매월 뗀 소득세의 연간 합계입니다. 모르면 비워두면 결정세액만 계산합니다.</div>
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="margin-bottom:4px;">주택자금·월세 (연간, 만원)</h2>
+        <div class="field">
+          <label for="housingSavings">주택청약종합저축 등 납입액 (무주택세대주, 한도 300만원)</label>
+          <input type="number" id="housingSavings" placeholder="예: 0" min="0" value="0" />
+        </div>
+        <div class="field">
+          <label for="mortgageInterest">장기주택저당차입금 이자상환액</label>
+          <input type="number" id="mortgageInterest" placeholder="예: 0" min="0" value="0" />
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="monthlyRent">월세액 (무주택세대주, 총급여 8천만원 이하, 한도 750만원)</label>
+          <input type="number" id="monthlyRent" placeholder="예: 0" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="margin-bottom:4px;">연금계좌·기부금 (연간, 만원)</h2>
+        <div class="field">
+          <label for="pensionContribution">연금저축·IRP 납입액 (한도 900만원)</label>
+          <input type="number" id="pensionContribution" placeholder="예: 400" min="0" value="0" />
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label for="donation">기부금</label>
+          <input type="number" id="donation" placeholder="예: 0" min="0" value="0" />
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <h2 style="margin-bottom:4px;">기납부세액</h2>
+        <div class="field" style="margin-bottom:0;">
+          <label for="withheldTax">이미 원천징수된 소득세 (연간, 만원)</label>
+          <input type="number" id="withheldTax" placeholder="예: 150" min="0" value="0" />
+          <div class="hint">급여명세서 기준 매월 뗀 소득세의 연간 합계입니다. 비워두면 결정세액만 계산합니다.</div>
+        </div>
       </div>
 
       <button class="btn btn-primary" onclick="runYearEndTaxCalc()">계산하기</button>
@@ -144,19 +221,29 @@
   <div class="container">
     <div class="card prose">
       <h2>연말정산 계산 방식 안내</h2>
-      <p>연말정산은 <strong>총급여 → 근로소득공제 → 근로소득금액 → 각종 소득공제(인적공제·4대보험료) → 과세표준 → 산출세액 → 세액공제(근로소득세액공제·연금계좌세액공제) → 결정세액</strong> 순서로 계산됩니다. 1년간 이미 원천징수로 낸 세금(기납부세액)이 결정세액보다 많으면 <strong>환급</strong>, 적으면 <strong>추가 납부</strong>가 발생합니다.</p>
-      <ul>
-        <li>인적공제는 본인 150만원 + 부양가족 1인당 150만원으로 계산합니다. (경로우대·장애인 추가공제는 반영하지 않음)</li>
-        <li>4대보험료(국민연금·건강보험·장기요양보험·고용보험)는 전액 소득공제 대상으로 자동 반영됩니다.</li>
-        <li>연금계좌세액공제는 연금저축·IRP 합산 900만원 한도에 총급여 5,500만원 이하 16.5%, 초과 13.2%를 적용합니다.</li>
-        <li>신용카드 사용액, 의료비, 월세, 기부금 등 그 밖의 공제·세액공제 항목은 반영되어 있지 않아 실제 환급액은 이보다 클 수 있습니다.</li>
-      </ul>
+      <p>연말정산은 <strong>총급여 → 근로소득공제 → 근로소득금액 → 각종 소득공제 → 과세표준 → 산출세액 → 각종 세액공제 → 결정세액</strong> 순서로 계산됩니다. 1년간 이미 원천징수로 낸 세금(기납부세액)이 결정세액보다 많으면 <strong>환급</strong>, 적으면 <strong>추가 납부</strong>가 발생합니다.</p>
+      <table>
+        <tr><th>항목</th><th>2026년 기준 반영 내용</th></tr>
+        <tr><td>인적공제</td><td>본인 150만원 + 부양가족 1인당 150만원 (경로우대·장애인 추가공제 미반영)</td></tr>
+        <tr><td>4대보험료</td><td>국민연금·건강보험·장기요양보험·고용보험 전액 소득공제 (일반 근로자 요율 기준)</td></tr>
+        <tr><td>신용카드 등 사용액</td><td>총급여 25% 초과분에 신용카드 15%, 체크카드·현금영수증·도서공연 30%, 전통시장·대중교통 40% — 낮은 공제율부터 기준선을 소진하는 국세청 계산 순서 반영. 기본한도 총급여 7천만원 이하 300만원/7천만~1.2억 250만원/1.2억 초과 200만원, 추가한도(전통시장·대중교통·도서공연 합산) 300만원</td></tr>
+        <tr><td>보험료 세액공제</td><td>일반보장성 100만원 한도 12%, 장애인전용 100만원 한도 15%</td></tr>
+        <tr><td>의료비 세액공제</td><td>총급여 3% 초과분 15% (본인·65세이상·장애인·6세이하는 한도 없음, 그 외 700만원 한도)</td></tr>
+        <tr><td>교육비 세액공제</td><td>인당 한도 적용 후 합계 × 15%</td></tr>
+        <tr><td>주택자금 소득공제</td><td>주택청약종합저축 등 300만원 한도 40%, 장기주택저당차입금 이자상환액(단순화하여 2000만원 한도)</td></tr>
+        <tr><td>월세 세액공제</td><td>총급여 5,500만원 이하 17%, 5,500만~8,000만원 15%, 한도 750만원</td></tr>
+        <tr><td>기부금 세액공제</td><td>1천만원 이하 15%, 1천만~3천만원 30%, 3천만원 초과 40%</td></tr>
+        <tr><td>자녀세액공제</td><td>1명 15만원, 2명 35만원, 3명 이상 35만원+2명 초과 1인당 30만원</td></tr>
+        <tr><td>연금계좌세액공제</td><td>연금저축·IRP 합산 900만원 한도, 총급여 5,500만원 이하 16.5%, 초과 13.2%</td></tr>
+      </table>
       <div class="info-callout">
-        더 챙길 수 있는 공제 항목이 궁금하다면 <a href="../guide/income-deduction-guide.html">소득·세액공제 가이드</a>를 함께 확인해보세요.
+        자녀세액공제는 자녀 1인당 10만원씩 인상하는 세법개정안이 2026년 정기국회에서 심의 중이며, 확정 전까지는 현재 시행 중인 금액을 사용합니다. 월세 세액공제 한도도 1,200만원으로 확대하는 방안이 논의되고 있어, 확정되는 대로 반영할 예정입니다.
       </div>
       <h2>자주 묻는 질문</h2>
-      <h3>Q. 왜 실제 연말정산 결과와 차이가 나나요?</h3>
-      <p>신용카드·현금영수증 사용액, 의료비, 교육비, 월세, 기부금 공제 등 개인마다 크게 달라지는 항목은 이 계산기에 반영되어 있지 않습니다. 이런 공제를 챙기면 실제로는 이 계산기보다 더 많이 환급받을 수 있습니다.</p>
+      <h3>Q. 신용카드 소득공제는 왜 이렇게 복잡한가요?</h3>
+      <p>국세청은 공제율이 낮은 항목(신용카드 15%)부터 총급여 25% 기준선을 채우고, 그 이후 남는 사용액에 각 항목의 공제율을 적용합니다. 이 계산기도 같은 순서(신용카드 → 체크카드·현금영수증 → 도서공연 → 전통시장 → 대중교통)로 계산합니다.</p>
+      <h3>Q. 그래도 실제 결과와 차이가 날 수 있나요?</h3>
+      <p>네. 경로우대·장애인 추가 인적공제, 정치자금·우리사주조합 기부금의 세부 구분, 중소기업 취업자 감면 등 개인별로 크게 달라지는 특수 항목은 반영되어 있지 않습니다. 정확한 금액은 국세청 홈택스 연말정산 미리보기 서비스를 통해 확인하세요.</p>
       <h3>Q. 연금저축과 IRP를 같이 넣으면 공제가 두 배인가요?</h3>
       <p>아니요. 연금저축과 IRP는 합산해서 연간 900만원까지만 세액공제 대상입니다(연금저축 단독으로는 600만원 한도). 두 계좌에 나눠 넣어도 합산 한도는 동일합니다.</p>
     </div>
@@ -204,16 +291,26 @@
 <script src="../js/main.js"></script>
 <script>
 function runYearEndTaxCalc() {
-  var totalGross = getNumberValue("totalGross");
-  var dependents = getNumberValue("dependents");
-  var pensionContribution = getNumberValue("pensionContribution");
-  var withheldTax = getNumberValue("withheldTax");
-
   var result = calcYearEndTax({
-    totalGrossManwon: totalGross,
-    dependents: dependents,
-    pensionContributionManwon: pensionContribution,
-    withheldTaxManwon: withheldTax
+    totalGrossManwon: getNumberValue("totalGross"),
+    dependents: getNumberValue("dependents"),
+    childCount: getNumberValue("childCount"),
+    creditCardManwon: getNumberValue("creditCard"),
+    debitCardManwon: getNumberValue("debitCard"),
+    traditionalMarketManwon: getNumberValue("traditionalMarket"),
+    publicTransportManwon: getNumberValue("publicTransport"),
+    booksCultureManwon: getNumberValue("booksCulture"),
+    generalInsuranceManwon: getNumberValue("generalInsurance"),
+    disabledInsuranceManwon: getNumberValue("disabledInsurance"),
+    normalMedicalManwon: getNumberValue("normalMedical"),
+    unlimitedMedicalManwon: getNumberValue("unlimitedMedical"),
+    educationManwon: getNumberValue("education"),
+    housingSavingsManwon: getNumberValue("housingSavings"),
+    mortgageInterestManwon: getNumberValue("mortgageInterest"),
+    monthlyRentManwon: getNumberValue("monthlyRent"),
+    pensionContributionManwon: getNumberValue("pensionContribution"),
+    donationManwon: getNumberValue("donation"),
+    withheldTaxManwon: getNumberValue("withheldTax")
   });
 
   if (result.error) {
@@ -241,21 +338,35 @@ function runYearEndTaxCalc() {
     html += '</div>';
   }
 
+  html += '<div class="d-group-label" style="font-size:.72rem; font-weight:700; color:var(--color-text-faint); text-transform:uppercase; margin:14px 0 4px;">소득공제</div>';
   html += '<table class="result-table">';
   html += '<tr><th>근로소득공제</th><td>-' + formatWon(result.laborDeduction) + '</td></tr>';
   html += '<tr><th>근로소득금액</th><td>' + formatWon(result.laborIncome) + '</td></tr>';
   html += '<tr><th>인적공제</th><td>-' + formatWon(result.personalDeduction) + '</td></tr>';
   html += '<tr><th>4대보험료 공제</th><td>-' + formatWon(result.insuranceAnnual) + '</td></tr>';
+  html += '<tr><th>신용카드 등 사용액 공제</th><td>-' + formatWon(result.cardDeduction) + '</td></tr>';
+  html += '<tr><th>주택자금 공제</th><td>-' + formatWon(result.housingDeduction) + '</td></tr>';
   html += '<tr><th>과세표준</th><td>' + formatWon(result.taxBase) + '</td></tr>';
-  html += '<tr><th>산출세액</th><td>' + formatWon(result.computedTax) + '</td></tr>';
+  html += '<tr><th>산출세액</th><td><strong>' + formatWon(result.computedTax) + '</strong></td></tr>';
+  html += '</table>';
+
+  html += '<div class="d-group-label" style="font-size:.72rem; font-weight:700; color:var(--color-text-faint); text-transform:uppercase; margin:14px 0 4px;">세액공제</div>';
+  html += '<table class="result-table">';
   html += '<tr><th>근로소득세액공제</th><td>-' + formatWon(result.earnedIncomeCredit) + '</td></tr>';
+  html += '<tr><th>자녀세액공제</th><td>-' + formatWon(result.childCredit) + '</td></tr>';
   html += '<tr><th>연금계좌세액공제</th><td>-' + formatWon(result.pensionCredit) + '</td></tr>';
+  html += '<tr><th>보험료 세액공제</th><td>-' + formatWon(result.insuranceCredit) + '</td></tr>';
+  html += '<tr><th>의료비 세액공제</th><td>-' + formatWon(result.medicalCredit) + '</td></tr>';
+  html += '<tr><th>교육비 세액공제</th><td>-' + formatWon(result.educationCredit) + '</td></tr>';
+  html += '<tr><th>월세 세액공제</th><td>-' + formatWon(result.rentCredit) + '</td></tr>';
+  html += '<tr><th>기부금 세액공제</th><td>-' + formatWon(result.donationCredit) + '</td></tr>';
+  html += '<tr><th>세액공제 합계</th><td>-' + formatWon(result.totalTaxCredit) + '</td></tr>';
   html += '<tr><th>결정세액(소득세)</th><td>' + formatWon(result.finalTax) + '</td></tr>';
   html += '<tr><th>지방소득세</th><td>' + formatWon(result.finalLocalTax) + '</td></tr>';
   html += '<tr><th>결정세액 합계</th><td><strong>' + formatWon(result.finalTotal) + '</strong></td></tr>';
   html += '</table>';
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>신용카드·의료비·월세 등 그 밖의 공제는 반영되지 않은 참고용 추정치입니다. 정확한 금액은 국세청 홈택스 연말정산 미리보기 서비스를 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>경로우대·장애인 추가 인적공제 등 개인별 특수 항목은 반영되지 않은 참고용 추정치입니다. 정확한 금액은 국세청 홈택스 연말정산 미리보기 서비스를 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }
