@@ -473,6 +473,27 @@ h1, h2, h3, h4 {
   font-family: inherit;
 }
 
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  cursor: pointer;
+}
+
+.field-checkbox input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.field-checkbox span {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
 .field input:focus,
 .field textarea:focus,
 .field select:focus {
@@ -772,11 +793,16 @@ h1, h2, h3, h4 {
   border: 1px solid var(--color-border);
   padding: 9px 10px;
   text-align: left;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .prose table th:first-child, .prose table td:first-child {
   min-width: 8.5em;
+}
+
+/* 셀 내용이 짧은 데이터가 아니라 문장 단위일 때 — 가로 스크롤 대신 자연스럽게 줄바꿈 */
+.prose table.wrap-cells th, .prose table.wrap-cells td {
+  white-space: normal;
 }
 
 .prose table th {

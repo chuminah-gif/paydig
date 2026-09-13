@@ -432,6 +432,12 @@ var RATE_EMPLOYMENT_INSURANCE = 0.009;   // 고용보험 실업급여 (근로자
 var MINIMUM_WAGE_2026 = 10320;           // 2026년 최저시급(원)
 var UNEMPLOYMENT_DAILY_CAP_2026 = 66000; // 구직급여 상한액(참고치, 고용노동부 매년 고시)
 
+// 국민연금 기준소득월액 상한·하한 (2026.7~2027.6 적용, 국민연금공단 고시)
+var NATIONAL_PENSION_BASE_CEILING = 6590000;
+var NATIONAL_PENSION_BASE_FLOOR = 410000;
+// 건강보험 직장가입자 개인부담 보험료 월 상한액(2026) — 보수월액이 아니라 "계산된 보험료" 자체에 적용되는 상한
+var HEALTH_INSURANCE_PREMIUM_CEILING = 4590000;
+
 /* 공적연금 종류별 개인부담 기여율. 공무원·사학·군인연금 가입자는 국민연금 대신
    각자의 직역연금에 가입하며, 국민연금에 가입할 수 없는 직역연금 가입자·별정우체국
    직원은 고용보험 가입 대상에서도 제외됩니다(근로복지공단 안내 기준). */
@@ -445,14 +451,22 @@ var PENSION_TYPES = {
 function calcInsuranceBreakdown(monthlyGrossWon, pensionType) {
   var m = clampNonNegative(monthlyGrossWon);
   var plan = PENSION_TYPES[pensionType] || PENSION_TYPES.national;
-  var np = m * plan.rate;
-  var hi = m * RATE_HEALTH_INSURANCE;
+
+  var pensionBase = m;
+  if (pensionType === "national" || !pensionType) {
+    // 국민연금은 기준소득월액에 상한·하한이 있어, 이 구간을 벗어난 소득에는 보험료가 더 붙지 않습니다.
+    pensionBase = Math.min(Math.max(m, NATIONAL_PENSION_BASE_FLOOR), NATIONAL_PENSION_BASE_CEILING);
+  }
+  var np = pensionBase * plan.rate;
+
+  var hi = Math.min(m * RATE_HEALTH_INSURANCE, HEALTH_INSURANCE_PREMIUM_CEILING);
   var ltc = hi * RATE_LONG_TERM_CARE_OF_PREMIUM; // 급여가 아니라 건강보험료(본인부담분)에 곱함
   var ei = plan.employmentInsurance ? m * RATE_EMPLOYMENT_INSURANCE : 0;
   return {
     pensionType: pensionType,
     pensionLabel: plan.label,
     employmentInsuranceApplicable: plan.employmentInsurance,
+    pensionBaseCapped: pensionType === "national" && m !== pensionBase,
     nationalPension: np,
     healthInsurance: hi,
     longTermCare: ltc,
@@ -471,12 +485,14 @@ function laborIncomeDeduction(annualGrossWon) {
   return 14750000 + (g - 100000000) * 0.02;
 }
 
-// 월 소득세·지방소득세 근사 (근로소득공제 → 근로소득금액 → 기본공제(본인만, 단순화) → 종합소득세 기본세율)
-function calcMonthlyIncomeTax(monthlyGrossWon) {
+// 월 소득세·지방소득세 근사 (근로소득공제 → 근로소득금액 → 인적공제(부양가족 수 × 150만원, 본인 포함) → 종합소득세 기본세율)
+// familyCount: 부양가족 수(본인 포함, 국세청 간이세액표의 "공제대상가족수"와 같은 개념). 경로우대·장애인 추가공제는 미반영.
+function calcMonthlyIncomeTax(monthlyGrossWon, familyCount) {
+  var fc = familyCount > 0 ? familyCount : 1;
   var annualGross = clampNonNegative(monthlyGrossWon) * 12;
   var deduction = laborIncomeDeduction(annualGross);
   var laborIncome = clampNonNegative(annualGross - deduction);
-  var basicDeduction = 1500000; // 본인 기본공제만 반영 (배우자·부양가족 공제 등은 미반영)
+  var basicDeduction = fc * 1500000;
   var taxBase = clampNonNegative(laborIncome - basicDeduction);
   var annualTax = progressiveIncomeTax(taxBase);
   var incomeTax = clampNonNegative(annualTax / 12);
@@ -485,14 +501,27 @@ function calcMonthlyIncomeTax(monthlyGrossWon) {
 }
 
 // 연봉 실수령액 (정방향): 월 급여(세전) -> 4대보험·세금 상세 + 월 실수령액
-function calcTakeHomePay(monthlyGrossWon, pensionType) {
+// options.nonTaxableWon: 비과세액(식대·자가운전보조금 등, 4대보험·소득세 산정 기준 모두에서 제외)
+// options.familyCount: 부양가족 수(본인 포함, 기본값 1)
+// options.withholdingRatio: 회사가 선택하는 소득세 원천징수 비율(80%/100%/120%, 기본값 1.0)
+function calcTakeHomePay(monthlyGrossWon, pensionType, options) {
+  options = options || {};
+  var nonTaxable = clampNonNegative(options.nonTaxableWon || 0);
+  var familyCount = options.familyCount > 0 ? options.familyCount : 1;
+  var withholdingRatio = options.withholdingRatio > 0 ? options.withholdingRatio : 1.0;
   var m = clampNonNegative(monthlyGrossWon);
   if (m <= 0) return { error: "월 급여(세전)를 올바르게 입력해 주세요." };
-  var insurance = calcInsuranceBreakdown(m, pensionType);
-  var tax = calcMonthlyIncomeTax(m);
+  var taxableBase = clampNonNegative(m - nonTaxable);
+  var insurance = calcInsuranceBreakdown(taxableBase, pensionType);
+  var baseTax = calcMonthlyIncomeTax(taxableBase, familyCount);
+  var incomeTax = clampNonNegative(baseTax.incomeTax * withholdingRatio);
+  var tax = { incomeTax: incomeTax, localTax: incomeTax * 0.1 };
   var totalDeduct = insurance.total + tax.incomeTax + tax.localTax;
   return {
     monthlyGross: m,
+    nonTaxable: nonTaxable,
+    taxableBase: taxableBase,
+    withholdingRatio: withholdingRatio,
     insurance: insurance,
     tax: tax,
     totalDeduct: totalDeduct,
@@ -502,16 +531,16 @@ function calcTakeHomePay(monthlyGrossWon, pensionType) {
 
 // 연봉 실수령액 (역산): 목표 월 실수령액 -> 필요한 세전 월급여 (이분 탐색)
 // 공제액이 급여 구간(누진세율)에 따라 완전한 선형함수가 아니므로 근사적으로 이분 탐색을 사용합니다.
-function solveGrossFromNet(targetMonthlyNetWon, pensionType) {
+function solveGrossFromNet(targetMonthlyNetWon, pensionType, options) {
   var target = clampNonNegative(targetMonthlyNetWon);
   if (target <= 0) return { error: "목표 월 실수령액을 올바르게 입력해 주세요." };
   var lo = 0, hi = 500000000;
   for (var i = 0; i < 60; i++) {
     var mid = (lo + hi) / 2;
-    var net = calcTakeHomePay(mid, pensionType).net;
+    var net = calcTakeHomePay(mid, pensionType, options).net;
     if (net < target) lo = mid; else hi = mid;
   }
-  return calcTakeHomePay((lo + hi) / 2, pensionType);
+  return calcTakeHomePay((lo + hi) / 2, pensionType, options);
 }
 
 /* -------------------------------------------------------------------------

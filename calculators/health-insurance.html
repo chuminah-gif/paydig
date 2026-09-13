@@ -138,7 +138,7 @@
         <tr><td>장기요양보험료</td><td>건강보험료의 13.14%</td></tr>
       </table>
       <div class="info-callout">
-        보수월액에는 상한액·하한액이 있으며, 이 계산기는 이를 반영하지 않은 단순 근사치입니다. 정확한 금액은 국민건강보험공단을 통해 확인하세요.
+        건강보험은 보수월액이 아니라 계산된 보험료 자체에 상한(2026년 개인부담 월 459만원)을 두고 있으며, 이 계산기는 이 상한을 반영합니다. 하한액은 반영하지 않았습니다. 정확한 금액은 국민건강보험공단을 통해 확인하세요.
       </div>
     </div>
   </div>
@@ -192,8 +192,9 @@ function runHealthCalc() {
   }
 
   var monthlyWon = manwon * 10000;
-  var hi = monthlyWon * RATE_HEALTH_INSURANCE;
-  var ltc = hi * RATE_LONG_TERM_CARE_OF_PREMIUM;
+  var insurance = calcInsuranceBreakdown(monthlyWon, "national");
+  var hi = insurance.healthInsurance;
+  var ltc = insurance.longTermCare;
   var total = hi + ltc;
   logCalculatorUsage("health-insurance");
 
@@ -211,7 +212,7 @@ function runHealthCalc() {
   html += '<tr><th>합계</th><td><strong>' + formatWon(total) + '</strong></td></tr>';
   html += '</table>';
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>2026년 근로자 부담 요율을 적용한 참고용 추정치입니다. 보수월액 상한·하한은 반영되어 있지 않습니다.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>2026년 근로자 부담 요율을 적용한 참고용 추정치입니다. 건강보험 개인부담 보험료 상한(월 459만원)은 반영했으나, 하한액은 반영되어 있지 않습니다.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }
