@@ -267,7 +267,7 @@ function runDBCalc() {
     html += '</div>';
     html += '<table class="result-table">';
     html += '<tr><th>근속기간</th><td>' + Math.floor(result.years) + '년 ' + Math.round((result.years % 1) * 12) + '개월</td></tr>';
-    html += '<tr><th>퇴직소득세 (지방소득세 포함)</th><td>-' + formatWon(retirementTax.tax) + ' (실효세율 ' + (retirementTax.effectiveRate * 100).toFixed(1) + '%)</td></tr>';
+    html += '<tr><th>퇴직소득세 (지방소득세 포함)</th><td>-' + formatWon(retirementTax.tax) + ' (실효세율 ' + (retirementTax.effectiveRate * 100).toFixed(1) + '%)<div class="table-formula">' + retirementTax.formula + '</div></td></tr>';
     html += '<tr><th>세후 실수령액 (추정)</th><td><strong>' + formatWon(afterTaxLumpSimple) + '</strong></td></tr>';
     html += '</table>';
   }

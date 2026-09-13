@@ -206,9 +206,9 @@ function runSeveranceCalc() {
   html += '</div>';
 
   html += '<table class="result-table">';
-  html += '<tr><th>1일 평균임금</th><td>' + formatWon(result.avgDailyWage) + '</td></tr>';
-  html += '<tr><th>세전 퇴직금</th><td>' + formatWon(result.severance) + '</td></tr>';
-  html += '<tr><th>퇴직소득세(근사)</th><td>-' + formatWon(result.tax) + '</td></tr>';
+  html += '<tr><th>1일 평균임금</th><td>' + formatWon(result.avgDailyWage) + '<div class="table-formula">' + result.avgDailyWageFormula + '</div></td></tr>';
+  html += '<tr><th>세전 퇴직금</th><td>' + formatWon(result.severance) + '<div class="table-formula">' + result.severanceFormula + '</div></td></tr>';
+  html += '<tr><th>퇴직소득세(근사)</th><td>-' + formatWon(result.tax) + '<div class="table-formula">' + result.taxFormula + '</div></td></tr>';
   html += '<tr><th>세후 예상 퇴직금</th><td><strong>' + formatWon(result.afterTax) + '</strong></td></tr>';
   html += '</table>';
 

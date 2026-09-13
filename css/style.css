@@ -647,6 +647,15 @@ h1, h2, h3, h4 {
   color: var(--color-text);
 }
 
+.result-table .table-formula {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--color-text-faint);
+  margin-top: 3px;
+  white-space: normal;
+  word-break: keep-all;
+}
+
 /* 통합 시뮬레이션 결과표: 4열(항목/수령방식/세전/세후)로는 좁은 화면에서
    폭 싸움이 반복됐다 — 특히 "직역연금(공무원/군인/사학)"처럼 띄어쓰기가
    전혀 없는 문자열은 Safari의 word-break:keep-all 해석이 Chrome과 달라

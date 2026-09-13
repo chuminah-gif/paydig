@@ -277,7 +277,7 @@ function runDCCalc() {
     html += '<table class="result-table">';
     html += '<tr><th>운용 기간</th><td>' + result.years + '년</td></tr>';
     html += '<tr><th>적용 수익률</th><td>연 ' + result.annualReturnPercent + '%</td></tr>';
-    html += '<tr><th>퇴직소득세(연금수령 감면 ' + (discountRate * 100) + '% 적용 후)</th><td>-' + formatWon(discountedTax) + '</td></tr>';
+    html += '<tr><th>퇴직소득세(연금수령 감면 ' + (discountRate * 100) + '% 적용 후)</th><td>-' + formatWon(discountedTax) + '<div class="table-formula">' + retirementTax.formula + ' → 연금수령 감면 ' + (discountRate * 100) + '%</div></td></tr>';
     html += '<tr><th>세후 월 지급액 (추정)</th><td><strong>' + formatWon(monthlyAfterTax) + '</strong></td></tr>';
     html += '</table>';
   } else {
@@ -290,7 +290,7 @@ function runDCCalc() {
     html += '<table class="result-table">';
     html += '<tr><th>운용 기간</th><td>' + result.years + '년</td></tr>';
     html += '<tr><th>적용 수익률</th><td>연 ' + result.annualReturnPercent + '%</td></tr>';
-    html += '<tr><th>퇴직소득세 (지방소득세 포함)</th><td>-' + formatWon(retirementTax.tax) + '</td></tr>';
+    html += '<tr><th>퇴직소득세 (지방소득세 포함)</th><td>-' + formatWon(retirementTax.tax) + '<div class="table-formula">' + retirementTax.formula + '</div></td></tr>';
     html += '<tr><th>세후 실수령액 (추정)</th><td><strong>' + formatWon(afterTaxLumpSimple) + '</strong></td></tr>';
     html += '</table>';
   }

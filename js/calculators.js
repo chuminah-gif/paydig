@@ -319,20 +319,30 @@ function progressiveIncomeTax(base) {
 // 공적연금소득세 근사 (국민연금·직역연금이 유일한 소득이라고 가정한 단순 추정)
 function calcPublicPensionTax(annualPensionWon) {
   var w = clampNonNegative(annualPensionWon);
-  var deduction;
-  if (w <= 3500000) deduction = w;
-  else if (w <= 7000000) deduction = 3500000 + (w - 3500000) * 0.4;
-  else if (w <= 14000000) deduction = 4900000 + (w - 7000000) * 0.2;
-  else deduction = 6300000 + (w - 14000000) * 0.1;
+  var deduction, deductionFormula;
+  if (w <= 3500000) { deduction = w; deductionFormula = "연금액 전액"; }
+  else if (w <= 7000000) { deduction = 3500000 + (w - 3500000) * 0.4; deductionFormula = "350만원 + (연금액 − 350만원) × 40%"; }
+  else if (w <= 14000000) { deduction = 4900000 + (w - 7000000) * 0.2; deductionFormula = "490만원 + (연금액 − 700만원) × 20%"; }
+  else { deduction = 6300000 + (w - 14000000) * 0.1; deductionFormula = "630만원 + (연금액 − 1,400만원) × 10%"; }
+  var deductionCapped = deduction > 9000000;
   deduction = Math.min(deduction, 9000000);
 
   var pensionIncome = clampNonNegative(w - deduction);
   var basicDeduction = 1500000; // 본인 기본공제만 반영 (단순화)
   var taxBase = clampNonNegative(pensionIncome - basicDeduction);
-  var incomeTax = progressiveIncomeTax(taxBase);
+  var bracket = incomeTaxBracket(taxBase);
+  var incomeTax = clampNonNegative(taxBase * bracket.rate - bracket.deduction);
   var totalTax = clampNonNegative(incomeTax * 1.1); // 지방소득세 10% 포함
 
-  return { annualTax: totalTax, monthlyTax: totalTax / 12 };
+  return {
+    annualTax: totalTax,
+    monthlyTax: totalTax / 12,
+    deduction: deduction,
+    deductionFormula: deductionCapped ? "900만원 한도 적용" : deductionFormula,
+    taxBase: taxBase,
+    bracketRatePercent: bracket.rate * 100,
+    bracketDeduction: bracket.deduction
+  };
 }
 
 // 퇴직소득세 (근속연수공제 → 환산급여 → 환산급여공제 → 세율 적용, 지방소득세 포함)
@@ -357,11 +367,16 @@ function calcRetirementIncomeTax(lumpSum, years) {
   else wageDeduction = 151700000 + (convertedWage - 300000000) * 0.35;
 
   var taxBase = clampNonNegative(convertedWage - wageDeduction);
-  var annualizedTax = progressiveIncomeTax(taxBase);
+  var bracket = incomeTaxBracket(taxBase);
+  var annualizedTax = clampNonNegative(taxBase * bracket.rate - bracket.deduction);
   var retirementTax = (annualizedTax / 12) * years;
   var totalTax = clampNonNegative(retirementTax * 1.1); // 지방소득세 10% 포함
 
-  return { tax: totalTax, effectiveRate: lumpSum > 0 ? totalTax / lumpSum : 0 };
+  return {
+    tax: totalTax,
+    effectiveRate: lumpSum > 0 ? totalTax / lumpSum : 0,
+    formula: "근속연수공제 " + formatWon(serviceDeduction) + " 반영 환산급여 " + formatWon(convertedWage) + " → 과세표준 " + formatWon(taxBase) + " × " + fmtPct(bracket.rate * 100) + "% − 누진공제 " + formatWon(bracket.deduction) + " → " + years + "년/12 재환산, 지방소득세 포함"
+  };
 }
 
 // 퇴직연금을 "연금" 형태로 수령할 때의 퇴직소득세 감면 (수령 1~10년차 30%, 11년차 이후 40% 감면)
@@ -383,9 +398,10 @@ var INTEREST_INCOME_TAX_RATE = 0.154;
 function publicPensionTaxRowsHtml(monthly) {
   var tax = calcPublicPensionTax(monthly * 12);
   var afterTax = clampNonNegative(monthly - tax.monthlyTax);
+  var taxFormula = "연금소득공제(" + tax.deductionFormula + ") 반영 후 과세표준 " + formatWon(tax.taxBase) + " × " + fmtPct(tax.bracketRatePercent) + "% − 누진공제 " + formatWon(tax.bracketDeduction) + " (연, 지방소득세 포함) ÷ 12개월";
   return (
     '<tr><th>세전 월 수급액</th><td>' + formatWon(monthly) + '</td></tr>' +
-    '<tr><th>예상 세금 (연금소득세, 단독소득 가정)</th><td>-' + formatWon(tax.monthlyTax) + '</td></tr>' +
+    '<tr><th>예상 세금 (연금소득세, 단독소득 가정)</th><td>-' + formatWon(tax.monthlyTax) + '<div class="table-formula">' + taxFormula + '</div></td></tr>' +
     '<tr><th>세후 실수령액 (추정)</th><td><strong>' + formatWon(afterTax) + '</strong></td></tr>'
   );
 }
@@ -402,11 +418,11 @@ function privatePensionResultTableHtml(futureValue, years, annualReturnPercent, 
     var rate = privatePensionTaxRate(startAge || 55);
     var monthlyAfterTax = monthly * (1 - rate);
     html += '<tr><th>연금소득세율 (만 ' + (startAge || 55) + '세 기준)</th><td>' + (rate * 100).toFixed(1) + '%</td></tr>';
-    html += '<tr><th>세후 월 지급액 (추정)</th><td><strong>' + formatWon(monthlyAfterTax) + '</strong></td></tr>';
+    html += '<tr><th>세후 월 지급액 (추정)</th><td><strong>' + formatWon(monthlyAfterTax) + '</strong><div class="table-formula">' + formatWon(monthly) + ' × (1 − ' + (rate * 100).toFixed(1) + '%)</div></td></tr>';
   } else {
     var otherIncomeTaxRate = 0.165;
     var afterTax = futureValue * (1 - otherIncomeTaxRate);
-    html += '<tr><th>기타소득세 (일시금 수령, 지방소득세 포함 약 16.5%)</th><td>-' + formatWon(futureValue * otherIncomeTaxRate) + '</td></tr>';
+    html += '<tr><th>기타소득세 (일시금 수령, 지방소득세 포함 약 16.5%)</th><td>-' + formatWon(futureValue * otherIncomeTaxRate) + '<div class="table-formula">' + formatWon(futureValue) + ' × 16.5%</div></td></tr>';
     html += '<tr><th>세후 실수령액 (추정)</th><td><strong>' + formatWon(afterTax) + '</strong></td></tr>';
   }
   html += '</table>';
@@ -708,9 +724,12 @@ function calcSeverancePay(input) {
   var tax = calcRetirementIncomeTax(severance, years);
   return {
     avgDailyWage: avgDailyWage,
+    avgDailyWageFormula: formatWon(last3MonthsWage) + " ÷ 91일",
     severance: clampNonNegative(severance),
+    severanceFormula: formatWon(avgDailyWage) + " × 30일 × (" + serviceDays + "일 ÷ 365일)",
     years: years,
     tax: tax.tax,
+    taxFormula: tax.formula,
     afterTax: clampNonNegative(severance - tax.tax),
     eligible: true
   };
