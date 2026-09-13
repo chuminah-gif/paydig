@@ -25,7 +25,7 @@
   .summary-box { background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)); color: #fff; border-radius: var(--radius-md); padding: 20px; }
   .summary-box .label { font-size: 0.82rem; color: #cfe3f1; margin-bottom: 6px; }
   .summary-box .amount { font-size: 1.5rem; font-weight: 800; }
-</style>
+</style>
 <link rel="canonical" href="https://pension-lab-phi.vercel.app/simulation.html" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="페이딕" />
@@ -409,7 +409,7 @@ function runSimulation() {
       var natAfter = clampNonNegative(r.monthly - natTax.monthlyTax);
       totalMonthlyPreTax += r.monthly;
       totalMonthlyAfterTax += natAfter;
-      rows.push({ name: "국민연금", type: "평생 매월", amount: r.monthly, afterTax: natAfter });
+      rows.push({ name: "국민연금", type: "평생 매월", amount: r.monthly, afterTax: natAfter, taxNote: natTax.formula });
     }
   }
 
@@ -426,7 +426,7 @@ function runSimulation() {
       var occAfter = clampNonNegative(r2.monthly - occTax.monthlyTax);
       totalMonthlyPreTax += r2.monthly;
       totalMonthlyAfterTax += occAfter;
-      rows.push({ name: "직역연금(공무원/군인/사학)", type: "평생 매월", amount: r2.monthly, afterTax: occAfter });
+      rows.push({ name: "직역연금(공무원/군인/사학)", type: "평생 매월", amount: r2.monthly, afterTax: occAfter, taxNote: occTax.formula });
     }
   }
 
@@ -448,7 +448,7 @@ function runSimulation() {
         totalMonthlyPreTax += dbMonthly;
         totalMonthlyAfterTax += dbMonthlyAfter;
         totalLumpSum += db.lumpSum;
-        rows.push({ name: "퇴직연금 DB형", type: payoutYears + "년간 월지급 환산", amount: dbMonthly, afterTax: dbMonthlyAfter, lump: db.lumpSum });
+        rows.push({ name: "퇴직연금 DB형", type: payoutYears + "년간 월지급 환산", amount: dbMonthly, afterTax: dbMonthlyAfter, lump: db.lumpSum, taxNote: dbTax.formula + " → 연금수령 감면 " + (dbDiscount * 100) + "%" });
       }
     } else {
       var dcRate = getNumberValue("dc-rate");
@@ -468,7 +468,7 @@ function runSimulation() {
         totalMonthlyPreTax += dcMonthly;
         totalMonthlyAfterTax += dcMonthlyAfter;
         totalLumpSum += dc.futureValue;
-        rows.push({ name: "퇴직연금 DC형", type: payoutYears + "년간 월지급 환산", amount: dcMonthly, afterTax: dcMonthlyAfter, lump: dc.futureValue });
+        rows.push({ name: "퇴직연금 DC형", type: payoutYears + "년간 월지급 환산", amount: dcMonthly, afterTax: dcMonthlyAfter, lump: dc.futureValue, taxNote: dcTax.formula + " → 연금수령 감면 " + (dcDiscount * 100) + "%" });
       }
     }
   }
@@ -487,11 +487,12 @@ function runSimulation() {
     });
     if (r.error) { errors.push(item.name + ": " + r.error); return; }
     var monthly = calcMonthlyPayout(r.futureValue, payoutYears, rate);
-    var monthlyAfter = monthly * (1 - privatePensionTaxRate(startAge));
+    var taxRate = privatePensionTaxRate(startAge);
+    var monthlyAfter = monthly * (1 - taxRate);
     totalMonthlyPreTax += monthly;
     totalMonthlyAfterTax += monthlyAfter;
     totalLumpSum += r.futureValue;
-    rows.push({ name: item.name, type: payoutYears + "년간 월지급 환산", amount: monthly, afterTax: monthlyAfter, lump: r.futureValue });
+    rows.push({ name: item.name, type: payoutYears + "년간 월지급 환산", amount: monthly, afterTax: monthlyAfter, lump: r.futureValue, taxNote: "세전 월지급액 × (1 − 연금소득세율 " + (taxRate * 100).toFixed(1) + "%, 만 " + startAge + "세 기준)" });
   });
 
   if (document.getElementById("chk-personal").checked) {
@@ -515,7 +516,7 @@ function runSimulation() {
       totalMonthlyPreTax += perMonthly;
       totalMonthlyAfterTax += perMonthlyAfter;
       totalLumpSum += per.futureValue;
-      rows.push({ name: "연금보험", type: payoutYears + "년간 월지급 환산", amount: perMonthly, afterTax: perMonthlyAfter, lump: per.futureValue });
+      rows.push({ name: "연금보험", type: payoutYears + "년간 월지급 환산", amount: perMonthly, afterTax: perMonthlyAfter, lump: per.futureValue, taxNote: perTaxFree ? "10년 이상 유지 — 보험차익 비과세" : "차익 " + formatWon(perGain) + " × 이자소득세 15.4%" });
     }
   }
 
@@ -537,7 +538,7 @@ function runSimulation() {
   rows.forEach(function (row) {
     html += '<tr><td>' + row.name + '</td><td>' + row.type + '</td><td class="amount-cell">' +
       '<div class="amount-pre"><span class="amount-tag">세전</span>' + formatWon(row.amount) + '</div>' +
-      '<div class="amount-after"><span class="amount-tag">세후</span>' + formatWon(row.afterTax) + '</div>' +
+      '<div class="amount-after" title="' + (row.taxNote || '').replace(/"/g, '&quot;') + '"><span class="amount-tag">세후 ⓘ</span>' + formatWon(row.afterTax) + '</div>' +
       '</td></tr>';
   });
   html += '</table></div>';

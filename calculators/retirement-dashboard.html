@@ -257,17 +257,19 @@ function runRetirementGapCalc() {
   html += '<tr><th>예상 은퇴 후 월 수령액</th><td>' + formatWon(result.projectedMonthly) + '</td></tr>';
   html += '<tr><th>노후 적정생활비 (' + (result.household === "couple" ? "부부" : "1인") + ' 가구 기준)</th><td>' + formatWon(result.livingCostBenchmark) + '</td></tr>';
   html += '</table>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>소득대체율 = 은퇴 후 월 수령액 ÷ 현재 월 실수령액 × 100 (' + formatWon(result.projectedMonthly) + ' ÷ ' + formatWon(result.currentNet) + ' × 100 = ' + result.replacementRatio.toFixed(1) + '%)</span></div>';
 
   if (result.gapVsBenchmark > 0) {
     html += '<div class="result-headline" style="background:linear-gradient(135deg,#8a2b1f,#c43f32); margin-top:16px;">';
     html += '<div class="label">적정생활비 대비 부족액 (월)</div>';
     html += '<div class="amount">' + formatWon(result.gapVsBenchmark) + '</div>';
+    html += '<div class="amount-yearly">' + formatWon(result.livingCostBenchmark) + ' − ' + formatWon(result.projectedMonthly) + '</div>';
     html += '</div>';
     if (result.requiredMonthlySavings > 0) {
       html += '<table class="result-table" style="margin-top:14px;">';
       html += '<tr><th>부족분을 채우려면 지금부터 매달</th><td><strong>' + formatWon(result.requiredMonthlySavings) + '</strong></td></tr>';
       html += '</table>';
-      html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>IRP·연금저축 등에 위 금액을 추가로 납입해 설정하신 수익률로 은퇴까지 운용한다고 가정한 근사치입니다.</span></div>';
+      html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>월 부족액 ' + formatWon(result.gapVsBenchmark) + '을 은퇴 시점까지 ' + accumulationYears + '년간 연 ' + accumulationRate + '% 수익률로 적립해 ' + payoutYears + '년간 나눠 받는다고 가정했을 때 필요한 월 적립액을 역산한 값입니다. IRP·연금저축 등에 이 금액을 추가로 납입한다고 가정한 근사치입니다.</span></div>';
     }
   } else {
     html += '<div class="disclaimer-box" style="background:#e9f9f0; border-color:#a7e3c3; color:#146c43; margin-top:16px;"><span class="mark">✓</span><span>예상 은퇴 후 수령액이 노후 적정생활비 기준을 충족하는 것으로 보입니다. 다만 물가상승률, 의료비 등은 반영되지 않은 참고용 비교입니다.</span></div>';

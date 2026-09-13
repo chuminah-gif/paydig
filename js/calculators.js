@@ -334,14 +334,16 @@ function calcPublicPensionTax(annualPensionWon) {
   var incomeTax = clampNonNegative(taxBase * bracket.rate - bracket.deduction);
   var totalTax = clampNonNegative(incomeTax * 1.1); // 지방소득세 10% 포함
 
+  var appliedDeductionFormula = deductionCapped ? "900만원 한도 적용" : deductionFormula;
   return {
     annualTax: totalTax,
     monthlyTax: totalTax / 12,
     deduction: deduction,
-    deductionFormula: deductionCapped ? "900만원 한도 적용" : deductionFormula,
+    deductionFormula: appliedDeductionFormula,
     taxBase: taxBase,
     bracketRatePercent: bracket.rate * 100,
-    bracketDeduction: bracket.deduction
+    bracketDeduction: bracket.deduction,
+    formula: "연금소득공제(" + appliedDeductionFormula + ") 반영 후 과세표준 " + formatWon(taxBase) + " × " + fmtPct(bracket.rate * 100) + "% − 누진공제 " + formatWon(bracket.deduction) + " (연, 지방소득세 포함) ÷ 12개월"
   };
 }
 
@@ -398,10 +400,9 @@ var INTEREST_INCOME_TAX_RATE = 0.154;
 function publicPensionTaxRowsHtml(monthly) {
   var tax = calcPublicPensionTax(monthly * 12);
   var afterTax = clampNonNegative(monthly - tax.monthlyTax);
-  var taxFormula = "연금소득공제(" + tax.deductionFormula + ") 반영 후 과세표준 " + formatWon(tax.taxBase) + " × " + fmtPct(tax.bracketRatePercent) + "% − 누진공제 " + formatWon(tax.bracketDeduction) + " (연, 지방소득세 포함) ÷ 12개월";
   return (
     '<tr><th>세전 월 수급액</th><td>' + formatWon(monthly) + '</td></tr>' +
-    '<tr><th>예상 세금 (연금소득세, 단독소득 가정)</th><td>-' + formatWon(tax.monthlyTax) + '<div class="table-formula">' + taxFormula + '</div></td></tr>' +
+    '<tr><th>예상 세금 (연금소득세, 단독소득 가정)</th><td>-' + formatWon(tax.monthlyTax) + '<div class="table-formula">' + tax.formula + '</div></td></tr>' +
     '<tr><th>세후 실수령액 (추정)</th><td><strong>' + formatWon(afterTax) + '</strong></td></tr>'
   );
 }
