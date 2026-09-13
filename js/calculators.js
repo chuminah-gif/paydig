@@ -690,3 +690,74 @@ function calcWorkInjuryLeaveBenefit(input) {
   var dailyBenefit = Math.max(basic, guaranteed);
   return { avgDailyWage: avgDailyWage, dailyBenefit: dailyBenefit, leaveDays: leaveDays, total: dailyBenefit * leaveDays };
 }
+
+/* -------------------------------------------------------------------------
+   연말정산 예상세액 계산기
+   총급여 -> 근로소득공제 -> 근로소득금액 -> 인적공제·4대보험료(특별소득공제) ->
+   과세표준 -> 산출세액 -> 근로소득세액공제·연금계좌세액공제 -> 결정세액
+   국세청 고시 근로소득세액공제 한도표, 연금계좌세액공제율(16.5%/13.2%, 900만원
+   한도)은 최근 몇 년간 안정적으로 유지되어 온 구조를 그대로 반영했습니다.
+   신용카드 사용액, 의료비, 월세 등 그 밖의 공제 항목은 반영되어 있지 않습니다.
+   ------------------------------------------------------------------------- */
+function laborIncomeTaxCredit(computedTax, totalGrossWon) {
+  var credit = computedTax <= 500000 ? computedTax * 0.55 : 275000 + (computedTax - 500000) * 0.3;
+
+  var cap;
+  if (totalGrossWon <= 33000000) cap = 740000;
+  else if (totalGrossWon <= 70000000) cap = Math.max(660000, 740000 - (totalGrossWon - 33000000) * 0.008);
+  else cap = Math.max(500000, 660000 - (totalGrossWon - 70000000) * 0.5);
+
+  return Math.min(credit, cap);
+}
+
+function pensionAccountTaxCredit(contributionWon, totalGrossWon) {
+  var capped = Math.min(contributionWon, 9000000);
+  var rate = totalGrossWon <= 55000000 ? 0.165 : 0.132;
+  return capped * rate;
+}
+
+function calcYearEndTax(input) {
+  var totalGross = input.totalGrossManwon * 10000;
+  var dependents = input.dependents || 0;
+  var pensionContribution = (input.pensionContributionManwon || 0) * 10000;
+  var withheldTax = (input.withheldTaxManwon || 0) * 10000;
+
+  if (totalGross <= 0) return { error: "연간 총급여를 올바르게 입력해 주세요." };
+
+  var laborDeduction = laborIncomeDeduction(totalGross);
+  var laborIncome = clampNonNegative(totalGross - laborDeduction);
+
+  var personalDeduction = (1 + dependents) * 1500000;
+  var insuranceAnnual = calcInsuranceBreakdown(totalGross / 12, "national").total * 12;
+
+  var taxBase = clampNonNegative(laborIncome - personalDeduction - insuranceAnnual);
+  var computedTax = progressiveIncomeTax(taxBase);
+
+  var earnedIncomeCredit = laborIncomeTaxCredit(computedTax, totalGross);
+  var pensionCredit = pensionAccountTaxCredit(pensionContribution, totalGross);
+
+  var finalTax = clampNonNegative(computedTax - earnedIncomeCredit - pensionCredit);
+  var finalLocalTax = finalTax * 0.1;
+  var finalTotal = finalTax + finalLocalTax;
+
+  var withheldLocalTax = withheldTax * 0.1;
+  var withheldTotal = withheldTax + withheldLocalTax;
+
+  return {
+    totalGross: totalGross,
+    laborDeduction: laborDeduction,
+    laborIncome: laborIncome,
+    personalDeduction: personalDeduction,
+    insuranceAnnual: insuranceAnnual,
+    taxBase: taxBase,
+    computedTax: computedTax,
+    earnedIncomeCredit: earnedIncomeCredit,
+    pensionCredit: pensionCredit,
+    finalTax: finalTax,
+    finalLocalTax: finalLocalTax,
+    finalTotal: finalTotal,
+    withheldTotal: withheldTotal,
+    hasWithheld: withheldTax > 0,
+    refundOrDue: withheldTotal - finalTotal // 양수면 환급, 음수면 추가 납부
+  };
+}

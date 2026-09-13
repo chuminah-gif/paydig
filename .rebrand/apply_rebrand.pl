@@ -17,6 +17,7 @@ my $HEADER_TMPL = <<'HEADER';
           <a href="__CALC__minimum-wage.html">최저시급 계산기</a>
           <a href="__CALC__weekly-holiday-pay.html">주휴수당 계산기</a>
           <a href="__CALC__freelancer-tax.html">프리랜서 3.3% 세금</a>
+          <a href="__CALC__year-end-tax.html">연말정산 예상세액</a>
         </div>
       </div>
       <div class="nav-item">
