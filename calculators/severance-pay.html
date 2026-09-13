@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="google-adsense-account" content="ca-pub-9392282410784308">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9392282410784308" crossorigin="anonymous"></script>
-<title>건강보험료 계산기 | 직장가입자 건강보험료·장기요양보험료 - 페이딕</title>
-<meta name="description" content="보수월액을 입력하면 직장가입자 기준 건강보험료와 장기요양보험료를 계산해주는 무료 건강보험료 계산기입니다." />
+<title>퇴직금 계산기 | 평균임금 기준 예상 퇴직금·퇴직소득세 - 페이딕</title>
+<meta name="description" content="최근 3개월 임금총액과 재직기간을 입력하면 근로기준법상 평균임금 방식으로 예상 퇴직금과 퇴직소득세를 계산해주는 무료 퇴직금 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="../css/style.css" />
 </head>
@@ -72,9 +72,9 @@
 
 <section class="page-hero">
   <div class="container">
-    <p class="breadcrumb"><a href="../index.html">홈</a> / 건강보험료 계산기</p>
-    <h1>건강보험료 계산기</h1>
-    <p>보수월액(세전 월급여)을 입력하면 직장가입자 기준 건강보험료와 장기요양보험료를 계산합니다.</p>
+    <p class="breadcrumb"><a href="../index.html">홈</a> / 퇴직금 계산기</p>
+    <h1>퇴직금 계산기</h1>
+    <p>최근 3개월 임금총액과 재직기간을 입력하면 근로기준법상 평균임금 방식으로 예상 퇴직금과 퇴직소득세를 계산합니다.</p>
   </div>
 </section>
 
@@ -85,18 +85,24 @@
       <p class="card-sub">입력하신 급여 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다.</p>
 
       <div class="field">
-        <label for="monthlySalary">보수월액 (세전, 만원)</label>
-        <input type="number" id="monthlySalary" placeholder="예: 375" min="0" />
-        <div class="hint">건강보험료 산정 기준이 되는 세전 월급여를 만원 단위로 입력하세요.</div>
+        <label for="last3Months">퇴직 전 3개월간 임금총액 (세전, 만원)</label>
+        <input type="number" id="last3Months" placeholder="예: 1200" min="0" />
+        <div class="hint">기본급·수당 등 퇴직 전 3개월치 임금총액입니다. (예: 월 400만원 × 3개월 = 1200)</div>
       </div>
 
-      <button class="btn btn-primary" onclick="runHealthCalc()">계산하기</button>
+      <div class="field">
+        <label for="serviceDays">재직일수</label>
+        <input type="number" id="serviceDays" placeholder="예: 1460" min="0" />
+        <div class="hint">입사일부터 퇴직일까지의 총 일수입니다. (예: 4년 = 약 1460일)</div>
+      </div>
+
+      <button class="btn btn-primary" onclick="runSeveranceCalc()">계산하기</button>
     </div>
 
     <div class="result-panel">
       <div class="card" id="resultCard">
         <div class="result-empty">
-          <div class="icon">🏥</div>
+          <div class="icon">💼</div>
           <p>왼쪽 정보를 입력하고 계산하기 버튼을 눌러주세요.</p>
         </div>
       </div>
@@ -108,16 +114,16 @@
 <section class="section" style="padding-top:0;">
   <div class="container">
     <div class="card prose">
-      <h2>건강보험료 계산 방식 안내</h2>
-      <p>직장가입자 건강보험료는 <strong>보수월액 × 건강보험료율</strong>로 계산되며, 이 중 절반을 근로자가, 나머지 절반을 사업주가 부담합니다. 장기요양보험료는 건강보험료와 별도로 보수월액에 정해진 요율을 곱해 계산합니다.</p>
-      <table>
-        <tr><th>구분</th><th>2026년 근로자 부담 요율</th></tr>
-        <tr><td>건강보험료</td><td>3.595% (보수월액 기준)</td></tr>
-        <tr><td>장기요양보험료</td><td>0.9448% (보수월액 기준)</td></tr>
-      </table>
+      <h2>퇴직금 계산 방식 안내</h2>
+      <p>퇴직금은 <strong>1일 평균임금 × 30 × (재직일수 ÷ 365)</strong>로 계산됩니다. 평균임금은 퇴직 전 3개월간 받은 임금총액을 그 기간의 총 일수(약 91일)로 나눈 값으로, 상여금·연차수당 일부도 포함될 수 있어 실제 급여명세서와 차이가 있을 수 있습니다.</p>
       <div class="info-callout">
-        보수월액에는 상한액·하한액이 있으며, 이 계산기는 이를 반영하지 않은 단순 근사치입니다. 정확한 금액은 국민건강보험공단을 통해 확인하세요.
+        계속근로기간이 <strong>1년 미만</strong>이면 법정 퇴직금 지급 의무가 없습니다. 또한 4인 이하 사업장도 일부 예외가 있을 수 있으니 정확한 지급 여부는 근로계약과 고용노동부 상담을 통해 확인하세요.
       </div>
+      <h2>자주 묻는 질문</h2>
+      <h3>Q. 퇴직연금 DB형 계산기와 무엇이 다른가요?</h3>
+      <p>계산 원리는 같지만, 이 계산기는 <strong>3개월 임금총액을 직접 입력</strong>해 평균임금을 정확히 산정하는 방식이고, 퇴직연금 DB형 계산기는 월급을 그대로 평균임금으로 보는 단순화된 방식입니다. 상여금·수당이 많은 경우 이 계산기가 더 정확합니다.</p>
+      <h3>Q. 퇴직금에도 세금이 붙나요?</h3>
+      <p>네, 퇴직소득세가 부과됩니다. 근속연수공제와 환산급여공제를 거쳐 일반 소득세보다 낮은 세율이 적용되도록 설계되어 있으며, 이 계산기는 세후 예상 수령액도 함께 보여드립니다.</p>
     </div>
   </div>
 </section>
@@ -162,34 +168,34 @@
 <script src="../js/calculators.js"></script>
 <script src="../js/main.js"></script>
 <script>
-function runHealthCalc() {
-  var manwon = getNumberValue("monthlySalary");
-  if (!(manwon > 0)) {
-    showError("resultCard", "보수월액을 올바르게 입력해 주세요.");
+function runSeveranceCalc() {
+  var wage = getNumberValue("last3Months");
+  var days = getNumberValue("serviceDays");
+
+  var result = calcSeverancePay({ last3MonthsWageManwon: wage, serviceDays: days });
+  if (result.error) {
+    showError("resultCard", result.error);
     return;
   }
 
-  var monthlyWon = manwon * 10000;
-  var hi = monthlyWon * RATE_HEALTH_INSURANCE;
-  var ltc = monthlyWon * RATE_LONG_TERM_CARE;
-  var total = hi + ltc;
-  logCalculatorUsage("health-insurance");
+  logCalculatorUsage("severance-pay");
 
   var html = "";
   html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
   html += '<div class="result-headline">';
-  html += '<div class="label">건강보험료 + 장기요양보험료 (월, 근로자 부담분)</div>';
-  html += '<div class="amount">' + formatWon(total) + '</div>';
-  html += '<div class="amount-yearly">보수월액 ' + formatManwon(manwon) + ' 기준</div>';
+  html += '<div class="label">세후 예상 퇴직금</div>';
+  html += '<div class="amount">' + formatWon(result.afterTax) + '</div>';
+  html += '<div class="amount-yearly">재직기간 ' + result.years.toFixed(1) + '년 기준</div>';
   html += '</div>';
 
   html += '<table class="result-table">';
-  html += '<tr><th>건강보험료</th><td>' + formatWon(hi) + '</td></tr>';
-  html += '<tr><th>장기요양보험료</th><td>' + formatWon(ltc) + '</td></tr>';
-  html += '<tr><th>합계</th><td><strong>' + formatWon(total) + '</strong></td></tr>';
+  html += '<tr><th>1일 평균임금</th><td>' + formatWon(result.avgDailyWage) + '</td></tr>';
+  html += '<tr><th>세전 퇴직금</th><td>' + formatWon(result.severance) + '</td></tr>';
+  html += '<tr><th>퇴직소득세(근사)</th><td>-' + formatWon(result.tax) + '</td></tr>';
+  html += '<tr><th>세후 예상 퇴직금</th><td><strong>' + formatWon(result.afterTax) + '</strong></td></tr>';
   html += '</table>';
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>2026년 근로자 부담 요율을 적용한 참고용 추정치입니다. 보수월액 상한·하한은 반영되어 있지 않습니다.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>평균임금은 3개월을 91일로 근사해 계산한 참고용 추정치이며, 상여금·연차수당 포함 여부에 따라 실제와 차이가 있을 수 있습니다. 정확한 금액은 고용노동부·세무사를 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

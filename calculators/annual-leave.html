@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="google-adsense-account" content="ca-pub-9392282410784308">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9392282410784308" crossorigin="anonymous"></script>
-<title>건강보험료 계산기 | 직장가입자 건강보험료·장기요양보험료 - 페이딕</title>
-<meta name="description" content="보수월액을 입력하면 직장가입자 기준 건강보험료와 장기요양보험료를 계산해주는 무료 건강보험료 계산기입니다." />
+<title>연차수당 계산기 | 연차 발생일수·미사용 연차수당 - 페이딕</title>
+<meta name="description" content="근속기간과 월급을 입력하면 근로기준법 제60조 기준 연차 발생일수와 미사용 연차수당을 계산해주는 무료 연차수당 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="../css/style.css" />
 </head>
@@ -72,9 +72,9 @@
 
 <section class="page-hero">
   <div class="container">
-    <p class="breadcrumb"><a href="../index.html">홈</a> / 건강보험료 계산기</p>
-    <h1>건강보험료 계산기</h1>
-    <p>보수월액(세전 월급여)을 입력하면 직장가입자 기준 건강보험료와 장기요양보험료를 계산합니다.</p>
+    <p class="breadcrumb"><a href="../index.html">홈</a> / 연차수당 계산기</p>
+    <h1>연차수당 계산기</h1>
+    <p>근속기간과 월급을 입력하면 연차 발생일수와 미사용 연차수당을 계산합니다.</p>
   </div>
 </section>
 
@@ -82,21 +82,31 @@
   <div class="calc-layout">
     <div class="card">
       <h2>정보 입력</h2>
-      <p class="card-sub">입력하신 급여 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다.</p>
+      <p class="card-sub">입력하신 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다.</p>
 
       <div class="field">
-        <label for="monthlySalary">보수월액 (세전, 만원)</label>
-        <input type="number" id="monthlySalary" placeholder="예: 375" min="0" />
-        <div class="hint">건강보험료 산정 기준이 되는 세전 월급여를 만원 단위로 입력하세요.</div>
+        <label for="serviceYears">근속기간 (년)</label>
+        <input type="number" id="serviceYears" placeholder="예: 3" min="0" step="0.1" />
+        <div class="hint">1년 미만이면 소수로 입력하세요. (예: 8개월 = 0.67)</div>
       </div>
 
-      <button class="btn btn-primary" onclick="runHealthCalc()">계산하기</button>
+      <div class="field">
+        <label for="monthlyWage">월급 (세전, 만원)</label>
+        <input type="number" id="monthlyWage" placeholder="예: 300" min="0" />
+      </div>
+
+      <div class="field">
+        <label for="usedDays">이미 사용한 연차일수</label>
+        <input type="number" id="usedDays" placeholder="예: 5" min="0" value="0" />
+      </div>
+
+      <button class="btn btn-primary" onclick="runAnnualLeaveCalc()">계산하기</button>
     </div>
 
     <div class="result-panel">
       <div class="card" id="resultCard">
         <div class="result-empty">
-          <div class="icon">🏥</div>
+          <div class="icon">🏖️</div>
           <p>왼쪽 정보를 입력하고 계산하기 버튼을 눌러주세요.</p>
         </div>
       </div>
@@ -108,16 +118,24 @@
 <section class="section" style="padding-top:0;">
   <div class="container">
     <div class="card prose">
-      <h2>건강보험료 계산 방식 안내</h2>
-      <p>직장가입자 건강보험료는 <strong>보수월액 × 건강보험료율</strong>로 계산되며, 이 중 절반을 근로자가, 나머지 절반을 사업주가 부담합니다. 장기요양보험료는 건강보험료와 별도로 보수월액에 정해진 요율을 곱해 계산합니다.</p>
+      <h2>연차 발생일수 계산 방식 안내 (근로기준법 제60조)</h2>
+      <p>근속기간에 따라 연차 발생일수가 달라집니다.</p>
       <table>
-        <tr><th>구분</th><th>2026년 근로자 부담 요율</th></tr>
-        <tr><td>건강보험료</td><td>3.595% (보수월액 기준)</td></tr>
-        <tr><td>장기요양보험료</td><td>0.9448% (보수월액 기준)</td></tr>
+        <tr><th>근속기간</th><th>연차 발생일수</th></tr>
+        <tr><td>1년 미만</td><td>1개월 개근 시 1일씩 (최대 11일)</td></tr>
+        <tr><td>1년 이상 3년 미만</td><td>15일</td></tr>
+        <tr><td>3년 이상 5년 미만</td><td>16일</td></tr>
+        <tr><td>5년 이상 7년 미만</td><td>17일</td></tr>
+        <tr><td>계속 2년마다</td><td>1일씩 가산 (최대 25일)</td></tr>
       </table>
       <div class="info-callout">
-        보수월액에는 상한액·하한액이 있으며, 이 계산기는 이를 반영하지 않은 단순 근사치입니다. 정확한 금액은 국민건강보험공단을 통해 확인하세요.
+        미사용 연차수당은 <strong>1일 통상임금 × 미사용 연차일수</strong>로 계산합니다. 이 계산기는 통상임금을 월급 ÷ 209시간 × 8시간으로 근사합니다.
       </div>
+      <h2>자주 묻는 질문</h2>
+      <h3>Q. 5인 미만 사업장도 연차가 발생하나요?</h3>
+      <p>상시근로자 5인 미만 사업장은 근로기준법상 연차유급휴가 규정이 적용되지 않습니다.</p>
+      <h3>Q. 회사가 연차 사용을 강제로 지정할 수 있나요?</h3>
+      <p>연차사용촉진제도를 적법하게 시행한 경우, 회사가 사용 시기를 지정하고 미사용 연차수당 지급 의무를 면할 수 있습니다. 촉진 절차를 지키지 않았다면 미사용 연차는 수당으로 정산되어야 합니다.</p>
     </div>
   </div>
 </section>
@@ -162,34 +180,36 @@
 <script src="../js/calculators.js"></script>
 <script src="../js/main.js"></script>
 <script>
-function runHealthCalc() {
-  var manwon = getNumberValue("monthlySalary");
-  if (!(manwon > 0)) {
-    showError("resultCard", "보수월액을 올바르게 입력해 주세요.");
+function runAnnualLeaveCalc() {
+  var serviceYears = getNumberValue("serviceYears");
+  var monthlyWage = getNumberValue("monthlyWage");
+  var usedDays = getNumberValue("usedDays");
+
+  var result = calcAnnualLeave({ serviceYears: serviceYears, monthlyWageManwon: monthlyWage, usedDays: usedDays });
+  if (result.error) {
+    showError("resultCard", result.error);
     return;
   }
 
-  var monthlyWon = manwon * 10000;
-  var hi = monthlyWon * RATE_HEALTH_INSURANCE;
-  var ltc = monthlyWon * RATE_LONG_TERM_CARE;
-  var total = hi + ltc;
-  logCalculatorUsage("health-insurance");
+  logCalculatorUsage("annual-leave");
 
   var html = "";
   html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
   html += '<div class="result-headline">';
-  html += '<div class="label">건강보험료 + 장기요양보험료 (월, 근로자 부담분)</div>';
-  html += '<div class="amount">' + formatWon(total) + '</div>';
-  html += '<div class="amount-yearly">보수월액 ' + formatManwon(manwon) + ' 기준</div>';
+  html += '<div class="label">미사용 연차수당</div>';
+  html += '<div class="amount">' + formatWon(result.allowance) + '</div>';
+  html += '<div class="amount-yearly">미사용 ' + result.unusedDays + '일 기준</div>';
   html += '</div>';
 
   html += '<table class="result-table">';
-  html += '<tr><th>건강보험료</th><td>' + formatWon(hi) + '</td></tr>';
-  html += '<tr><th>장기요양보험료</th><td>' + formatWon(ltc) + '</td></tr>';
-  html += '<tr><th>합계</th><td><strong>' + formatWon(total) + '</strong></td></tr>';
+  html += '<tr><th>연차 발생일수</th><td>' + result.totalDays + '일</td></tr>';
+  html += '<tr><th>사용한 연차</th><td>' + result.usedDays + '일</td></tr>';
+  html += '<tr><th>미사용 연차</th><td>' + result.unusedDays + '일</td></tr>';
+  html += '<tr><th>1일 통상임금(근사)</th><td>' + formatWon(result.dailyOrdinaryWage) + '</td></tr>';
+  html += '<tr><th>미사용 연차수당</th><td><strong>' + formatWon(result.allowance) + '</strong></td></tr>';
   html += '</table>';
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>2026년 근로자 부담 요율을 적용한 참고용 추정치입니다. 보수월액 상한·하한은 반영되어 있지 않습니다.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>통상임금은 월급 ÷ 209시간 × 8시간으로 근사한 참고용 추정치이며, 회사의 통상임금 산정 기준에 따라 실제와 차이가 있을 수 있습니다.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

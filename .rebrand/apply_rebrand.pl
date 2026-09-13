@@ -15,6 +15,8 @@ my $HEADER_TMPL = <<'HEADER';
         <div class="dropdown-menu">
           <a href="__CALC__salary-net.html">연봉 실수령액·역산</a>
           <a href="__CALC__minimum-wage.html">최저시급 계산기</a>
+          <a href="__CALC__weekly-holiday-pay.html">주휴수당 계산기</a>
+          <a href="__CALC__freelancer-tax.html">프리랜서 3.3% 세금</a>
         </div>
       </div>
       <div class="nav-item">
@@ -23,7 +25,16 @@ my $HEADER_TMPL = <<'HEADER';
           <a href="__CALC__national-pension.html">국민연금</a>
           <a href="__CALC__health-insurance.html">건강보험료</a>
           <a href="__CALC__employment-insurance.html">고용보험 실업급여</a>
+          <a href="__CALC__industrial-accident.html">산재보험료·휴업급여</a>
           <a href="__CALC__four-insurance.html">4대보험 통합계산기</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">노동·복지 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="__CALC__severance-pay.html">퇴직금 계산기</a>
+          <a href="__CALC__annual-leave.html">연차수당 계산기</a>
+          <a href="__CALC__parental-leave.html">육아휴직급여 계산기</a>
         </div>
       </div>
       <div class="nav-item">
@@ -44,6 +55,7 @@ my $HEADER_TMPL = <<'HEADER';
           <a href="__ROOT__simulation.html">통합 시뮬레이션</a>
         </div>
       </div>
+      <a href="__ROOT__news/index.html">소식</a>
       <a href="__ROOT__guide/index.html">가이드</a>
       <a href="__ROOT__about.html">사이트소개</a>
     </nav>
@@ -73,6 +85,7 @@ my $FOOTER_TMPL = <<'FOOTER';
         <h4>사이트 정보</h4>
         <ul>
           <li><a href="__ROOT__about.html">사이트 소개</a></li>
+          <li><a href="__ROOT__news/index.html">소식</a></li>
           <li><a href="__ROOT__guide/index.html">연금 가이드</a></li>
           <li><a href="__ROOT__contact.html">문의하기</a></li>
           <li><a href="__ROOT__privacy.html">개인정보처리방침</a></li>
@@ -106,7 +119,7 @@ for my $file (@files) {
     my ($root, $calc);
     if ($file =~ m{(^|[\\/])calculators[\\/]}) {
         $root = '../'; $calc = '';
-    } elsif ($file =~ m{(^|[\\/])guide[\\/]}) {
+    } elsif ($file =~ m{(^|[\\/])(guide|news)[\\/]}) {
         $root = '../'; $calc = '../calculators/';
     } else {
         $root = ''; $calc = 'calculators/';

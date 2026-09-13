@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="google-adsense-account" content="ca-pub-9392282410784308">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9392282410784308" crossorigin="anonymous"></script>
-<title>건강보험료 계산기 | 직장가입자 건강보험료·장기요양보험료 - 페이딕</title>
-<meta name="description" content="보수월액을 입력하면 직장가입자 기준 건강보험료와 장기요양보험료를 계산해주는 무료 건강보험료 계산기입니다." />
+<title>주휴수당 계산기 | 아르바이트·단시간 근로자 주휴수당 - 페이딕</title>
+<meta name="description" content="시급과 주 근로시간을 입력하면 주 15시간 이상 근무자에게 발생하는 주휴수당을 바로 계산해주는 무료 주휴수당 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
 <link rel="stylesheet" href="../css/style.css" />
 </head>
@@ -72,9 +72,9 @@
 
 <section class="page-hero">
   <div class="container">
-    <p class="breadcrumb"><a href="../index.html">홈</a> / 건강보험료 계산기</p>
-    <h1>건강보험료 계산기</h1>
-    <p>보수월액(세전 월급여)을 입력하면 직장가입자 기준 건강보험료와 장기요양보험료를 계산합니다.</p>
+    <p class="breadcrumb"><a href="../index.html">홈</a> / 주휴수당 계산기</p>
+    <h1>주휴수당 계산기</h1>
+    <p>시급과 주 근로시간을 입력하면 주휴수당 발생 여부와 금액을 계산합니다.</p>
   </div>
 </section>
 
@@ -82,21 +82,26 @@
   <div class="calc-layout">
     <div class="card">
       <h2>정보 입력</h2>
-      <p class="card-sub">입력하신 급여 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다.</p>
+      <p class="card-sub">입력하신 정보는 저장되지 않으며 브라우저 안에서만 계산됩니다.</p>
 
       <div class="field">
-        <label for="monthlySalary">보수월액 (세전, 만원)</label>
-        <input type="number" id="monthlySalary" placeholder="예: 375" min="0" />
-        <div class="hint">건강보험료 산정 기준이 되는 세전 월급여를 만원 단위로 입력하세요.</div>
+        <label for="hourlyWage">시급 (원)</label>
+        <input type="number" id="hourlyWage" placeholder="예: 10320" min="0" value="10320" />
       </div>
 
-      <button class="btn btn-primary" onclick="runHealthCalc()">계산하기</button>
+      <div class="field">
+        <label for="weeklyHours">주 근로시간 (시간)</label>
+        <input type="number" id="weeklyHours" placeholder="예: 20" min="0" max="80" value="20" />
+        <div class="hint">주 15시간 이상 근무하고 소정근로일을 개근해야 주휴수당이 발생합니다.</div>
+      </div>
+
+      <button class="btn btn-primary" onclick="runWeeklyHolidayCalc()">계산하기</button>
     </div>
 
     <div class="result-panel">
       <div class="card" id="resultCard">
         <div class="result-empty">
-          <div class="icon">🏥</div>
+          <div class="icon">📆</div>
           <p>왼쪽 정보를 입력하고 계산하기 버튼을 눌러주세요.</p>
         </div>
       </div>
@@ -108,16 +113,16 @@
 <section class="section" style="padding-top:0;">
   <div class="container">
     <div class="card prose">
-      <h2>건강보험료 계산 방식 안내</h2>
-      <p>직장가입자 건강보험료는 <strong>보수월액 × 건강보험료율</strong>로 계산되며, 이 중 절반을 근로자가, 나머지 절반을 사업주가 부담합니다. 장기요양보험료는 건강보험료와 별도로 보수월액에 정해진 요율을 곱해 계산합니다.</p>
-      <table>
-        <tr><th>구분</th><th>2026년 근로자 부담 요율</th></tr>
-        <tr><td>건강보험료</td><td>3.595% (보수월액 기준)</td></tr>
-        <tr><td>장기요양보험료</td><td>0.9448% (보수월액 기준)</td></tr>
-      </table>
+      <h2>주휴수당 계산 방식 안내</h2>
+      <p>주휴수당은 1주 소정근로시간이 <strong>15시간 이상</strong>이고 그 주의 소정근로일을 <strong>개근</strong>한 근로자에게 지급되는 유급휴일 수당입니다. 주 40시간 근무 시 최대 8시간(하루치 임금)이 지급되며, 그보다 적게 일하면 근로시간에 비례해 계산됩니다.</p>
       <div class="info-callout">
-        보수월액에는 상한액·하한액이 있으며, 이 계산기는 이를 반영하지 않은 단순 근사치입니다. 정확한 금액은 국민건강보험공단을 통해 확인하세요.
+        정규직뿐 아니라 아르바이트·단시간 근로자도 요건을 충족하면 동일하게 주휴수당 대상입니다. 다만 지각·결근이 있으면 그 주는 주휴수당이 발생하지 않을 수 있습니다.
       </div>
+      <h2>자주 묻는 질문</h2>
+      <h3>Q. 주 14시간만 일해도 주휴수당을 받을 수 있나요?</h3>
+      <p>아니요. 1주 소정근로시간이 15시간 미만이면 주휴수당 대상이 아닙니다.</p>
+      <h3>Q. 최저시급 계산기와 무엇이 다른가요?</h3>
+      <p>계산 로직은 같지만, 이 페이지는 "이번 주 주휴수당이 얼마인지"만 빠르게 확인하는 용도이고, <a href="minimum-wage.html">최저시급 계산기</a>는 최저임금 준수 여부까지 함께 확인할 때 사용합니다.</p>
     </div>
   </div>
 </section>
@@ -162,34 +167,40 @@
 <script src="../js/calculators.js"></script>
 <script src="../js/main.js"></script>
 <script>
-function runHealthCalc() {
-  var manwon = getNumberValue("monthlySalary");
-  if (!(manwon > 0)) {
-    showError("resultCard", "보수월액을 올바르게 입력해 주세요.");
+function runWeeklyHolidayCalc() {
+  var hourly = getNumberValue("hourlyWage");
+  var weeklyHours = getNumberValue("weeklyHours");
+
+  var result = calcWeeklyHolidayPay({ hourlyWage: hourly, weeklyHours: weeklyHours });
+  if (result.error) {
+    showError("resultCard", result.error);
     return;
   }
 
-  var monthlyWon = manwon * 10000;
-  var hi = monthlyWon * RATE_HEALTH_INSURANCE;
-  var ltc = monthlyWon * RATE_LONG_TERM_CARE;
-  var total = hi + ltc;
-  logCalculatorUsage("health-insurance");
+  logCalculatorUsage("weekly-holiday-pay");
 
   var html = "";
   html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
+
+  if (!result.eligible) {
+    html += '<div class="disclaimer-box" style="background:#fdecec; border-color:#f3b8b8; color:#9b1c1c;"><span class="mark">⚠</span><span>주 근로시간이 15시간 미만이라 주휴수당 대상이 아닙니다.</span></div>';
+    document.getElementById("resultCard").innerHTML = html;
+    return;
+  }
+
   html += '<div class="result-headline">';
-  html += '<div class="label">건강보험료 + 장기요양보험료 (월, 근로자 부담분)</div>';
-  html += '<div class="amount">' + formatWon(total) + '</div>';
-  html += '<div class="amount-yearly">보수월액 ' + formatManwon(manwon) + ' 기준</div>';
+  html += '<div class="label">주휴수당</div>';
+  html += '<div class="amount">' + formatWon(result.holidayPay) + '</div>';
+  html += '<div class="amount-yearly">주휴시간 ' + result.holidayHours.toFixed(1) + '시간 기준</div>';
   html += '</div>';
 
   html += '<table class="result-table">';
-  html += '<tr><th>건강보험료</th><td>' + formatWon(hi) + '</td></tr>';
-  html += '<tr><th>장기요양보험료</th><td>' + formatWon(ltc) + '</td></tr>';
-  html += '<tr><th>합계</th><td><strong>' + formatWon(total) + '</strong></td></tr>';
+  html += '<tr><th>시급</th><td>' + result.hourly.toLocaleString("ko-KR") + '원</td></tr>';
+  html += '<tr><th>주휴시간</th><td>' + result.holidayHours.toFixed(1) + '시간</td></tr>';
+  html += '<tr><th>주휴수당</th><td><strong>' + formatWon(result.holidayPay) + '</strong></td></tr>';
   html += '</table>';
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>2026년 근로자 부담 요율을 적용한 참고용 추정치입니다. 보수월액 상한·하한은 반영되어 있지 않습니다.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>소정근로일 개근을 전제로 계산된 참고용 추정치입니다.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

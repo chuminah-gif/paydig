@@ -522,3 +522,170 @@ function insuranceDeductDetailHtml(insurance, tax) {
   html += '</div>';
   return html;
 }
+
+/* -------------------------------------------------------------------------
+   퇴직금 계산기 (근로기준법 기준 평균임금 방식)
+   근로자퇴직급여보장법: 퇴직금 = 1일 평균임금 × 30 × (재직일수 / 365)
+   평균임금 = 퇴직 전 3개월간 임금총액 ÷ 그 기간의 총 일수
+   기존 calcRetirementDB(월급×근속연수 단순화)보다 정확한 방식을 사용합니다.
+   ------------------------------------------------------------------------- */
+function calcSeverancePay(input) {
+  var last3MonthsWage = input.last3MonthsWageManwon * 10000;
+  var serviceDays = input.serviceDays;
+  if (last3MonthsWage <= 0 || !(serviceDays > 0)) {
+    return { error: "최근 3개월 임금총액과 재직기간을 올바르게 입력해 주세요." };
+  }
+  if (serviceDays < 365) {
+    return { error: "퇴직금은 계속근로기간 1년(365일) 이상부터 지급 의무가 발생합니다.", eligible: false, serviceDays: serviceDays };
+  }
+  var avgDailyWage = last3MonthsWage / 91; // 3개월을 평균 91일로 근사
+  var severance = avgDailyWage * 30 * (serviceDays / 365);
+  var years = serviceDays / 365;
+  var tax = calcRetirementIncomeTax(severance, years);
+  return {
+    avgDailyWage: avgDailyWage,
+    severance: clampNonNegative(severance),
+    years: years,
+    tax: tax.tax,
+    afterTax: clampNonNegative(severance - tax.tax),
+    eligible: true
+  };
+}
+
+/* -------------------------------------------------------------------------
+   프리랜서(사업소득) 3.3% 원천징수 계산기
+   소득세 3% + 지방소득세 0.3% = 총 3.3%를 지급자가 원천징수 후 나머지를 지급합니다.
+   실제 세부담은 다음 해 5월 종합소득세 신고 때 확정되며, 3.3%는 예납 성격입니다.
+   ------------------------------------------------------------------------- */
+var FREELANCER_WITHHOLDING_RATE = 0.033;
+
+function calcFreelancerTax(grossWon) {
+  var g = clampNonNegative(grossWon);
+  if (g <= 0) return { error: "용역대가(계약금액)를 올바르게 입력해 주세요." };
+  var incomeTax = g * 0.03;
+  var localTax = g * 0.003;
+  return { gross: g, incomeTax: incomeTax, localTax: localTax, withheld: incomeTax + localTax, net: g - incomeTax - localTax };
+}
+
+function solveFreelancerGrossFromNet(targetNetWon) {
+  var target = clampNonNegative(targetNetWon);
+  if (target <= 0) return { error: "원하는 실수령액을 올바르게 입력해 주세요." };
+  var gross = target / (1 - FREELANCER_WITHHOLDING_RATE);
+  return calcFreelancerTax(gross);
+}
+
+/* -------------------------------------------------------------------------
+   주휴수당 계산기 (calcMinimumWage와 동일한 로직을 재사용하는 전용 진입점)
+   ------------------------------------------------------------------------- */
+function calcWeeklyHolidayPay(input) {
+  var hourly = input.hourlyWage > 0 ? input.hourlyWage : MINIMUM_WAGE_2026;
+  var weeklyHours = input.weeklyHours;
+  if (!(weeklyHours > 0)) return { error: "주 근로시간을 올바르게 입력해 주세요." };
+  if (weeklyHours < 15) {
+    return { eligible: false, weeklyHours: weeklyHours };
+  }
+  var holidayHours = Math.min(weeklyHours, 40) / 5;
+  return { eligible: true, hourly: hourly, weeklyHours: weeklyHours, holidayHours: holidayHours, holidayPay: hourly * holidayHours };
+}
+
+/* -------------------------------------------------------------------------
+   연차유급휴가 계산기 (근로기준법 제60조)
+   1년 미만: 1개월 개근 시 1일씩 발생 (최대 11일)
+   1년 이상: 기본 15일 + 최초 1년 초과 매 2년마다 1일 가산 (최대 25일)
+   ------------------------------------------------------------------------- */
+function annualLeaveDays(serviceYears) {
+  if (serviceYears < 1) return Math.min(11, Math.floor(serviceYears * 12));
+  var bonus = Math.floor((serviceYears - 1) / 2);
+  return Math.min(25, 15 + bonus);
+}
+
+function calcAnnualLeave(input) {
+  var serviceYears = input.serviceYears;
+  var monthlyWageWon = input.monthlyWageManwon * 10000;
+  var usedDays = input.usedDays || 0;
+  if (!(serviceYears >= 0) || monthlyWageWon <= 0) {
+    return { error: "근속기간과 월급을 올바르게 입력해 주세요." };
+  }
+  var totalDays = annualLeaveDays(serviceYears);
+  var unusedDays = clampNonNegative(totalDays - usedDays);
+  var dailyOrdinaryWage = (monthlyWageWon / 209) * 8; // 통상임금 근사(월 소정근로시간 209시간 기준)
+  var allowance = dailyOrdinaryWage * unusedDays;
+  return { totalDays: totalDays, usedDays: usedDays, unusedDays: unusedDays, dailyOrdinaryWage: dailyOrdinaryWage, allowance: allowance };
+}
+
+/* -------------------------------------------------------------------------
+   육아휴직급여 계산기 (2026년 기준, 사후지급금 폐지 · 매월 전액 지급)
+   1~3개월차: 통상임금 100%, 상한 250만원 / 4~6개월차: 100%, 상한 200만원
+   7개월차 이후: 통상임금 80%, 상한 160만원
+   "6+6 부모육아휴직제"(부모 동시·순차 사용 시 첫 6개월 상한 대폭 상향)는
+   별도 특례로, 이 계산기에는 반영되어 있지 않습니다.
+   ------------------------------------------------------------------------- */
+var PARENTAL_LEAVE_LOWER_BOUND = 700000; // 하한액(참고치)
+
+function parentalLeaveMonthlyPay(monthlyOrdinaryWageWon, monthIndex) {
+  var rate, cap;
+  if (monthIndex <= 3) { rate = 1.0; cap = 2500000; }
+  else if (monthIndex <= 6) { rate = 1.0; cap = 2000000; }
+  else { rate = 0.8; cap = 1600000; }
+  var pay = monthlyOrdinaryWageWon * rate;
+  pay = Math.min(pay, cap);
+  pay = Math.max(pay, Math.min(PARENTAL_LEAVE_LOWER_BOUND, monthlyOrdinaryWageWon));
+  return pay;
+}
+
+function calcParentalLeavePay(input) {
+  var monthlyWageWon = input.monthlyWageManwon * 10000;
+  var months = input.months;
+  if (monthlyWageWon <= 0 || !(months > 0)) {
+    return { error: "통상임금(월급)과 육아휴직 사용 개월 수를 올바르게 입력해 주세요." };
+  }
+  var rows = [];
+  var total = 0;
+  for (var m = 1; m <= months; m++) {
+    var pay = parentalLeaveMonthlyPay(monthlyWageWon, m);
+    rows.push({ month: m, pay: pay });
+    total += pay;
+  }
+  return { rows: rows, total: total, months: months };
+}
+
+/* -------------------------------------------------------------------------
+   산재보험료 · 휴업급여 계산기
+   - 산재보험료: 전액 사업주 부담. 업종별 요율(대표 업종 예시, 2026년 근사치) × 보수총액
+   - 휴업급여: 요양으로 일하지 못한 기간 중 평균임금의 70%를 1일 단위로 지급
+     (저소득 근로자는 평균임금의 90%·최저임금 일급 한도까지 상향 보장하는 특례가 있어
+     이 계산기는 그 취지를 반영한 단순화된 하한을 적용합니다)
+   - 요양급여(치료비)는 실비 지급이 원칙이라 사전에 금액을 계산할 수 있는 항목이
+     아니므로 이 계산기에는 포함하지 않았습니다. 아래 안내문 참고.
+   ------------------------------------------------------------------------- */
+var INDUSTRIAL_ACCIDENT_RATES = {
+  office: { label: "사무직(금융·보험 등)", rate: 0.007 },
+  retail: { label: "도소매·음식숙박업", rate: 0.009 },
+  manufacturing: { label: "제조업(일반)", rate: 0.015 },
+  transport: { label: "운수·창고·통신업", rate: 0.018 },
+  construction: { label: "건설업", rate: 0.035 }
+};
+
+var MINIMUM_WAGE_DAILY_2026 = MINIMUM_WAGE_2026 * 8; // 82,560원
+
+function calcIndustrialAccidentPremium(input) {
+  var totalWageWon = input.totalWageManwon * 10000;
+  var industry = INDUSTRIAL_ACCIDENT_RATES[input.industry];
+  if (totalWageWon <= 0 || !industry) {
+    return { error: "보수총액과 업종을 올바르게 입력해 주세요." };
+  }
+  return { industryLabel: industry.label, rate: industry.rate, premium: totalWageWon * industry.rate };
+}
+
+function calcWorkInjuryLeaveBenefit(input) {
+  var last3MonthsWage = input.last3MonthsWageManwon * 10000;
+  var leaveDays = input.leaveDays;
+  if (last3MonthsWage <= 0 || !(leaveDays > 0)) {
+    return { error: "최근 3개월 임금총액과 요양(휴업) 일수를 올바르게 입력해 주세요." };
+  }
+  var avgDailyWage = last3MonthsWage / 91;
+  var basic = avgDailyWage * 0.7;
+  var guaranteed = Math.min(avgDailyWage * 0.9, MINIMUM_WAGE_DAILY_2026);
+  var dailyBenefit = Math.max(basic, guaranteed);
+  return { avgDailyWage: avgDailyWage, dailyBenefit: dailyBenefit, leaveDays: leaveDays, total: dailyBenefit * leaveDays };
+}
