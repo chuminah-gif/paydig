@@ -256,7 +256,7 @@ function runCalc() {
     html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>공무원연금 퇴직연금은 최소 재직기간 10년(120개월, 2016년 이후 임용 기준)을 채워야 수급 자격이 발생합니다. 입력하신 재직기간은 이에 미달하며, 미달 시 퇴직일시금 등으로 지급될 수 있습니다.</span></div>';
   }
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>본 결과는 공개된 산정식을 단순화한 참고용 추정치입니다. 세후 금액은 이 연금이 유일한 소득이라고 가정한 근사치입니다. 정확한 금액은 공무원연금공단 및 국세청을 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>공무원연금공단이 공개한 산정식을 단순화해 계산한 값으로, 실제 지급액과는 차이가 있을 수 있습니다. 세후 금액은 이 연금만 받는다고 가정했으므로, 다른 소득이 있다면 세율 구간부터 달라진다는 점을 감안해 참고해 주세요. 정확한 금액은 공무원연금공단에서 확인할 수 있습니다.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

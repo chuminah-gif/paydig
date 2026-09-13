@@ -792,6 +792,72 @@ h1, h2, h3, h4 {
   font-size: 0.92rem;
 }
 
+.mistake-callout {
+  background: var(--color-accent-soft);
+  border-left: 4px solid var(--color-accent);
+  border-radius: 6px;
+  padding: 16px 20px;
+  margin: 18px 0;
+}
+
+.mistake-callout h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+  color: var(--color-accent-dark);
+}
+
+.mistake-callout ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.mistake-callout li {
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+}
+
+.mistake-callout li:last-child {
+  margin-bottom: 0;
+}
+
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.case-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+}
+
+.case-card .case-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+
+.case-card .case-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  padding: 5px 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.case-card .case-row:last-child {
+  border-bottom: none;
+}
+
+.case-card .case-row.highlight {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
 /* ---------- 가이드 목록 ---------- */
 .guide-grid {
   display: grid;
