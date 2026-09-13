@@ -779,11 +779,8 @@ h1, h2, h3, h4 {
 }
 
 .prose table {
-  display: block;
-  width: auto;
-  max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   margin: 18px 0;
   font-size: 0.9rem;
@@ -793,16 +790,13 @@ h1, h2, h3, h4 {
   border: 1px solid var(--color-border);
   padding: 9px 10px;
   text-align: left;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .prose table th:first-child, .prose table td:first-child {
-  min-width: 8.5em;
-}
-
-/* 셀 내용이 짧은 데이터가 아니라 문장 단위일 때 — 가로 스크롤 대신 자연스럽게 줄바꿈 */
-.prose table.wrap-cells th, .prose table.wrap-cells td {
-  white-space: normal;
+  width: 32%;
 }
 
 .prose table th {
