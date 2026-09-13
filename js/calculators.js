@@ -290,17 +290,30 @@ function calcRetirementGap(input) {
    확인해야 합니다.
    ------------------------------------------------------------------------- */
 
-// 종합소득세 기본세율 (누진공제 포함, 지방소득세 별도)
+// 종합소득세 기본세율 구간표(누진공제 포함, 지방소득세 별도) — 계산과 화면 표시(계산식 공개)에 공용으로 사용
+var INCOME_TAX_BRACKETS = [
+  { limit: 14000000, rate: 0.06, deduction: 0 },
+  { limit: 50000000, rate: 0.15, deduction: 1260000 },
+  { limit: 88000000, rate: 0.24, deduction: 5760000 },
+  { limit: 150000000, rate: 0.35, deduction: 15440000 },
+  { limit: 300000000, rate: 0.38, deduction: 19940000 },
+  { limit: 500000000, rate: 0.40, deduction: 25940000 },
+  { limit: 1000000000, rate: 0.42, deduction: 35940000 },
+  { limit: Infinity, rate: 0.45, deduction: 65940000 }
+];
+
+function incomeTaxBracket(base) {
+  base = clampNonNegative(base);
+  for (var i = 0; i < INCOME_TAX_BRACKETS.length; i++) {
+    if (base <= INCOME_TAX_BRACKETS[i].limit) return INCOME_TAX_BRACKETS[i];
+  }
+  return INCOME_TAX_BRACKETS[INCOME_TAX_BRACKETS.length - 1];
+}
+
 function progressiveIncomeTax(base) {
   base = clampNonNegative(base);
-  if (base <= 14000000) return base * 0.06;
-  if (base <= 50000000) return base * 0.15 - 1260000;
-  if (base <= 88000000) return base * 0.24 - 5760000;
-  if (base <= 150000000) return base * 0.35 - 15440000;
-  if (base <= 300000000) return base * 0.38 - 19940000;
-  if (base <= 500000000) return base * 0.40 - 25940000;
-  if (base <= 1000000000) return base * 0.42 - 35940000;
-  return base * 0.45 - 65940000;
+  var bracket = incomeTaxBracket(base);
+  return base * bracket.rate - bracket.deduction;
 }
 
 // 공적연금소득세 근사 (국민연금·직역연금이 유일한 소득이라고 가정한 단순 추정)
@@ -459,17 +472,25 @@ function calcInsuranceBreakdown(monthlyGrossWon, pensionType) {
   }
   var np = pensionBase * plan.rate;
 
-  var hi = Math.min(m * RATE_HEALTH_INSURANCE, HEALTH_INSURANCE_PREMIUM_CEILING);
+  var healthRaw = m * RATE_HEALTH_INSURANCE;
+  var hi = Math.min(healthRaw, HEALTH_INSURANCE_PREMIUM_CEILING);
   var ltc = hi * RATE_LONG_TERM_CARE_OF_PREMIUM; // 급여가 아니라 건강보험료(본인부담분)에 곱함
   var ei = plan.employmentInsurance ? m * RATE_EMPLOYMENT_INSURANCE : 0;
   return {
     pensionType: pensionType,
     pensionLabel: plan.label,
     employmentInsuranceApplicable: plan.employmentInsurance,
+    pensionBase: pensionBase,
+    pensionRatePercent: plan.rate * 100,
     pensionBaseCapped: pensionType === "national" && m !== pensionBase,
     nationalPension: np,
+    healthBase: m,
+    healthRatePercent: RATE_HEALTH_INSURANCE * 100,
+    healthCapped: healthRaw > HEALTH_INSURANCE_PREMIUM_CEILING,
     healthInsurance: hi,
+    ltcRatePercent: RATE_LONG_TERM_CARE_OF_PREMIUM * 100,
     longTermCare: ltc,
+    eiRatePercent: RATE_EMPLOYMENT_INSURANCE * 100,
     employmentInsurance: ei,
     total: np + hi + ltc + ei
   };
@@ -494,10 +515,23 @@ function calcMonthlyIncomeTax(monthlyGrossWon, familyCount) {
   var laborIncome = clampNonNegative(annualGross - deduction);
   var basicDeduction = fc * 1500000;
   var taxBase = clampNonNegative(laborIncome - basicDeduction);
-  var annualTax = progressiveIncomeTax(taxBase);
+  var bracket = incomeTaxBracket(taxBase);
+  var annualTax = clampNonNegative(taxBase * bracket.rate - bracket.deduction);
   var incomeTax = clampNonNegative(annualTax / 12);
   var localTax = incomeTax * 0.1; // 지방소득세 = 소득세의 10% (법정 비율)
-  return { incomeTax: incomeTax, localTax: localTax };
+  return {
+    incomeTax: incomeTax,
+    localTax: localTax,
+    annualGross: annualGross,
+    laborDeduction: deduction,
+    laborIncome: laborIncome,
+    familyCount: fc,
+    basicDeduction: basicDeduction,
+    taxBase: taxBase,
+    bracketRatePercent: bracket.rate * 100,
+    bracketDeduction: bracket.deduction,
+    annualTax: annualTax
+  };
 }
 
 // 연봉 실수령액 (정방향): 월 급여(세전) -> 4대보험·세금 상세 + 월 실수령액
@@ -515,7 +549,16 @@ function calcTakeHomePay(monthlyGrossWon, pensionType, options) {
   var insurance = calcInsuranceBreakdown(taxableBase, pensionType);
   var baseTax = calcMonthlyIncomeTax(taxableBase, familyCount);
   var incomeTax = clampNonNegative(baseTax.incomeTax * withholdingRatio);
-  var tax = { incomeTax: incomeTax, localTax: incomeTax * 0.1 };
+  var tax = {
+    incomeTax: incomeTax,
+    localTax: incomeTax * 0.1,
+    baseIncomeTax: baseTax.incomeTax,
+    withholdingRatio: withholdingRatio,
+    taxBase: baseTax.taxBase,
+    bracketRatePercent: baseTax.bracketRatePercent,
+    bracketDeduction: baseTax.bracketDeduction,
+    annualTax: baseTax.annualTax
+  };
   var totalDeduct = insurance.total + tax.incomeTax + tax.localTax;
   return {
     monthlyGross: m,
@@ -595,25 +638,51 @@ function calcUnemploymentBenefit(input) {
 }
 
 /* 4대보험·실수령액류 계산기 공통: 상세 내역 HTML */
+// 소수점 요율을 "4.75", "0.9"처럼 불필요한 0 없이 표시
+function fmtPct(n) {
+  return (Math.round(n * 1000) / 1000).toString();
+}
+
+// 라벨 + 계산식(선택) + 금액 한 줄을 만드는 공용 헬퍼. 계산식은 결과 바로 위에 작은 글씨로 표시됩니다.
+function dRow(label, formula, amountText, isTotal) {
+  var inner = formula
+    ? '<span class="d-formula">' + formula + '</span><span class="d-amount">' + amountText + '</span>'
+    : amountText;
+  return '<div class="d-row' + (isTotal ? ' total' : '') + '"><span>' + label + '</span><span>' + inner + '</span></div>';
+}
+
 function insuranceDeductDetailHtml(insurance, tax) {
   var pensionLabel = insurance.pensionLabel || "국민연금";
   var html = '<div class="deduct-detail">';
   html += '<div class="d-group-label">4대보험</div>';
-  html += '<div class="d-row"><span>' + pensionLabel + '</span><span>' + formatWon(insurance.nationalPension) + '</span></div>';
-  html += '<div class="d-row"><span>건강보험</span><span>' + formatWon(insurance.healthInsurance) + '</span></div>';
-  html += '<div class="d-row"><span>장기요양보험</span><span>' + formatWon(insurance.longTermCare) + '</span></div>';
+
+  var pensionFormula = (insurance.pensionBaseCapped ? "상한액 " : "") + formatWon(insurance.pensionBase) + " × " + fmtPct(insurance.pensionRatePercent) + "%";
+  html += dRow(pensionLabel, pensionFormula, formatWon(insurance.nationalPension));
+
+  var healthFormula = insurance.healthCapped
+    ? "월 459만원 상한 적용"
+    : formatWon(insurance.healthBase) + " × " + fmtPct(insurance.healthRatePercent) + "%";
+  html += dRow("건강보험", healthFormula, formatWon(insurance.healthInsurance));
+
+  var ltcFormula = "건강보험료 " + formatWon(insurance.healthInsurance) + " × " + fmtPct(insurance.ltcRatePercent) + "%";
+  html += dRow("장기요양보험", ltcFormula, formatWon(insurance.longTermCare));
+
   if (insurance.employmentInsuranceApplicable === false) {
-    html += '<div class="d-row"><span>고용보험</span><span>해당없음</span></div>';
+    html += dRow("고용보험", "직역연금 가입자는 대상 제외", "해당없음");
   } else {
-    html += '<div class="d-row"><span>고용보험</span><span>' + formatWon(insurance.employmentInsurance) + '</span></div>';
+    var eiFormula = formatWon(insurance.healthBase) + " × " + fmtPct(insurance.eiRatePercent) + "%";
+    html += dRow("고용보험", eiFormula, formatWon(insurance.employmentInsurance));
   }
+
   if (tax) {
     html += '<div class="d-group-label">세금</div>';
-    html += '<div class="d-row"><span>소득세</span><span>' + formatWon(tax.incomeTax) + '</span></div>';
-    html += '<div class="d-row"><span>지방소득세</span><span>' + formatWon(tax.localTax) + '</span></div>';
+    var ratioNote = tax.withholdingRatio && tax.withholdingRatio !== 1 ? " × 원천징수비율 " + Math.round(tax.withholdingRatio * 100) + "%" : "";
+    var taxFormula = "연 과세표준 " + formatWon(tax.taxBase) + " × " + fmtPct(tax.bracketRatePercent) + "% − 누진공제 " + formatWon(tax.bracketDeduction) + ratioNote + ", 12개월 분할";
+    html += dRow("소득세", taxFormula, formatWon(tax.incomeTax));
+    html += dRow("지방소득세", formatWon(tax.incomeTax) + " × 10%", formatWon(tax.localTax));
   }
   var total = insurance.total + (tax ? tax.incomeTax + tax.localTax : 0);
-  html += '<div class="d-row total"><span>공제 합계</span><span>' + formatWon(total) + '</span></div>';
+  html += dRow("공제 합계", null, formatWon(total), true);
   html += '</div>';
   return html;
 }

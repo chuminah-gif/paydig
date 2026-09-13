@@ -1072,15 +1072,42 @@ h1, h2, h3, h4 {
 .deduct-detail .d-row {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   padding: 6px 0;
   font-size: 0.9rem;
   color: var(--color-text-muted);
   border-bottom: 1px solid var(--color-border);
+  gap: 10px;
+}
+
+.deduct-detail .d-row > span:first-child {
+  padding-top: 1px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.deduct-detail .d-row .d-formula {
+  white-space: normal;
+  word-break: keep-all;
 }
 
 .deduct-detail .d-row span:last-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 1;
+  min-width: 0;
   font-weight: 700;
   color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.deduct-detail .d-row .d-formula {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--color-text-faint);
+  margin-bottom: 2px;
   font-variant-numeric: tabular-nums;
 }
 

@@ -206,11 +206,15 @@ function runHealthCalc() {
   html += '<div class="amount-yearly">보수월액 ' + formatManwon(manwon) + ' 기준</div>';
   html += '</div>';
 
-  html += '<table class="result-table">';
-  html += '<tr><th>건강보험료</th><td>' + formatWon(hi) + '</td></tr>';
-  html += '<tr><th>장기요양보험료</th><td>' + formatWon(ltc) + '</td></tr>';
-  html += '<tr><th>합계</th><td><strong>' + formatWon(total) + '</strong></td></tr>';
-  html += '</table>';
+  html += '<div class="deduct-detail">';
+  var healthFormula = insurance.healthCapped
+    ? "월 459만원 상한 적용"
+    : formatWon(insurance.healthBase) + " × " + fmtPct(insurance.healthRatePercent) + "%";
+  html += dRow("건강보험료", healthFormula, formatWon(hi));
+  var ltcFormula = "건강보험료 " + formatWon(hi) + " × " + fmtPct(insurance.ltcRatePercent) + "%";
+  html += dRow("장기요양보험료", ltcFormula, formatWon(ltc));
+  html += dRow("합계", null, formatWon(total), true);
+  html += '</div>';
 
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>2026년 근로자 부담 요율을 적용한 참고용 추정치입니다. 건강보험 개인부담 보험료 상한(월 459만원)은 반영했으나, 하한액은 반영되어 있지 않습니다.</span></div>';
 
