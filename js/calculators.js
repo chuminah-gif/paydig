@@ -982,50 +982,99 @@ function calcYearEndTax(input) {
 
   if (totalGross <= 0) return { error: "연간 총급여를 올바르게 입력해 주세요." };
 
+  var f = {}; // 각 항목의 계산식 문자열(화면 표시용) — 계산 로직 자체에는 영향 없음
+
   var laborDeduction = laborIncomeDeduction(totalGross);
+  if (totalGross <= 5000000) f.laborDeduction = formatWon(totalGross) + " × 70%";
+  else if (totalGross <= 15000000) f.laborDeduction = "350만원 + (" + formatWon(totalGross) + " − 500만원) × 40%";
+  else if (totalGross <= 45000000) f.laborDeduction = "750만원 + (" + formatWon(totalGross) + " − 1,500만원) × 15%";
+  else if (totalGross <= 100000000) f.laborDeduction = "1,200만원 + (" + formatWon(totalGross) + " − 4,500만원) × 5%";
+  else f.laborDeduction = "1,475만원 + (" + formatWon(totalGross) + " − 1억원) × 2%";
   var laborIncome = clampNonNegative(totalGross - laborDeduction);
 
   // ---- 소득공제 ----
   var personalDeduction = (1 + dependents) * 1500000;
-  var insuranceAnnual = calcInsuranceBreakdown(totalGross / 12, "national").total * 12;
-  var cardResult = creditCardDeduction({
+  f.personalDeduction = "(본인 포함 " + (1 + dependents) + "명) × 150만원";
+
+  var monthlyInsurance = calcInsuranceBreakdown(totalGross / 12, "national");
+  var insuranceAnnual = monthlyInsurance.total * 12;
+  f.insuranceAnnual = "월 4대보험료 " + formatWon(monthlyInsurance.total) + " × 12개월";
+
+  var cardInput = {
     creditCardWon: (input.creditCardManwon || 0) * 10000,
     debitCardWon: (input.debitCardManwon || 0) * 10000,
     booksCultureWon: (input.booksCultureManwon || 0) * 10000,
     traditionalMarketWon: (input.traditionalMarketManwon || 0) * 10000,
     publicTransportWon: (input.publicTransportManwon || 0) * 10000
-  }, totalGross);
-  var housingDeduction = housingFundDeduction({
-    housingSavingsWon: (input.housingSavingsManwon || 0) * 10000,
-    mortgageInterestWon: (input.mortgageInterestManwon || 0) * 10000
-  });
+  };
+  var cardResult = creditCardDeduction(cardInput, totalGross);
+  f.cardDeduction = cardResult.totalUsage > 0
+    ? "총사용액 " + formatWon(cardResult.totalUsage) + " 중 총급여 25%(" + formatWon(totalGross * 0.25) + ") 초과분에 항목별 공제율 적용"
+    : "사용액 없음";
+
+  var housingSavings = (input.housingSavingsManwon || 0) * 10000;
+  var mortgageInterest = (input.mortgageInterestManwon || 0) * 10000;
+  var housingDeduction = housingFundDeduction({ housingSavingsWon: housingSavings, mortgageInterestWon: mortgageInterest });
+  f.housingDeduction = "청약저축 등 " + formatWon(Math.min(housingSavings, 3000000)) + " × 40% + 주택저당이자상환액 " + formatWon(Math.min(mortgageInterest, 20000000));
 
   var totalIncomeDeduction = personalDeduction + insuranceAnnual + cardResult.deduction + housingDeduction;
   var taxBase = clampNonNegative(laborIncome - totalIncomeDeduction);
-  var computedTax = progressiveIncomeTax(taxBase);
+
+  var taxBracket = incomeTaxBracket(taxBase);
+  var computedTax = clampNonNegative(taxBase * taxBracket.rate - taxBracket.deduction);
+  f.computedTax = "과세표준 " + formatWon(taxBase) + " × " + fmtPct(taxBracket.rate * 100) + "% − 누진공제 " + formatWon(taxBracket.deduction);
 
   // ---- 세액공제 ----
   var earnedIncomeCredit = laborIncomeTaxCredit(computedTax, totalGross);
+  var earnedCreditBase = computedTax <= 500000 ? computedTax * 0.55 : 275000 + (computedTax - 500000) * 0.3;
+  f.earnedIncomeCredit = (computedTax <= 500000 ? "산출세액 " + formatWon(computedTax) + " × 55%" : "27만5천원 + (산출세액 − 50만원) × 30%")
+    + (earnedIncomeCredit < earnedCreditBase ? " → 한도 " + formatWon(earnedIncomeCredit) + " 적용" : "");
+
   var childCredit = childTaxCredit(childCount);
+  f.childCredit = childCount <= 0 ? "대상 자녀 없음"
+    : childCount === 1 ? "1명 × 15만원"
+    : childCount === 2 ? "2명 35만원(15만원+20만원)"
+    : "2명 35만원 + (" + (childCount - 2) + "명 × 30만원)";
+
   var pensionCredit = pensionAccountTaxCredit(pensionContribution, totalGross);
+  var pensionRate = totalGross <= 55000000 ? 16.5 : 13.2;
+  f.pensionCredit = "납입액(900만원 한도) " + formatWon(Math.min(pensionContribution, 9000000)) + " × " + pensionRate + "%";
+
   var medicalCredit = medicalExpenseCredit(
     (input.normalMedicalManwon || 0) * 10000,
     (input.unlimitedMedicalManwon || 0) * 10000,
     totalGross
   );
-  var insuranceCredit = insurancePremiumCredit(
-    (input.generalInsuranceManwon || 0) * 10000,
-    (input.disabledInsuranceManwon || 0) * 10000
-  );
-  var educationCredit = educationExpenseCredit((input.educationManwon || 0) * 10000);
-  var rentCredit = monthlyRentCredit((input.monthlyRentManwon || 0) * 10000, totalGross);
-  var donationCreditAmount = donationCredit((input.donationManwon || 0) * 10000);
+  f.medicalCredit = "총의료비 − 총급여 3%(" + formatWon(totalGross * 0.03) + ") 초과분 × 15%";
+
+  var generalInsurance = (input.generalInsuranceManwon || 0) * 10000;
+  var disabledInsurance = (input.disabledInsuranceManwon || 0) * 10000;
+  var insuranceCredit = insurancePremiumCredit(generalInsurance, disabledInsurance);
+  f.insuranceCredit = "일반 " + formatWon(Math.min(generalInsurance, 1000000)) + " × 12% + 장애인전용 " + formatWon(Math.min(disabledInsurance, 1000000)) + " × 15%";
+
+  var educationTotal = (input.educationManwon || 0) * 10000;
+  var educationCredit = educationExpenseCredit(educationTotal);
+  f.educationCredit = formatWon(educationTotal) + " × 15%";
+
+  var rentTotal = (input.monthlyRentManwon || 0) * 10000;
+  var rentCredit = monthlyRentCredit(rentTotal, totalGross);
+  f.rentCredit = !(rentTotal > 0) ? "월세 입력 없음"
+    : totalGross > 80000000 ? "총급여 8,000만원 초과로 대상 아님"
+    : "월세(750만원 한도) " + formatWon(Math.min(rentTotal, 7500000)) + " × " + (totalGross <= 55000000 ? 17 : 15) + "%";
+
+  var donationTotal = (input.donationManwon || 0) * 10000;
+  var donationCreditAmount = donationCredit(donationTotal);
+  f.donationCredit = donationTotal <= 0 ? "기부금 없음"
+    : donationTotal <= 10000000 ? formatWon(donationTotal) + " × 15%"
+    : donationTotal <= 30000000 ? "1천만원 × 15% + (" + formatWon(donationTotal - 10000000) + ") × 30%"
+    : "1천만원 × 15% + 2천만원 × 30% + (" + formatWon(donationTotal - 30000000) + ") × 40%";
 
   var totalTaxCredit = earnedIncomeCredit + childCredit + pensionCredit + medicalCredit +
     insuranceCredit + educationCredit + rentCredit + donationCreditAmount;
 
   var finalTax = clampNonNegative(computedTax - totalTaxCredit);
   var finalLocalTax = finalTax * 0.1;
+  f.finalLocalTax = "결정세액(소득세) " + formatWon(finalTax) + " × 10%";
   var finalTotal = finalTax + finalLocalTax;
 
   var withheldLocalTax = withheldTax * 0.1;
@@ -1057,6 +1106,7 @@ function calcYearEndTax(input) {
     finalTotal: finalTotal,
     withheldTotal: withheldTotal,
     hasWithheld: withheldTax > 0,
-    refundOrDue: withheldTotal - finalTotal // 양수면 환급, 음수면 추가 납부
+    refundOrDue: withheldTotal - finalTotal, // 양수면 환급, 음수면 추가 납부
+    f: f
   };
 }

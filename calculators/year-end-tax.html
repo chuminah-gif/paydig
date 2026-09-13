@@ -360,33 +360,32 @@ function runYearEndTaxCalc() {
     html += '</div>';
   }
 
-  html += '<div class="d-group-label" style="font-size:.72rem; font-weight:700; color:var(--color-text-faint); text-transform:uppercase; margin:14px 0 4px;">소득공제</div>';
-  html += '<table class="result-table">';
-  html += '<tr><th>근로소득공제</th><td>-' + formatWon(result.laborDeduction) + '</td></tr>';
-  html += '<tr><th>근로소득금액</th><td>' + formatWon(result.laborIncome) + '</td></tr>';
-  html += '<tr><th>인적공제</th><td>-' + formatWon(result.personalDeduction) + '</td></tr>';
-  html += '<tr><th>4대보험료 공제</th><td>-' + formatWon(result.insuranceAnnual) + '</td></tr>';
-  html += '<tr><th>신용카드 등 사용액 공제</th><td>-' + formatWon(result.cardDeduction) + '</td></tr>';
-  html += '<tr><th>주택자금 공제</th><td>-' + formatWon(result.housingDeduction) + '</td></tr>';
-  html += '<tr><th>과세표준</th><td>' + formatWon(result.taxBase) + '</td></tr>';
-  html += '<tr><th>산출세액</th><td><strong>' + formatWon(result.computedTax) + '</strong></td></tr>';
-  html += '</table>';
+  var f = result.f;
+  html += '<div class="deduct-detail">';
+  html += '<div class="d-group-label">소득공제</div>';
+  html += dRow("근로소득공제", f.laborDeduction, "-" + formatWon(result.laborDeduction));
+  html += dRow("근로소득금액", null, formatWon(result.laborIncome));
+  html += dRow("인적공제", f.personalDeduction, "-" + formatWon(result.personalDeduction));
+  html += dRow("4대보험료 공제", f.insuranceAnnual, "-" + formatWon(result.insuranceAnnual));
+  html += dRow("신용카드 등 사용액 공제", f.cardDeduction, "-" + formatWon(result.cardDeduction));
+  html += dRow("주택자금 공제", f.housingDeduction, "-" + formatWon(result.housingDeduction));
+  html += dRow("과세표준", "근로소득금액 − 소득공제 합계", formatWon(result.taxBase));
+  html += dRow("산출세액", f.computedTax, formatWon(result.computedTax), true);
 
-  html += '<div class="d-group-label" style="font-size:.72rem; font-weight:700; color:var(--color-text-faint); text-transform:uppercase; margin:14px 0 4px;">세액공제</div>';
-  html += '<table class="result-table">';
-  html += '<tr><th>근로소득세액공제</th><td>-' + formatWon(result.earnedIncomeCredit) + '</td></tr>';
-  html += '<tr><th>자녀세액공제</th><td>-' + formatWon(result.childCredit) + '</td></tr>';
-  html += '<tr><th>연금계좌세액공제</th><td>-' + formatWon(result.pensionCredit) + '</td></tr>';
-  html += '<tr><th>보험료 세액공제</th><td>-' + formatWon(result.insuranceCredit) + '</td></tr>';
-  html += '<tr><th>의료비 세액공제</th><td>-' + formatWon(result.medicalCredit) + '</td></tr>';
-  html += '<tr><th>교육비 세액공제</th><td>-' + formatWon(result.educationCredit) + '</td></tr>';
-  html += '<tr><th>월세 세액공제</th><td>-' + formatWon(result.rentCredit) + '</td></tr>';
-  html += '<tr><th>기부금 세액공제</th><td>-' + formatWon(result.donationCredit) + '</td></tr>';
-  html += '<tr><th>세액공제 합계</th><td>-' + formatWon(result.totalTaxCredit) + '</td></tr>';
-  html += '<tr><th>결정세액(소득세)</th><td>' + formatWon(result.finalTax) + '</td></tr>';
-  html += '<tr><th>지방소득세</th><td>' + formatWon(result.finalLocalTax) + '</td></tr>';
-  html += '<tr><th>결정세액 합계</th><td><strong>' + formatWon(result.finalTotal) + '</strong></td></tr>';
-  html += '</table>';
+  html += '<div class="d-group-label">세액공제</div>';
+  html += dRow("근로소득세액공제", f.earnedIncomeCredit, "-" + formatWon(result.earnedIncomeCredit));
+  html += dRow("자녀세액공제", f.childCredit, "-" + formatWon(result.childCredit));
+  html += dRow("연금계좌세액공제", f.pensionCredit, "-" + formatWon(result.pensionCredit));
+  html += dRow("보험료 세액공제", f.insuranceCredit, "-" + formatWon(result.insuranceCredit));
+  html += dRow("의료비 세액공제", f.medicalCredit, "-" + formatWon(result.medicalCredit));
+  html += dRow("교육비 세액공제", f.educationCredit, "-" + formatWon(result.educationCredit));
+  html += dRow("월세 세액공제", f.rentCredit, "-" + formatWon(result.rentCredit));
+  html += dRow("기부금 세액공제", f.donationCredit, "-" + formatWon(result.donationCredit));
+  html += dRow("세액공제 합계", null, "-" + formatWon(result.totalTaxCredit));
+  html += dRow("결정세액(소득세)", "산출세액 − 세액공제 합계", formatWon(result.finalTax));
+  html += dRow("지방소득세", f.finalLocalTax, formatWon(result.finalLocalTax));
+  html += dRow("결정세액 합계", null, formatWon(result.finalTotal), true);
+  html += '</div>';
 
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>경로우대·장애인 추가 인적공제 등 개인별 특수 항목은 반영되지 않은 참고용 추정치입니다. 정확한 금액은 국세청 홈택스 연말정산 미리보기 서비스를 통해 확인하세요.</span></div>';
 
