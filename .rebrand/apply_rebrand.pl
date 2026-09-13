@@ -52,7 +52,13 @@ my $HEADER_TMPL = <<'HEADER';
           <div class="dropdown-heading">개인연금</div>
           <a href="__CALC__pension-savings.html">연금저축</a>
           <a href="__CALC__personal-pension.html">연금보험</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">노후설계 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
           <a href="__ROOT__simulation.html">통합 시뮬레이션</a>
+          <a href="__CALC__retirement-dashboard.html">노후설계 대시보드</a>
         </div>
       </div>
       <a href="__CALC__year-end-tax.html" class="emph">연말정산</a>

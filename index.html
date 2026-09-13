@@ -70,7 +70,13 @@
           <div class="dropdown-heading">개인연금</div>
           <a href="calculators/pension-savings.html">연금저축</a>
           <a href="calculators/personal-pension.html">연금보험</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">노후설계 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
           <a href="simulation.html">통합 시뮬레이션</a>
+          <a href="calculators/retirement-dashboard.html">노후설계 대시보드</a>
         </div>
       </div>
       <a href="calculators/year-end-tax.html" class="emph">연말정산</a>
@@ -230,7 +236,7 @@
 
 <div class="container section" style="padding-top:0;">
   <h2 class="section-title">연금</h2>
-  <p class="section-desc">공적연금부터 퇴직연금, 개인연금까지 — 세전/세후 예상 수령액을 계산하고 통합 시뮬레이션으로 합산해 볼 수 있습니다.</p>
+  <p class="section-desc">공적연금부터 퇴직연금, 개인연금까지 — 각각의 세전/세후 예상 수령액을 계산합니다.</p>
 
   <h3 style="font-size:1.02rem; margin:28px 0 4px;">공적연금</h3>
   <div class="pension-grid" style="margin-top:0;">
@@ -296,11 +302,24 @@
       <p>10년 이상 유지 시 비과세 혜택을 받는 연금보험을 계산합니다.</p>
       <span class="go">계산하러 가기 →</span>
     </a>
+  </div>
+</div>
+
+<div class="container section" style="padding-top:0;">
+  <h2 class="section-title">노후설계</h2>
+  <p class="section-desc">여러 연금을 합산하고, 그 합계가 지금 소득 대비 충분한지까지 확인합니다.</p>
+  <div class="pension-grid" style="margin-top:0; grid-template-columns:repeat(2,1fr); max-width:700px;">
     <a class="pension-card" href="simulation.html">
       <div class="icon">🧮</div>
       <h3>통합 시뮬레이션</h3>
       <p>해당하는 연금을 모두 체크해 은퇴 후 총 월 수령액을 한 번에 계산합니다.</p>
-      <span class="go">지금 계산하기 →</span>
+      <span class="go">계산하러 가기 →</span>
+    </a>
+    <a class="pension-card" href="calculators/retirement-dashboard.html">
+      <div class="icon">🧭</div>
+      <h3>노후설계 대시보드</h3>
+      <p>소득대체율과 노후 적정생활비 대비 부족액, 필요한 추가 저축액을 계산합니다.</p>
+      <span class="go">계산하러 가기 →</span>
     </a>
   </div>
 </div>

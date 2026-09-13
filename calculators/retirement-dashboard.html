@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="google-adsense-account" content="ca-pub-9392282410784308">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9392282410784308" crossorigin="anonymous"></script>
+<title>노후설계 대시보드 | 소득대체율·은퇴 준비 부족액 계산 - 페이딕</title>
+<meta name="description" content="현재 연봉과 예상 은퇴 후 월 수령액을 입력하면 소득대체율과 국민연금연구원 노후 적정생활비 대비 부족액, 그리고 부족분을 채우기 위해 매달 더 모아야 할 금액을 계산합니다." />
+<link rel="canonical" href="https://pension-lab-phi.vercel.app/calculators/retirement-dashboard.html" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="페이딕" />
+<meta property="og:title" content="노후설계 대시보드 | 소득대체율·은퇴 준비 부족액 계산 - 페이딕" />
+<meta property="og:description" content="현재 연봉과 예상 은퇴 후 월 수령액을 입력하면 소득대체율과 국민연금연구원 노후 적정생활비 대비 부족액, 그리고 부족분을 채우기 위해 매달 더 모아야 할 금액을 계산합니다." />
+<meta property="og:url" content="https://pension-lab-phi.vercel.app/calculators/retirement-dashboard.html" />
+<meta property="og:locale" content="ko_KR" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="노후설계 대시보드 | 소득대체율·은퇴 준비 부족액 계산 - 페이딕" />
+<meta name="twitter:description" content="현재 연봉과 예상 은퇴 후 월 수령액을 입력하면 소득대체율과 국민연금연구원 노후 적정생활비 대비 부족액, 그리고 부족분을 채우기 위해 매달 더 모아야 할 금액을 계산합니다." />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
+<link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="../index.html" class="logo"><svg viewBox="0 0 32 32" class="logo-mark" aria-hidden="true"><circle cx="13" cy="13" r="8" fill="none" stroke="#1E3A5F" stroke-width="3"/><line x1="19" y1="19" x2="26" y2="26" stroke="#1E3A5F" stroke-width="3" stroke-linecap="round"/><text x="13" y="16.5" font-size="9" font-weight="800" fill="#C43F32" text-anchor="middle">&#8361;</text></svg> 페이딕</a>
+    <nav class="main-nav">
+      <a href="../index.html">홈</a>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">실수령액 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="salary-net.html">연봉 실수령액·역산</a>
+          <a href="freelancer-tax.html">프리랜서 3.3% 세금</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">4대보험 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="national-pension.html">국민연금</a>
+          <a href="health-insurance.html">건강보험료</a>
+          <a href="employment-insurance.html">고용보험 실업급여</a>
+          <a href="parental-leave.html">육아휴직급여</a>
+          <a href="industrial-accident.html">산재보험료·휴업급여</a>
+          <a href="four-insurance.html">4대보험 통합계산기</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">근로수당·퇴직금 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="minimum-wage.html">최저시급 계산기</a>
+          <a href="weekly-holiday-pay.html">주휴수당 계산기</a>
+          <a href="annual-leave.html">연차수당 계산기</a>
+          <a href="severance-pay.html">퇴직금 계산기</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">연금 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <div class="dropdown-heading">공적연금</div>
+          <a href="national-pension.html">국민연금</a>
+          <a href="civil-servant-pension.html">공무원연금</a>
+          <a href="military-pension.html">군인연금</a>
+          <a href="private-school-pension.html">사학연금</a>
+          <div class="dropdown-heading">퇴직연금</div>
+          <a href="retirement-db.html">DB형(확정급여형)</a>
+          <a href="retirement-dc.html">DC형(확정기여형)</a>
+          <a href="irp.html">IRP</a>
+          <div class="dropdown-heading">개인연금</div>
+          <a href="pension-savings.html">연금저축</a>
+          <a href="personal-pension.html">연금보험</a>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="#" class="dropdown-toggle">노후설계 <span class="caret">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="../simulation.html">통합 시뮬레이션</a>
+          <a href="retirement-dashboard.html">노후설계 대시보드</a>
+        </div>
+      </div>
+      <a href="year-end-tax.html" class="emph">연말정산</a>
+      <a href="../news/index.html">소식</a>
+      <a href="../guide/index.html">가이드</a>
+      <a href="../about.html">사이트소개</a>
+    </nav>
+    <button class="nav-toggle" aria-label="메뉴 열기" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="breadcrumb"><a href="../index.html">홈</a> / 노후설계 대시보드</p>
+    <h1>노후설계 대시보드</h1>
+    <p>지금 소득과 예상 은퇴 후 수령액을 비교해 소득대체율을 확인하고, 적정 노후생활비 대비 부족한 만큼을 채우려면 지금부터 매달 얼마를 더 모아야 하는지 계산합니다.</p>
+  </div>
+</section>
+
+<div class="container section">
+  <div class="calc-layout">
+    <div class="card">
+      <h2>정보 입력</h2>
+      <p class="card-sub">은퇴 후 예상 수령액을 아직 계산 안 해보셨다면 <a href="../simulation.html">통합 시뮬레이션</a>에서 먼저 계산한 뒤 그 결과(세후 총 월 수령액)를 아래에 입력해 주세요.</p>
+
+      <div class="field">
+        <label for="currentSalary">현재 연봉 (세전, 만원)</label>
+        <input type="number" id="currentSalary" placeholder="예: 4500" min="0" />
+      </div>
+
+      <div class="field">
+        <label for="pensionType">가입 연금 종류</label>
+        <select id="pensionType">
+          <option value="national">국민연금 (일반 근로자)</option>
+          <option value="civilServant">공무원연금</option>
+          <option value="privateSchool">사학연금</option>
+          <option value="military">군인연금</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="projectedMonthly">예상 은퇴 후 총 월 수령액 (세후, 만원)</label>
+        <input type="number" id="projectedMonthly" placeholder="예: 200" min="0" />
+        <div class="hint">국민연금+퇴직연금+개인연금 등을 다 합친 세후 월 수령액입니다.</div>
+      </div>
+
+      <div class="field">
+        <label for="household">가구 형태 (적정생활비 비교 기준)</label>
+        <select id="household">
+          <option value="single">1인 가구</option>
+          <option value="couple">부부(2인) 가구</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="accumulationYears">은퇴까지 남은 기간 (년)</label>
+        <input type="number" id="accumulationYears" placeholder="예: 20" min="0" value="20" />
+      </div>
+
+      <div class="field">
+        <label for="accumulationRate">추가 저축 시 예상 연 수익률 (%)</label>
+        <input type="number" id="accumulationRate" value="3" step="0.1" />
+      </div>
+
+      <div class="field">
+        <label for="payoutYears">부족분 수령 희망 기간 (년)</label>
+        <input type="number" id="payoutYears" value="20" min="1" max="40" />
+      </div>
+
+      <button class="btn btn-primary" onclick="runRetirementGapCalc()">계산하기</button>
+    </div>
+
+    <div class="result-panel">
+      <div class="card" id="resultCard">
+        <div class="result-empty">
+          <div class="icon">🧭</div>
+          <p>왼쪽 정보를 입력하고 계산하기 버튼을 눌러주세요.</p>
+        </div>
+      </div>
+      <div class="ad-slot">광고 영역 (Google AdSense 승인 후 게재)</div>
+    </div>
+  </div>
+</div>
+
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="card prose">
+      <h2>소득대체율과 적정 노후생활비란?</h2>
+      <p><strong>소득대체율</strong>은 은퇴 후 받는 돈이 은퇴 전 소득의 몇 %인지를 나타내는 지표입니다. 국민연금만 40년 가입했을 때의 이론상 소득대체율은 2026년 기준 43%(2025년 41.5%에서 인상)이지만, 실제로는 평균 가입기간이 40년에 훨씬 못 미쳐 개인이 체감하는 대체율은 이보다 낮은 경우가 많습니다.</p>
+      <p>국민연금연구원 조사에 따르면 노후 적정생활비는 <strong>1인 가구 월 192만원, 부부 가구 월 296만원</strong> 수준으로 조사된 바 있습니다(조사 시점에 따라 달라질 수 있는 참고치입니다).</p>
+      <div class="info-callout">
+        이 대시보드는 통합 시뮬레이션에서 계산한 "예상 은퇴 후 총 월 수령액"을 입력받아 지금 소득과 비교하는 도구입니다. 은퇴 후 수령액 자체를 아직 계산하지 않았다면 <a href="../simulation.html">통합 시뮬레이션</a>을 먼저 이용해 주세요.
+      </div>
+      <h2>자주 묻는 질문</h2>
+      <h3>Q. 통합 시뮬레이션과 뭐가 다른가요?</h3>
+      <p>통합 시뮬레이션은 국민연금·퇴직연금·개인연금 등 여러 연금을 더해 "총 얼마를 받는지" 계산하는 도구입니다. 노후설계 대시보드는 그 합계를 <strong>지금 소득과 비교</strong>해서 충분한지 확인하고, 부족하다면 <strong>지금부터 얼마씩 더 모아야 하는지</strong>까지 알려주는 도구입니다.</p>
+      <h3>Q. "부족분을 채우기 위한 월 저축액"은 어떻게 계산하나요?</h3>
+      <p>적정생활비 대비 부족한 월 금액을 정해진 기간(부족분 수령 희망 기간) 동안 받으려면 은퇴 시점에 필요한 목돈을 역산한 뒤, 그 목돈을 은퇴까지 남은 기간 동안 매년 얼마씩 적립해야 하는지를 계산합니다. IRP·연금저축 등에 추가로 납입하는 상황을 가정한 근사치입니다.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>페이딕</h4>
+        <p>4대보험·실수령액·연말정산부터 공적연금·퇴직연금·개인연금까지, 내 월급과 관련된 모든 계산을 무료로 해볼 수 있는 정보 제공 사이트입니다. 본 사이트는 특정 금융상품을 권유하거나 투자자문을 제공하지 않습니다.</p>
+      </div>
+      <div>
+        <h4>계산기</h4>
+        <ul>
+          <li><a href="salary-net.html">연봉 실수령액 계산기</a></li>
+          <li><a href="four-insurance.html">4대보험 통합 계산기</a></li>
+          <li><a href="year-end-tax.html">연말정산 예상세액 계산기</a></li>
+          <li><a href="../simulation.html">통합 시뮬레이션</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>사이트 정보</h4>
+        <ul>
+          <li><a href="../about.html">사이트 소개</a></li>
+          <li><a href="../news/index.html">소식</a></li>
+          <li><a href="../guide/index.html">연금 가이드</a></li>
+          <li><a href="../contact.html">문의하기</a></li>
+          <li><a href="../privacy.html">개인정보처리방침</a></li>
+          <li><a href="../terms.html">이용약관</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 페이딕. All rights reserved.</span>
+      <span>본 사이트의 계산 결과는 참고용이며 법적 효력이 없습니다.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/calculators.js"></script>
+<script src="../js/main.js"></script>
+<script>
+function runRetirementGapCalc() {
+  var currentSalary = getNumberValue("currentSalary");
+  var pensionType = document.getElementById("pensionType").value;
+  var projectedMonthly = getNumberValue("projectedMonthly");
+  var household = document.getElementById("household").value;
+  var accumulationYears = getNumberValue("accumulationYears");
+  var accumulationRate = getNumberValue("accumulationRate");
+  var payoutYears = getNumberValue("payoutYears");
+
+  var result = calcRetirementGap({
+    currentAnnualGrossManwon: currentSalary,
+    pensionType: pensionType,
+    projectedMonthlyManwon: projectedMonthly,
+    household: household,
+    accumulationYears: accumulationYears,
+    accumulationReturnPercent: accumulationRate,
+    payoutYears: payoutYears
+  });
+
+  if (result.error) {
+    showError("resultCard", result.error);
+    return;
+  }
+
+  logCalculatorUsage("retirement-dashboard");
+
+  var html = "";
+  html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
+  html += '<div class="result-headline">';
+  html += '<div class="label">소득대체율</div>';
+  html += '<div class="amount">' + result.replacementRatio.toFixed(1) + '%</div>';
+  html += '<div class="amount-yearly">현재 월 실수령액 ' + formatWon(result.currentNet) + ' 대비 은퇴 후 ' + formatWon(result.projectedMonthly) + '</div>';
+  html += '</div>';
+
+  html += '<table class="result-table">';
+  html += '<tr><th>현재 월 실수령액</th><td>' + formatWon(result.currentNet) + '</td></tr>';
+  html += '<tr><th>예상 은퇴 후 월 수령액</th><td>' + formatWon(result.projectedMonthly) + '</td></tr>';
+  html += '<tr><th>노후 적정생활비 (' + (result.household === "couple" ? "부부" : "1인") + ' 가구 기준)</th><td>' + formatWon(result.livingCostBenchmark) + '</td></tr>';
+  html += '</table>';
+
+  if (result.gapVsBenchmark > 0) {
+    html += '<div class="result-headline" style="background:linear-gradient(135deg,#8a2b1f,#c43f32); margin-top:16px;">';
+    html += '<div class="label">적정생활비 대비 부족액 (월)</div>';
+    html += '<div class="amount">' + formatWon(result.gapVsBenchmark) + '</div>';
+    html += '</div>';
+    if (result.requiredMonthlySavings > 0) {
+      html += '<table class="result-table" style="margin-top:14px;">';
+      html += '<tr><th>부족분을 채우려면 지금부터 매달</th><td><strong>' + formatWon(result.requiredMonthlySavings) + '</strong></td></tr>';
+      html += '</table>';
+      html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>IRP·연금저축 등에 위 금액을 추가로 납입해 설정하신 수익률로 은퇴까지 운용한다고 가정한 근사치입니다.</span></div>';
+    }
+  } else {
+    html += '<div class="disclaimer-box" style="background:#e9f9f0; border-color:#a7e3c3; color:#146c43; margin-top:16px;"><span class="mark">✓</span><span>예상 은퇴 후 수령액이 노후 적정생활비 기준을 충족하는 것으로 보입니다. 다만 물가상승률, 의료비 등은 반영되지 않은 참고용 비교입니다.</span></div>';
+  }
+
+  html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">ℹ</span><span>노후 적정생활비는 국민연금연구원 조사 기준(1인 192만원/부부 296만원) 참고치이며, 개인 상황에 따라 실제 필요 금액은 다를 수 있습니다.</span></div>';
+
+  document.getElementById("resultCard").innerHTML = html;
+}
+</script>
+</body>
+</html>

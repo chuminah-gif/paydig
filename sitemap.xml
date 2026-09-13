@@ -23,6 +23,7 @@
   <url><loc>https://pension-lab-phi.vercel.app/calculators/pension-savings.html</loc><priority>0.9</priority></url>
   <url><loc>https://pension-lab-phi.vercel.app/calculators/personal-pension.html</loc><priority>0.9</priority></url>
   <url><loc>https://pension-lab-phi.vercel.app/simulation.html</loc><priority>0.9</priority></url>
+  <url><loc>https://pension-lab-phi.vercel.app/calculators/retirement-dashboard.html</loc><priority>0.85</priority></url>
   <url><loc>https://pension-lab-phi.vercel.app/guide/index.html</loc><priority>0.8</priority></url>
   <url><loc>https://pension-lab-phi.vercel.app/guide/national-pension-guide.html</loc><priority>0.7</priority></url>
   <url><loc>https://pension-lab-phi.vercel.app/guide/civil-servant-pension-guide.html</loc><priority>0.7</priority></url>

@@ -216,6 +216,71 @@ function calcMonthlyPayout(futureValue, payoutYears, payoutReturnPercent) {
   return futureValue * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months));
 }
 
+// calcMonthlyPayout의 역함수: 매월 monthlyPayout을 payoutYears 동안 받으려면 은퇴 시점에 필요한 목돈(FV)
+function requiredLumpSumForPayout(monthlyPayout, payoutYears, payoutReturnPercent) {
+  var months = payoutYears * 12;
+  if (months <= 0 || monthlyPayout <= 0) return 0;
+  var monthlyRate = (payoutReturnPercent / 100) / 12;
+  if (Math.abs(monthlyRate) < 1e-9) return monthlyPayout * months;
+  return monthlyPayout * (1 - Math.pow(1 + monthlyRate, -months)) / monthlyRate;
+}
+
+// calcInvestmentAccumulation의 역함수: 목표 목돈(targetFV)을 accumulationYears 동안 매년 얼마씩
+// 적립해야 하는지 (연 수익률 accumulationReturnPercent, 초기 잔액 0 가정)
+function requiredAnnualContribution(targetFV, accumulationYears, accumulationReturnPercent) {
+  if (accumulationYears <= 0 || targetFV <= 0) return 0;
+  var rate = accumulationReturnPercent / 100;
+  if (Math.abs(rate) < 1e-9) return targetFV / accumulationYears;
+  return targetFV / ((Math.pow(1 + rate, accumulationYears) - 1) / rate);
+}
+
+/* -------------------------------------------------------------------------
+   노후설계 대시보드
+   통합 시뮬레이션이 "여러 연금을 더하면 총 얼마"까지만 계산한다면, 이 갭
+   분석은 그 합계가 지금 소득 대비 충분한지, 부족하면 은퇴 전까지 매달
+   얼마를 더 모아야 하는지까지 계산합니다.
+   적정 노후생활비 벤치마크(1인 192만원 / 부부 296만원)는 국민연금연구원
+   조사 기준으로, 조사 시점에 따라 달라질 수 있는 참고치입니다.
+   ------------------------------------------------------------------------- */
+var ADEQUATE_LIVING_COST_SINGLE = 1920000;
+var ADEQUATE_LIVING_COST_COUPLE = 2960000;
+
+function calcRetirementGap(input) {
+  var currentAnnualGross = input.currentAnnualGrossManwon * 10000;
+  var projectedMonthly = input.projectedMonthlyManwon * 10000;
+  var accumulationYears = input.accumulationYears || 0;
+  var accumulationReturnPercent = input.accumulationReturnPercent || 0;
+  var payoutYears = input.payoutYears || 20;
+  var payoutReturnPercent = input.payoutReturnPercent || 0;
+  var household = input.household === "couple" ? "couple" : "single";
+
+  if (currentAnnualGross <= 0 || !(projectedMonthly >= 0)) {
+    return { error: "현재 연봉과 예상 은퇴 후 월 수령액을 올바르게 입력해 주세요." };
+  }
+
+  var currentNet = calcTakeHomePay(currentAnnualGross / 12, input.pensionType).net;
+  var replacementRatio = currentNet > 0 ? (projectedMonthly / currentNet) * 100 : 0;
+
+  var livingCostBenchmark = household === "couple" ? ADEQUATE_LIVING_COST_COUPLE : ADEQUATE_LIVING_COST_SINGLE;
+  var gapVsBenchmark = livingCostBenchmark - projectedMonthly; // 양수면 부족
+
+  var requiredMonthlySavings = 0;
+  if (gapVsBenchmark > 0 && accumulationYears > 0) {
+    var neededLumpSum = requiredLumpSumForPayout(gapVsBenchmark, payoutYears, payoutReturnPercent);
+    requiredMonthlySavings = requiredAnnualContribution(neededLumpSum, accumulationYears, accumulationReturnPercent) / 12;
+  }
+
+  return {
+    currentNet: currentNet,
+    projectedMonthly: projectedMonthly,
+    replacementRatio: replacementRatio,
+    household: household,
+    livingCostBenchmark: livingCostBenchmark,
+    gapVsBenchmark: gapVsBenchmark,
+    requiredMonthlySavings: requiredMonthlySavings
+  };
+}
+
 /* -------------------------------------------------------------------------
    세금 계산 (참고용 근사치)
    국세청 고시 세율표(2023.1.1 이후 근속연수공제/환산급여공제, 종합소득세
