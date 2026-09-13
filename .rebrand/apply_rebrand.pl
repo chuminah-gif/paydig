@@ -57,7 +57,7 @@ my $HEADER_TMPL = <<'HEADER';
       <div class="nav-item">
         <a href="#" class="dropdown-toggle">노후설계 <span class="caret">▾</span></a>
         <div class="dropdown-menu">
-          <a href="__ROOT__simulation.html">통합 시뮬레이션</a>
+          <a href="__ROOT__simulation.html">연금 통합 시뮬레이션</a>
           <a href="__CALC__retirement-dashboard.html">노후설계 대시보드</a>
         </div>
       </div>
@@ -85,7 +85,7 @@ my $FOOTER_TMPL = <<'FOOTER';
           <li><a href="__CALC__salary-net.html">연봉 실수령액 계산기</a></li>
           <li><a href="__CALC__four-insurance.html">4대보험 통합 계산기</a></li>
           <li><a href="__CALC__year-end-tax.html">연말정산 예상세액 계산기</a></li>
-          <li><a href="__ROOT__simulation.html">통합 시뮬레이션</a></li>
+          <li><a href="__ROOT__simulation.html">연금 통합 시뮬레이션</a></li>
         </ul>
       </div>
       <div>
