@@ -826,7 +826,8 @@ function calcParentalLeavePay(input) {
   var total = 0;
   for (var m = 1; m <= months; m++) {
     var pay = parentalLeaveMonthlyPay(monthlyWageWon, m);
-    rows.push({ month: m, pay: pay });
+    var tier = m <= 3 ? "통상임금 100%, 상한 250만원" : m <= 6 ? "통상임금 100%, 상한 200만원" : "통상임금 80%, 상한 160만원";
+    rows.push({ month: m, pay: pay, tier: tier });
     total += pay;
   }
   return { rows: rows, total: total, months: months };
@@ -870,7 +871,14 @@ function calcWorkInjuryLeaveBenefit(input) {
   var basic = avgDailyWage * 0.7;
   var guaranteed = Math.min(avgDailyWage * 0.9, MINIMUM_WAGE_DAILY_2026);
   var dailyBenefit = Math.max(basic, guaranteed);
-  return { avgDailyWage: avgDailyWage, dailyBenefit: dailyBenefit, leaveDays: leaveDays, total: dailyBenefit * leaveDays };
+  return {
+    avgDailyWage: avgDailyWage,
+    avgDailyWageFormula: formatWon(last3MonthsWage) + " ÷ 91일",
+    dailyBenefit: dailyBenefit,
+    dailyBenefitFormula: dailyBenefit === basic ? formatWon(avgDailyWage) + " × 70%" : "저소득 특례: min(" + formatWon(avgDailyWage) + " × 90%, 최저임금 일급)",
+    leaveDays: leaveDays,
+    total: dailyBenefit * leaveDays
+  };
 }
 
 /* -------------------------------------------------------------------------

@@ -219,9 +219,9 @@ function runUnemploymentCalc() {
   html += '</div>';
 
   html += '<table class="result-table">';
-  html += '<tr><th>구직급여일액</th><td>' + formatWon(result.dailyBenefit) + '</td></tr>';
-  html += '<tr><th>소정급여일수</th><td>' + result.days + '일</td></tr>';
-  html += '<tr><th>예상 총 수급액</th><td><strong>' + formatWon(result.total) + '</strong></td></tr>';
+  html += '<tr><th>구직급여일액</th><td>' + formatWon(result.dailyBenefit) + '<div class="table-formula">(평균월급여 ÷ 30일) × 60%, 상한 ' + UNEMPLOYMENT_DAILY_CAP_2026.toLocaleString("ko-KR") + '원</div></td></tr>';
+  html += '<tr><th>소정급여일수</th><td>' + result.days + '일<div class="table-formula">가입기간 ' + insuredYears + '년 · 연령 ' + age + '세 기준 법정 표</div></td></tr>';
+  html += '<tr><th>예상 총 수급액</th><td><strong>' + formatWon(result.total) + '</strong><div class="table-formula">' + formatWon(result.dailyBenefit) + ' × ' + result.days + '일</div></td></tr>';
   html += '</table>';
 
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>비자발적 이직으로 수급 자격이 있다고 가정한 참고용 추정치이며, 상한액은 근사치를 적용했습니다. 정확한 금액과 수급 자격은 고용센터·고용보험 홈페이지를 통해 확인하세요.</span></div>';

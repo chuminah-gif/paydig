@@ -210,7 +210,7 @@ function runParentalLeaveCalc() {
 
   html += '<div class="table-scroll-wrap"><table class="result-table">';
   result.rows.forEach(function (row) {
-    html += '<tr><th>' + row.month + '개월차</th><td>' + formatWon(row.pay) + '</td></tr>';
+    html += '<tr><th>' + row.month + '개월차</th><td>' + formatWon(row.pay) + '<div class="table-formula">' + row.tier + '</div></td></tr>';
   });
   html += '<tr><th>합계</th><td><strong>' + formatWon(result.total) + '</strong></td></tr>';
   html += '</table></div>';

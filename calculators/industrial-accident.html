@@ -263,9 +263,9 @@ function runLeaveCalc() {
   html += '<div class="amount-yearly">요양(휴업) ' + result.leaveDays + '일 기준</div>';
   html += '</div>';
   html += '<table class="result-table">';
-  html += '<tr><th>1일 평균임금</th><td>' + formatWon(result.avgDailyWage) + '</td></tr>';
-  html += '<tr><th>1일 휴업급여</th><td>' + formatWon(result.dailyBenefit) + '</td></tr>';
-  html += '<tr><th>예상 총액</th><td><strong>' + formatWon(result.total) + '</strong></td></tr>';
+  html += '<tr><th>1일 평균임금</th><td>' + formatWon(result.avgDailyWage) + '<div class="table-formula">' + result.avgDailyWageFormula + '</div></td></tr>';
+  html += '<tr><th>1일 휴업급여</th><td>' + formatWon(result.dailyBenefit) + '<div class="table-formula">' + result.dailyBenefitFormula + '</div></td></tr>';
+  html += '<tr><th>예상 총액</th><td><strong>' + formatWon(result.total) + '</strong><div class="table-formula">' + formatWon(result.dailyBenefit) + ' × ' + result.leaveDays + '일</div></td></tr>';
   html += '</table>';
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>평균임금은 3개월을 91일로 근사한 참고용 추정치입니다. 요양급여(치료비)는 실비 지급 항목이라 이 계산에는 포함되어 있지 않습니다.</span></div>';
   document.getElementById("resultCard").innerHTML = html;
