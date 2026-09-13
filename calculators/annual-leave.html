@@ -219,11 +219,11 @@ function runAnnualLeaveCalc() {
   html += '</div>';
 
   html += '<table class="result-table">';
-  html += '<tr><th>연차 발생일수</th><td>' + result.totalDays + '일</td></tr>';
+  html += '<tr><th>연차 발생일수</th><td>' + result.totalDays + '일<div class="table-formula">' + (serviceYears < 1 ? "근속 " + serviceYears + "년 × 12개월(최대 11일)" : "기본 15일 + 2년마다 1일 가산(최대 25일)") + '</div></td></tr>';
   html += '<tr><th>사용한 연차</th><td>' + result.usedDays + '일</td></tr>';
-  html += '<tr><th>미사용 연차</th><td>' + result.unusedDays + '일</td></tr>';
-  html += '<tr><th>1일 통상임금(근사)</th><td>' + formatWon(result.dailyOrdinaryWage) + '</td></tr>';
-  html += '<tr><th>미사용 연차수당</th><td><strong>' + formatWon(result.allowance) + '</strong></td></tr>';
+  html += '<tr><th>미사용 연차</th><td>' + result.unusedDays + '일<div class="table-formula">' + result.totalDays + '일 − ' + result.usedDays + '일</div></td></tr>';
+  html += '<tr><th>1일 통상임금(근사)</th><td>' + formatWon(result.dailyOrdinaryWage) + '<div class="table-formula">월급 ÷ 209시간 × 8시간</div></td></tr>';
+  html += '<tr><th>미사용 연차수당</th><td><strong>' + formatWon(result.allowance) + '</strong><div class="table-formula">' + formatWon(result.dailyOrdinaryWage) + ' × ' + result.unusedDays + '일</div></td></tr>';
   html += '</table>';
 
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>통상임금은 월급 ÷ 209시간 × 8시간으로 근사한 참고용 추정치이며, 회사의 통상임금 산정 기준에 따라 실제와 차이가 있을 수 있습니다.</span></div>';

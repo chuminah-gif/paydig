@@ -228,8 +228,8 @@ function runFreelancerCalc() {
 
   html += '<table class="result-table">';
   html += '<tr><th>세전 계약금액</th><td>' + formatWon(result.gross) + '</td></tr>';
-  html += '<tr><th>소득세 (3%)</th><td>-' + formatWon(result.incomeTax) + '</td></tr>';
-  html += '<tr><th>지방소득세 (0.3%)</th><td>-' + formatWon(result.localTax) + '</td></tr>';
+  html += '<tr><th>소득세 (3%)</th><td>-' + formatWon(result.incomeTax) + '<div class="table-formula">' + formatWon(result.gross) + ' × 3%</div></td></tr>';
+  html += '<tr><th>지방소득세 (0.3%)</th><td>-' + formatWon(result.localTax) + '<div class="table-formula">' + formatWon(result.gross) + ' × 0.3%</div></td></tr>';
   html += '<tr><th>실수령액</th><td><strong>' + formatWon(result.net) + '</strong></td></tr>';
   html += '</table>';
 

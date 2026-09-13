@@ -213,8 +213,8 @@ function runWeeklyHolidayCalc() {
 
   html += '<table class="result-table">';
   html += '<tr><th>시급</th><td>' + result.hourly.toLocaleString("ko-KR") + '원</td></tr>';
-  html += '<tr><th>주휴시간</th><td>' + result.holidayHours.toFixed(1) + '시간</td></tr>';
-  html += '<tr><th>주휴수당</th><td><strong>' + formatWon(result.holidayPay) + '</strong></td></tr>';
+  html += '<tr><th>주휴시간</th><td>' + result.holidayHours.toFixed(1) + '시간<div class="table-formula">min(' + weeklyHours + '시간, 40시간) ÷ 5</div></td></tr>';
+  html += '<tr><th>주휴수당</th><td><strong>' + formatWon(result.holidayPay) + '</strong><div class="table-formula">' + result.hourly.toLocaleString("ko-KR") + '원 × ' + result.holidayHours.toFixed(1) + '시간</div></td></tr>';
   html += '</table>';
 
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>소정근로일 개근을 전제로 계산된 참고용 추정치입니다.</span></div>';
