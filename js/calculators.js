@@ -354,14 +354,15 @@ function showError(panelId, message) {
 
 /* -------------------------------------------------------------------------
    4대보험 · 실수령액 · 최저시급 · 실업급여 (페이딕 확장분)
-   요율은 2026년 기준(국민연금 9.5%/장기요양 0.9448%/건강보험 7.19%/
-   고용보험 1.8%, 각 근로자 부담분)이며, 매년 고시되는 값이므로 실제
-   급여명세서와 차이가 있을 수 있는 참고용 추정치입니다.
+   요율은 2026년 기준(국민연금 9.5%/건강보험 7.19%/장기요양보험은
+   건강보험료의 13.14%/고용보험 1.8%, 각 총액 기준 — 근로자는 절반
+   부담)이며, 매년 고시되는 값이므로 실제 급여명세서와 차이가 있을 수
+   있는 참고용 추정치입니다.
    ------------------------------------------------------------------------- */
 
 var RATE_NATIONAL_PENSION = 0.0475;      // 국민연금 (근로자 부담분, 2026)
 var RATE_HEALTH_INSURANCE = 0.03595;     // 건강보험 (근로자 부담분, 2026)
-var RATE_LONG_TERM_CARE = 0.009448;      // 장기요양보험 (보수월액 대비, 2026)
+var RATE_LONG_TERM_CARE_OF_PREMIUM = 0.1314; // 장기요양보험료율(2026) — 급여가 아닌 "건강보험료(본인부담분)"에 곱하는 비율
 var RATE_EMPLOYMENT_INSURANCE = 0.009;   // 고용보험 실업급여 (근로자 부담분, 2026)
 var MINIMUM_WAGE_2026 = 10320;           // 2026년 최저시급(원)
 var UNEMPLOYMENT_DAILY_CAP_2026 = 66000; // 구직급여 상한액(참고치, 고용노동부 매년 고시)
@@ -381,7 +382,7 @@ function calcInsuranceBreakdown(monthlyGrossWon, pensionType) {
   var plan = PENSION_TYPES[pensionType] || PENSION_TYPES.national;
   var np = m * plan.rate;
   var hi = m * RATE_HEALTH_INSURANCE;
-  var ltc = m * RATE_LONG_TERM_CARE;
+  var ltc = hi * RATE_LONG_TERM_CARE_OF_PREMIUM; // 급여가 아니라 건강보험료(본인부담분)에 곱함
   var ei = plan.employmentInsurance ? m * RATE_EMPLOYMENT_INSURANCE : 0;
   return {
     pensionType: pensionType,
