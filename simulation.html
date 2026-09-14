@@ -25,7 +25,7 @@
   .summary-box { background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)); color: #fff; border-radius: var(--radius-md); padding: 20px; }
   .summary-box .label { font-size: 0.82rem; color: #cfe3f1; margin-bottom: 6px; }
   .summary-box .amount { font-size: 1.5rem; font-weight: 800; }
-</style>
+</style>
 <link rel="canonical" href="https://pension-lab-phi.vercel.app/simulation.html" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="페이딕" />
@@ -156,6 +156,15 @@
           <span class="tag">공적연금</span>
         </div>
         <div class="sim-section-body">
+          <div class="field">
+            <label for="occ-type">직역연금 종류</label>
+            <select id="occ-type">
+              <option value="civilServant">공무원연금</option>
+              <option value="privateSchool">사학연금</option>
+              <option value="military">군인연금</option>
+            </select>
+            <div class="hint">군인연금은 최소 복무기간이 20년(240개월)으로 공무원연금·사학연금(10년)보다 깁니다.</div>
+          </div>
           <div class="field">
             <label>재직기간</label>
             <div class="field-row">
@@ -396,6 +405,7 @@ function runSimulation() {
   var totalMonthlyAfterTax = 0;
   var totalLumpSum = 0;
   var errors = [];
+  var warnings = [];
 
   if (document.getElementById("chk-national").checked) {
     var r = calcNationalPension({
@@ -414,19 +424,25 @@ function runSimulation() {
   }
 
   if (document.getElementById("chk-occ").checked) {
+    var occType = document.getElementById("occ-type").value;
+    var occTypeLabel = occType === "military" ? "군인연금" : occType === "privateSchool" ? "사학연금" : "공무원연금";
     var r2 = calcOccupationalPension({
       years: getNumberValue("occ-years"),
       months: getNumberValue("occ-months"),
       avgIncomeManwon: getNumberValue("occ-income"),
       retireYear: getNumberValue("occ-retireYear")
     });
-    if (r2.error) { errors.push("직역연금: " + r2.error); }
+    if (r2.error) { errors.push(occTypeLabel + ": " + r2.error); }
     else {
+      var occMinMonths = occType === "military" ? 240 : 120;
+      if (r2.totalMonths < occMinMonths) {
+        warnings.push(occTypeLabel + "은 최소 재직(복무)기간 " + (occMinMonths / 12) + "년(" + occMinMonths + "개월)을 채워야 연금으로 받을 수 있습니다. 입력하신 기간은 이에 미달해 실제로는 일시금으로 지급될 수 있으나, 참고용으로 월 환산액을 계속 표시합니다.");
+      }
       var occTax = calcPublicPensionTax(r2.monthly * 12);
       var occAfter = clampNonNegative(r2.monthly - occTax.monthlyTax);
       totalMonthlyPreTax += r2.monthly;
       totalMonthlyAfterTax += occAfter;
-      rows.push({ name: "직역연금(공무원/군인/사학)", type: "평생 매월", amount: r2.monthly, afterTax: occAfter, taxNote: occTax.formula });
+      rows.push({ name: occTypeLabel, type: "평생 매월", amount: r2.monthly, afterTax: occAfter, taxNote: occTax.formula });
     }
   }
 
@@ -545,6 +561,9 @@ function runSimulation() {
 
   if (errors.length) {
     html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">⚠</span><span>일부 항목은 입력값이 부족해 계산에서 제외되었습니다: ' + errors.join(" / ") + '</span></div>';
+  }
+  if (warnings.length) {
+    html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">⚠</span><span>' + warnings.join(" / ") + '</span></div>';
   }
 
   html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">ℹ</span><span>공적연금(국민연금·직역연금)은 평생 지급되지만, 퇴직연금·개인연금은 설정하신 ' + payoutYears + '년 동안만 지급된다고 가정한 값입니다. 세후 금액은 각 연금별 세제(공적연금소득세·퇴직소득세·사적연금소득세·이자소득세 등)를 항목별로 근사 적용한 참고용 추정치이며, 다른 소득이 있거나 개별 상황이 다르면 실제 세액과 차이가 클 수 있습니다. 정확한 세액은 국세청 홈택스 또는 세무사를 통해 확인하세요.</span></div>';

@@ -106,6 +106,16 @@
           <input type="number" id="totalGross" placeholder="예: 4500" min="0" />
         </div>
         <div class="field">
+          <label for="pensionType">가입 연금 종류</label>
+          <select id="pensionType">
+            <option value="national">국민연금 (일반 근로자)</option>
+            <option value="civilServant">공무원연금</option>
+            <option value="privateSchool">사학연금</option>
+            <option value="military">군인연금</option>
+          </select>
+          <div class="hint">4대보험료 소득공제 계산에 반영됩니다. 공무원·사학·군인연금 가입자는 국민연금 대신 각자의 직역연금 기여율이 적용되고, 고용보험 대상에서도 제외됩니다.</div>
+        </div>
+        <div class="field">
           <label for="dependents">부양가족 수 (본인 제외)</label>
           <input type="number" id="dependents" placeholder="예: 1" min="0" value="0" />
         </div>
@@ -315,6 +325,7 @@
 function runYearEndTaxCalc() {
   var result = calcYearEndTax({
     totalGrossManwon: getNumberValue("totalGross"),
+    pensionType: document.getElementById("pensionType").value,
     dependents: getNumberValue("dependents"),
     childCount: getNumberValue("childCount"),
     creditCardManwon: getNumberValue("creditCard"),

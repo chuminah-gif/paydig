@@ -1005,6 +1005,7 @@ function calcYearEndTax(input) {
   var totalGross = input.totalGrossManwon * 10000;
   var dependents = input.dependents || 0;
   var childCount = input.childCount || 0;
+  var pensionType = input.pensionType || "national";
   var pensionContribution = (input.pensionContributionManwon || 0) * 10000;
   var withheldTax = (input.withheldTaxManwon || 0) * 10000;
 
@@ -1024,9 +1025,9 @@ function calcYearEndTax(input) {
   var personalDeduction = (1 + dependents) * 1500000;
   f.personalDeduction = "(본인 포함 " + (1 + dependents) + "명) × 150만원";
 
-  var monthlyInsurance = calcInsuranceBreakdown(totalGross / 12, "national");
+  var monthlyInsurance = calcInsuranceBreakdown(totalGross / 12, pensionType);
   var insuranceAnnual = monthlyInsurance.total * 12;
-  f.insuranceAnnual = "월 4대보험료 " + formatWon(monthlyInsurance.total) + " × 12개월";
+  f.insuranceAnnual = "월 4대보험료(" + monthlyInsurance.pensionLabel + ") " + formatWon(monthlyInsurance.total) + " × 12개월";
 
   var cardInput = {
     creditCardWon: (input.creditCardManwon || 0) * 10000,
