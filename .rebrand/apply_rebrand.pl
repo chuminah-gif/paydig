@@ -14,7 +14,7 @@ my $HEADER_TMPL = <<'HEADER';
         <a href="#" class="dropdown-toggle">실수령액 <span class="caret">▾</span></a>
         <div class="dropdown-menu">
           <a href="__CALC__salary-net.html">연봉 실수령액·역산</a>
-          <a href="__CALC__freelancer-tax.html">프리랜서 3.3% 세금</a>
+          <a href="__CALC__freelancer-tax.html">프리랜서 원천징수</a>
         </div>
       </div>
       <div class="nav-item">

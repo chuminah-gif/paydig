@@ -737,25 +737,39 @@ function calcSeverancePay(input) {
 }
 
 /* -------------------------------------------------------------------------
-   프리랜서(사업소득) 3.3% 원천징수 계산기
-   소득세 3% + 지방소득세 0.3% = 총 3.3%를 지급자가 원천징수 후 나머지를 지급합니다.
-   실제 세부담은 다음 해 5월 종합소득세 신고 때 확정되며, 3.3%는 예납 성격입니다.
+   프리랜서 원천징수 계산기 — 사업소득(3.3%) / 기타소득(8.8%) 두 종류
+   - 사업소득: 계속적·반복적으로 용역을 제공할 때. 소득세 3%+지방소득세 0.3%=3.3%를 원천징수.
+   - 기타소득: 일시적·우발적 인적용역(단발성 강연료·원고료 등). 필요경비 60%를 의제 공제한
+     나머지(40%)에 소득세 20%+지방소득세 2%(소득세의 10%)=22%를 매겨, 총액 기준으로는
+     40% × 22% = 8.8%를 원천징수.
+   두 경우 모두 원천징수는 예납 성격이며, 실제 세부담은 다음 해 5월 종합소득세 신고 때 확정됩니다.
    ------------------------------------------------------------------------- */
 var FREELANCER_WITHHOLDING_RATE = 0.033;
+var OTHER_INCOME_NECESSARY_EXPENSE_RATE = 0.6;
+var OTHER_INCOME_TAX_RATE = 0.2;
+var OTHER_INCOME_LOCAL_TAX_RATE = 0.02;
+var OTHER_INCOME_WITHHOLDING_RATE = (1 - OTHER_INCOME_NECESSARY_EXPENSE_RATE) * (OTHER_INCOME_TAX_RATE + OTHER_INCOME_LOCAL_TAX_RATE);
 
-function calcFreelancerTax(grossWon) {
+function calcFreelancerTax(grossWon, incomeType) {
   var g = clampNonNegative(grossWon);
   if (g <= 0) return { error: "용역대가(계약금액)를 올바르게 입력해 주세요." };
+  if (incomeType === "other") {
+    var taxBase = g * (1 - OTHER_INCOME_NECESSARY_EXPENSE_RATE);
+    var incomeTaxOther = taxBase * OTHER_INCOME_TAX_RATE;
+    var localTaxOther = taxBase * OTHER_INCOME_LOCAL_TAX_RATE;
+    return { gross: g, incomeType: "other", taxBase: taxBase, incomeTax: incomeTaxOther, localTax: localTaxOther, withheld: incomeTaxOther + localTaxOther, net: g - incomeTaxOther - localTaxOther };
+  }
   var incomeTax = g * 0.03;
   var localTax = g * 0.003;
-  return { gross: g, incomeTax: incomeTax, localTax: localTax, withheld: incomeTax + localTax, net: g - incomeTax - localTax };
+  return { gross: g, incomeType: "business", incomeTax: incomeTax, localTax: localTax, withheld: incomeTax + localTax, net: g - incomeTax - localTax };
 }
 
-function solveFreelancerGrossFromNet(targetNetWon) {
+function solveFreelancerGrossFromNet(targetNetWon, incomeType) {
   var target = clampNonNegative(targetNetWon);
   if (target <= 0) return { error: "원하는 실수령액을 올바르게 입력해 주세요." };
-  var gross = target / (1 - FREELANCER_WITHHOLDING_RATE);
-  return calcFreelancerTax(gross);
+  var rate = incomeType === "other" ? OTHER_INCOME_WITHHOLDING_RATE : FREELANCER_WITHHOLDING_RATE;
+  var gross = target / (1 - rate);
+  return calcFreelancerTax(gross, incomeType);
 }
 
 /* -------------------------------------------------------------------------
