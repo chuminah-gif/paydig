@@ -444,7 +444,7 @@ function showError(panelId, message) {
   var panel = document.getElementById(panelId);
   panel.innerHTML =
     '<div class="error-box">⚠ ' + message + "</div>" +
-    '<div class="result-empty"><div class="icon">🧮</div><p>입력값을 확인한 뒤 다시 계산해 주세요.</p></div>';
+    '<div class="result-empty"><p>입력값을 확인한 뒤 다시 계산해 주세요.</p></div>';
 }
 
 /* -------------------------------------------------------------------------
