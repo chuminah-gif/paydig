@@ -239,7 +239,7 @@
         <ul>
           <li><a href="../about.html">사이트 소개</a></li>
           <li><a href="../news/index.html">소식</a></li>
-          <li><a href="../guide/index.html">연금 가이드</a></li>
+          <li><a href="../guide/index.html">급여·연금 가이드</a></li>
           <li><a href="../contact.html">문의하기</a></li>
           <li><a href="../privacy.html">개인정보처리방침</a></li>
           <li><a href="../terms.html">이용약관</a></li>
@@ -293,7 +293,7 @@ function runRetirementGapCalc() {
   html += '<div class="amount">' + result.replacementRatio.toFixed(1) + '%</div>';
   html += '<div class="amount-yearly">현재 월 실수령액 ' + formatWon(result.currentNet) + ' 대비 은퇴 후 ' + formatWon(result.projectedMonthly) + '</div>';
   html += '</div>';
-  html += '<div style="font-size:0.82rem; color:var(--color-text-faint); margin-top:10px; line-height:1.5;">💡 소득대체율이란? 은퇴 후 받는 돈이 지금 버는 돈(월 실수령액) 대비 몇 %인지 보여주는 지표입니다. 100%면 지금과 같은 생활 수준, 50%면 지금의 절반 수준으로 산다고 보면 됩니다.</div>';
+  html += '<div style="font-size:0.82rem; color:var(--color-text-faint); margin-top:10px; line-height:1.5;">💡 소득대체율 = 지금 버는 돈 대비 은퇴 후 받는 돈의 비율. 자세한 뜻은 아래 "소득대체율과 적정 노후생활비" 설명을 참고하세요.</div>';
 
   html += '<table class="result-table" style="margin-top:14px;">';
   html += '<tr><th>현재 월 실수령액</th><td>' + formatWon(result.currentNet) + '</td></tr>';
