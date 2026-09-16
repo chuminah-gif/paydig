@@ -93,7 +93,7 @@ my $FOOTER_TMPL = <<'FOOTER';
         <ul>
           <li><a href="__ROOT__about.html">사이트 소개</a></li>
           <li><a href="__ROOT__news/index.html">소식</a></li>
-          <li><a href="__ROOT__guide/index.html">연금 가이드</a></li>
+          <li><a href="__ROOT__guide/index.html">급여·연금 가이드</a></li>
           <li><a href="__ROOT__contact.html">문의하기</a></li>
           <li><a href="__ROOT__privacy.html">개인정보처리방침</a></li>
           <li><a href="__ROOT__terms.html">이용약관</a></li>
