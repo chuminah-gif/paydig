@@ -149,12 +149,6 @@
       </div>
 
       <div class="field">
-        <label for="inflationPercent">은퇴 시점까지 예상 물가상승률 (연, %)</label>
-        <input type="number" id="inflationPercent" value="2" step="0.1" min="0" />
-        <div class="hint">노후 적정생활비(오늘 기준 금액)를 은퇴 시점의 물가로 환산할 때 쓰는 값입니다. 은퇴가 많이 남을수록 실제 필요 금액이 커지는 걸 반영합니다. 한국은행 물가안정목표(연 2%)를 기본값으로 넣어뒀습니다.</div>
-      </div>
-
-      <div class="field">
         <label for="payoutYears">모은 돈을 나눠 받을 기간 (년)</label>
         <input type="number" id="payoutYears" value="20" min="1" max="40" />
         <div class="hint">부족분을 채우려고 추가로 모은 목돈을, 은퇴 후 몇 년에 걸쳐 매달 나눠 쓸지 정하는 기간입니다. 예를 들어 20년으로 설정하면 "은퇴 후 20년 동안 매달 부족액만큼 받는다"고 가정해 지금 모아야 할 금액을 역산합니다.</div>
@@ -179,37 +173,40 @@
     <div class="card prose">
       <h2>소득대체율과 적정 노후생활비, 먼저 짚고 갈게요</h2>
       <p><strong>소득대체율</strong>은 은퇴 후 받는 돈이 은퇴 전 소득의 몇 %인지를 나타내는 지표입니다. 100%면 지금과 똑같은 생활 수준, 50%면 지금의 절반 수준으로 산다는 뜻입니다. 국민연금만 40년 가입했을 때의 이론상 소득대체율은 2026년 기준 43%(2025년 41.5%에서 인상)이지만, 실제로는 평균 가입기간이 40년에 훨씬 못 미쳐 개인이 체감하는 대체율은 이보다 낮은 경우가 많습니다.</p>
-      <p>국민연금연구원 조사에 따르면 노후 적정생활비는 <strong>1인 가구 월 192만원, 부부 가구 월 296만원</strong> 수준으로 조사된 바 있습니다(오늘 기준 금액이며, 조사 시점에 따라 달라질 수 있는 참고치입니다). 은퇴가 수십 년 남았다면 그때 가서 실제로 필요한 금액은 물가가 오른 만큼 더 커지므로, 이 계산기는 입력하신 물가상승률로 그 시점의 금액으로 환산해서 비교합니다.</p>
+      <p>국민연금연구원 조사에 따르면 노후 적정생활비는 <strong>1인 가구 월 192만원, 부부 가구 월 296만원</strong> 수준으로 조사된 바 있습니다(오늘 기준 금액이며, 조사 시점에 따라 달라질 수 있는 참고치입니다).</p>
       <div class="info-callout">
         이 대시보드는 연금 통합 시뮬레이션에서 계산한 "예상 은퇴 후 총 월 수령액"을 입력받아 지금 소득과 비교하는 도구입니다. 은퇴 후 수령액 자체를 아직 계산하지 않았다면 <a href="../simulation.html">연금 통합 시뮬레이션</a>을 먼저 이용해 주세요.
       </div>
 
+      <h2>물가상승률은 왜 따로 안 곱하나요?</h2>
+      <p>"몇십 년 뒤 물가를 반영 안 하면 필요 금액을 너무 적게 잡는 거 아닌가?" 싶을 수 있는데, <strong>국민연금·직역연금은 수급 개시 후 매년 전년도 소비자물가상승률만큼 연금액이 법적으로 자동 인상</strong>됩니다. 그래서 오늘 계산기로 뽑은 예상 수령액은 "은퇴 시점의 명목 금액"이 아니라 이미 "오늘 화폐가치 기준 실질 구매력"에 가깝습니다. 노후 적정생활비도 오늘 기준 금액이므로, 이 둘을 그대로 비교하면 됩니다 — 물가상승률을 따로 곱하면 오히려 한쪽만 부풀려서 부족액을 실제보다 크게 보이게 만드는 오류가 생깁니다.</p>
+      <div class="mistake-callout">
+        <h3>⚠ 헷갈리기 쉬운 부분</h3>
+        <ul>
+          <li><strong>연금도 물가 반영 안 하면 미래엔 턱없이 부족한 거 아닌가?</strong> 국민연금·직역연금만 놓고 보면 아닙니다. 매년 자동으로 물가만큼 올라서 실질 가치가 유지되도록 설계돼 있습니다. 다만 <strong>퇴직연금·개인연금은 이런 자동 인상 장치가 없어</strong>, 예상 수령액에서 이 비중이 크다면 시간이 지날수록 실질 구매력이 조금씩 줄어들 수 있습니다 — 이 계산기는 그 세부 구성까지는 구분하지 않습니다.</li>
+          <li><strong>소득대체율 40%대면 절반 가까이 되니 괜찮다?</strong> 소득대체율은 "지금 버는 돈 대비 비율"일 뿐, 노후 적정생활비 기준과는 다른 잣대입니다. 소득대체율이 44%여도 적정생활비 기준으로는 매달 수십만원이 부족할 수 있습니다.</li>
+          <li><strong>이미 모아둔 돈은 계산에 안 넣어도 된다?</strong> 아닙니다. 이미 모아둔 목돈도 은퇴 시점까지 계속 불어나기 때문에, 넣지 않으면 필요한 월 저축액이 실제보다 크게 나옵니다. "현재까지 모아둔 노후자산" 칸에 꼭 입력하세요.</li>
+        </ul>
+      </div>
+
       <h2>조건에 따라 필요 저축액이 이렇게 달라집니다</h2>
-      <p>연봉 5,000만원, 1인 가구, 은퇴까지 20년, 물가상승률 연 2%를 기준으로 조건별 결과를 실제로 계산해 봤습니다.</p>
+      <p>연봉 5,000만원, 1인 가구, 은퇴까지 20년을 기준으로 조건별 결과를 실제로 계산해 봤습니다.</p>
       <div class="case-grid">
         <div class="case-card">
           <div class="case-title">월 수령액 150만원 · 기존 자산 없음</div>
           <div class="case-row"><span>소득대체율</span><span>44.4%</span></div>
-          <div class="case-row highlight"><span>필요 월 추가저축</span><span>1,007,071원</span></div>
+          <div class="case-row highlight"><span>필요 월 추가저축</span><span>312,612원</span></div>
         </div>
         <div class="case-card">
           <div class="case-title">월 수령액 150만원 · 기존 자산 3,000만원</div>
           <div class="case-row"><span>소득대체율</span><span>44.4%</span></div>
-          <div class="case-row highlight"><span>필요 월 추가저축</span><span>839,032원</span></div>
+          <div class="case-row highlight"><span>필요 월 추가저축</span><span>144,573원</span></div>
         </div>
         <div class="case-card">
           <div class="case-title">월 수령액 200만원 · 기존 자산 없음</div>
           <div class="case-row"><span>소득대체율</span><span>59.2%</span></div>
-          <div class="case-row highlight"><span>필요 월 추가저축</span><span>634,914원</span></div>
+          <div class="case-row highlight"><span>필요 월 추가저축</span><span>0원(이미 충족)</span></div>
         </div>
-      </div>
-      <div class="mistake-callout">
-        <h3>⚠ 헷갈리기 쉬운 부분</h3>
-        <ul>
-          <li><strong>소득대체율 40%대면 절반 가까이 되니 괜찮다?</strong> 소득대체율은 "지금 버는 돈 대비 비율"일 뿐, 노후 적정생활비 기준과는 다른 잣대입니다. 위 사례처럼 소득대체율이 44%여도 물가 상승을 반영하면 매달 백만원 넘게 부족할 수 있습니다.</li>
-          <li><strong>물가상승률은 큰 영향이 없을 것이다?</strong> 은퇴가 20년 남았다면 연 2%의 물가상승률만으로도 오늘 기준 192만원이 필요한 생활비가 약 285만원으로 늘어납니다. 물가를 반영하지 않으면 필요 저축액을 꽤 과소평가하게 됩니다.</li>
-          <li><strong>이미 모아둔 돈은 계산에 안 넣어도 된다?</strong> 위 두 번째 사례처럼 기존 자산 3,000만원이 있으면 그 돈도 은퇴 시점까지 계속 불어나기 때문에, 매달 추가로 모아야 할 돈이 그만큼 줄어듭니다. "현재까지 모아둔 노후자산" 칸에 꼭 입력하세요.</li>
-        </ul>
       </div>
 
       <h2>자주 묻는 질문</h2>
@@ -269,7 +266,6 @@ function runRetirementGapCalc() {
   var existingSavings = getNumberValue("existingSavings");
   var accumulationYears = getNumberValue("accumulationYears");
   var accumulationRate = getNumberValue("accumulationRate");
-  var inflationPercent = getNumberValue("inflationPercent");
   var payoutYears = getNumberValue("payoutYears");
 
   var result = calcRetirementGap({
@@ -280,7 +276,6 @@ function runRetirementGapCalc() {
     existingSavingsManwon: existingSavings,
     accumulationYears: accumulationYears,
     accumulationReturnPercent: accumulationRate,
-    inflationPercent: inflationPercent,
     payoutYears: payoutYears
   });
 
@@ -303,14 +298,14 @@ function runRetirementGapCalc() {
   html += '<table class="result-table" style="margin-top:14px;">';
   html += '<tr><th>현재 월 실수령액</th><td>' + formatWon(result.currentNet) + '</td></tr>';
   html += '<tr><th>예상 은퇴 후 월 수령액</th><td>' + formatWon(result.projectedMonthly) + '</td></tr>';
-  html += '<tr><th>노후 적정생활비 (오늘 기준, ' + (result.household === "couple" ? "부부" : "1인") + ' 가구)</th><td>' + formatWon(result.livingCostBenchmarkToday) + '</td></tr>';
-  html += '<tr><th>노후 적정생활비 (은퇴 시점 물가 환산)</th><td>' + formatWon(result.livingCostBenchmark) + '<div class="table-formula">' + formatWon(result.livingCostBenchmarkToday) + ' × (물가상승률 ' + inflationPercent + '%로 ' + accumulationYears + '년 환산)</div></td></tr>';
+  html += '<tr><th>노후 적정생활비 (' + (result.household === "couple" ? "부부" : "1인") + ' 가구 기준)</th><td>' + formatWon(result.livingCostBenchmark) + '</td></tr>';
   html += '</table>';
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>소득대체율 = 은퇴 후 월 수령액 ÷ 현재 월 실수령액 × 100 (' + formatWon(result.projectedMonthly) + ' ÷ ' + formatWon(result.currentNet) + ' × 100 = ' + result.replacementRatio.toFixed(1) + '%)</span></div>';
+  html += '<div style="font-size:0.82rem; color:var(--color-text-faint); margin-top:10px; line-height:1.5;">💡 두 금액 다 물가상승률을 곱하지 않은 값입니다. 국민연금·직역연금은 수급 후 매년 물가상승률만큼 자동으로 올라서, 오늘 계산한 예상 수령액이 은퇴 시점에도 비슷한 실질 구매력을 유지한다고 보고 오늘 기준 적정생활비와 그대로 비교합니다.</div>';
 
   if (result.gapVsBenchmark > 0) {
     html += '<div class="result-headline" style="background:linear-gradient(135deg,#8a2b1f,#c43f32); margin-top:16px;">';
-    html += '<div class="label">적정생활비 대비 부족액 (월, 은퇴 시점 기준)</div>';
+    html += '<div class="label">적정생활비 대비 부족액 (월)</div>';
     html += '<div class="amount">' + formatWon(result.gapVsBenchmark) + '</div>';
     html += '<div class="amount-yearly">' + formatWon(result.livingCostBenchmark) + ' − ' + formatWon(result.projectedMonthly) + '</div>';
     html += '</div>';
@@ -325,7 +320,7 @@ function runRetirementGapCalc() {
       html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>필요 목돈에서 기존 자산의 은퇴 시점 예상 가치를 뺀 나머지를, ' + accumulationYears + '년간 연 ' + accumulationRate + '% 수익률로 적립한다고 가정해 역산한 값입니다. 은퇴 후 ' + payoutYears + '년간 나눠 쓸 때는 별도 운용수익 없이 원금만 사용한다고 가정한 보수적인 값이며, IRP·연금저축 등에 이 금액을 추가로 납입한다고 가정한 근사치입니다.</span></div>';
     }
   } else {
-    html += '<div class="disclaimer-box" style="background:#e9f9f0; border-color:#a7e3c3; color:#146c43; margin-top:16px;"><span class="mark">✓</span><span>예상 은퇴 후 수령액이 물가 상승을 반영한 노후 적정생활비 기준을 충족하는 것으로 보입니다. 다만 의료비 등 예상치 못한 지출은 반영되지 않은 참고용 비교입니다.</span></div>';
+    html += '<div class="disclaimer-box" style="background:#e9f9f0; border-color:#a7e3c3; color:#146c43; margin-top:16px;"><span class="mark">✓</span><span>예상 은퇴 후 수령액이 노후 적정생활비 기준을 충족하는 것으로 보입니다. 다만 예상 수령액에 물가연동이 안 되는 퇴직연금·개인연금 비중이 크거나, 의료비 등 예상치 못한 지출이 있다면 실제로는 부족할 수 있습니다.</span></div>';
   }
 
   html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">ℹ</span><span>노후 적정생활비(오늘 기준 1인 192만원/부부 296만원)는 국민연금연구원 조사 기준 참고치이며, 개인 상황에 따라 실제 필요 금액은 다를 수 있습니다.</span></div>';

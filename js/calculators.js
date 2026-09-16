@@ -251,7 +251,6 @@ function calcRetirementGap(input) {
   var existingSavings = (input.existingSavingsManwon || 0) * 10000;
   var accumulationYears = input.accumulationYears || 0;
   var accumulationReturnPercent = input.accumulationReturnPercent || 0;
-  var inflationPercent = input.inflationPercent || 0;
   var payoutYears = input.payoutYears || 20;
   var payoutReturnPercent = input.payoutReturnPercent || 0;
   var household = input.household === "couple" ? "couple" : "single";
@@ -263,9 +262,13 @@ function calcRetirementGap(input) {
   var currentNet = calcTakeHomePay(currentAnnualGross / 12, input.pensionType).net;
   var replacementRatio = currentNet > 0 ? (projectedMonthly / currentNet) * 100 : 0;
 
-  var livingCostBenchmarkToday = household === "couple" ? ADEQUATE_LIVING_COST_COUPLE : ADEQUATE_LIVING_COST_SINGLE;
-  var inflationFactor = Math.pow(1 + inflationPercent / 100, accumulationYears);
-  var livingCostBenchmark = livingCostBenchmarkToday * inflationFactor; // 은퇴 시점 명목가치로 환산
+  // 국민연금·직역연금은 수급 개시 후 매년 물가상승률만큼 자동 인상되므로(물가연동),
+  // 오늘 계산한 예상 수령액을 "오늘 화폐가치 기준 실질 구매력"으로 보고, 별도의 물가
+  // 상승률을 곱하지 않고 오늘 기준 적정생활비와 그대로 비교합니다. (다만 이 수령액에
+  // 퇴직연금·개인연금처럼 물가연동이 없는 부분이 섞여 있다면, 그 부분의 실질가치는
+  // 은퇴 후 시간이 지날수록 조금씩 낮아질 수 있습니다 — 이 계산기는 그 세부 구성까지는
+  // 반영하지 않습니다.)
+  var livingCostBenchmark = household === "couple" ? ADEQUATE_LIVING_COST_COUPLE : ADEQUATE_LIVING_COST_SINGLE;
   var gapVsBenchmark = livingCostBenchmark - projectedMonthly; // 양수면 부족
 
   var existingSavingsFV = existingSavings * Math.pow(1 + accumulationReturnPercent / 100, accumulationYears);
@@ -282,9 +285,7 @@ function calcRetirementGap(input) {
     projectedMonthly: projectedMonthly,
     replacementRatio: replacementRatio,
     household: household,
-    livingCostBenchmarkToday: livingCostBenchmarkToday,
     livingCostBenchmark: livingCostBenchmark,
-    inflationFactor: inflationFactor,
     gapVsBenchmark: gapVsBenchmark,
     existingSavingsFV: existingSavingsFV,
     neededLumpSum: neededLumpSum,
