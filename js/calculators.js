@@ -248,8 +248,10 @@ var ADEQUATE_LIVING_COST_COUPLE = 2960000;
 function calcRetirementGap(input) {
   var currentAnnualGross = input.currentAnnualGrossManwon * 10000;
   var projectedMonthly = input.projectedMonthlyManwon * 10000;
+  var existingSavings = (input.existingSavingsManwon || 0) * 10000;
   var accumulationYears = input.accumulationYears || 0;
   var accumulationReturnPercent = input.accumulationReturnPercent || 0;
+  var inflationPercent = input.inflationPercent || 0;
   var payoutYears = input.payoutYears || 20;
   var payoutReturnPercent = input.payoutReturnPercent || 0;
   var household = input.household === "couple" ? "couple" : "single";
@@ -261,13 +263,18 @@ function calcRetirementGap(input) {
   var currentNet = calcTakeHomePay(currentAnnualGross / 12, input.pensionType).net;
   var replacementRatio = currentNet > 0 ? (projectedMonthly / currentNet) * 100 : 0;
 
-  var livingCostBenchmark = household === "couple" ? ADEQUATE_LIVING_COST_COUPLE : ADEQUATE_LIVING_COST_SINGLE;
+  var livingCostBenchmarkToday = household === "couple" ? ADEQUATE_LIVING_COST_COUPLE : ADEQUATE_LIVING_COST_SINGLE;
+  var inflationFactor = Math.pow(1 + inflationPercent / 100, accumulationYears);
+  var livingCostBenchmark = livingCostBenchmarkToday * inflationFactor; // 은퇴 시점 명목가치로 환산
   var gapVsBenchmark = livingCostBenchmark - projectedMonthly; // 양수면 부족
 
+  var existingSavingsFV = existingSavings * Math.pow(1 + accumulationReturnPercent / 100, accumulationYears);
   var requiredMonthlySavings = 0;
+  var neededLumpSum = 0;
   if (gapVsBenchmark > 0 && accumulationYears > 0) {
-    var neededLumpSum = requiredLumpSumForPayout(gapVsBenchmark, payoutYears, payoutReturnPercent);
-    requiredMonthlySavings = requiredAnnualContribution(neededLumpSum, accumulationYears, accumulationReturnPercent) / 12;
+    neededLumpSum = requiredLumpSumForPayout(gapVsBenchmark, payoutYears, payoutReturnPercent);
+    var remainingNeeded = Math.max(0, neededLumpSum - existingSavingsFV);
+    requiredMonthlySavings = requiredAnnualContribution(remainingNeeded, accumulationYears, accumulationReturnPercent) / 12;
   }
 
   return {
@@ -275,8 +282,12 @@ function calcRetirementGap(input) {
     projectedMonthly: projectedMonthly,
     replacementRatio: replacementRatio,
     household: household,
+    livingCostBenchmarkToday: livingCostBenchmarkToday,
     livingCostBenchmark: livingCostBenchmark,
+    inflationFactor: inflationFactor,
     gapVsBenchmark: gapVsBenchmark,
+    existingSavingsFV: existingSavingsFV,
+    neededLumpSum: neededLumpSum,
     requiredMonthlySavings: requiredMonthlySavings
   };
 }
