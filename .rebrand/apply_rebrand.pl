@@ -23,6 +23,7 @@ my $HEADER_TMPL = <<'HEADER';
           <a href="__CALC__health-insurance.html">건강보험료</a>
           <a href="__CALC__national-pension.html">국민연금</a>
           <a href="__CALC__employment-insurance.html">고용보험 실업급여</a>
+          <a href="__CALC__parental-leave.html">육아휴직급여</a>
           <a href="__CALC__industrial-accident.html">산재보험료·휴업급여</a>
           <a href="__CALC__four-insurance.html">4대보험 통합계산기</a>
         </div>
@@ -33,7 +34,6 @@ my $HEADER_TMPL = <<'HEADER';
           <a href="__CALC__minimum-wage.html">최저시급 계산기</a>
           <a href="__CALC__weekly-holiday-pay.html">주휴수당 계산기</a>
           <a href="__CALC__annual-leave.html">연차수당 계산기</a>
-          <a href="__CALC__parental-leave.html">육아휴직급여</a>
           <a href="__CALC__severance-pay.html">퇴직금 계산기</a>
         </div>
       </div>
