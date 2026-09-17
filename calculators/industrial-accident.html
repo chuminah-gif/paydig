@@ -116,7 +116,7 @@
             <option value="transport">운수·창고·통신업 — 1.8%</option>
             <option value="construction">건설업 — 3.5%</option>
           </select>
-          <div class="hint">대표 업종 예시 요율입니다. 정확한 업종별 요율은 근로복지공단에서 사업종류 코드로 확인하세요.</div>
+          <div class="hint">대표 업종 예시 요율입니다. 정확한 업종별 요율은 <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>에서 사업종류 코드로 확인하세요.</div>
         </div>
         <div class="field">
           <label for="totalWage">전 직원 보수총액 (연간, 세전, 만원)</label>
@@ -186,7 +186,7 @@
       <h3>Q. 산재보험료도 근로자가 일부 부담하나요?</h3>
       <p>아니요. 산재보험료는 4대보험 중 유일하게 <strong>전액 사업주가 부담</strong>합니다.</p>
       <h3>Q. 장해급여·유족급여도 계산할 수 있나요?</h3>
-      <p>장해등급·유족 수에 따라 지급일수가 크게 달라지는 항목이라 이 계산기에는 포함하지 않았습니다. 근로복지공단 산재보험 홈페이지에서 등급별 기준을 확인하세요.</p>
+      <p>장해등급·유족 수에 따라 지급일수가 크게 달라지는 항목이라 이 계산기에는 포함하지 않았습니다. <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a> 산재보험 홈페이지에서 등급별 기준을 확인하세요.</p>
     </div>
   </div>
 </section>
@@ -263,7 +263,7 @@ function runPremiumCalc() {
   html += '<div class="amount">' + formatWon(result.premium) + '</div>';
   html += '<div class="amount-yearly">' + result.industryLabel + ' · 요율 ' + (result.rate * 100).toFixed(1) + '%</div>';
   html += '</div>';
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>대표 업종 예시 요율을 적용한 참고용 추정치입니다. 실제 사업종류 코드별 요율은 근로복지공단에서 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>대표 업종 예시 요율을 적용한 참고용 추정치입니다. 실제 사업종류 코드별 요율은 <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>에서 확인하세요.</span></div>';
   document.getElementById("resultCard").innerHTML = html;
 }
 

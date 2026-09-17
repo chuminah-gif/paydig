@@ -347,12 +347,12 @@
         <h3>⚠ 연계 신청 전에 알아둘 부분</h3>
         <ul>
           <li><strong>이미 퇴직일시금을 받았는데 연계할 수 있나요?</strong> 가능합니다. 다만 국민연금 가입자가 되면서 연계를 신청할 때, 이미 받은 퇴직일시금을 이자를 가산해 반납해야 그 기간이 연계 대상에 포함됩니다.</li>
-          <li><strong>연계 신청은 어디서 하나요?</strong> 연계 대상 경력이 있는 연금관리기관(국민연금공단, 공무원연금공단, 사립학교교직원연금공단, 국방부 등) 중 <strong>한 곳에만</strong> 신청서를 제출하면 됩니다.</li>
+          <li><strong>연계 신청은 어디서 하나요?</strong> 연계 대상 경력이 있는 연금관리기관(<a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>, <a href="https://www.geps.or.kr" target="_blank" rel="noopener">공무원연금공단</a>, <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>, <a href="https://www.mps.mil.kr" target="_blank" rel="noopener">군인연금 정보포털</a> 등) 중 <strong>한 곳에만</strong> 신청서를 제출하면 됩니다.</li>
           <li><strong>신청하고 나서 취소할 수 있나요?</strong> 연계가 승인되면 이후에는 철회할 수 없으므로, 신청 전에 각 연금별 예상 수급액을 미리 비교해 보고 신중하게 결정하는 것이 좋습니다.</li>
         </ul>
       </div>
       <div class="info-callout">
-        이 시뮬레이션은 국민연금과 직역연금을 <strong>각자의 계산식으로 따로 구해 단순 합산</strong>하는 방식입니다. 실제 연계연금은 두 기관이 가입기간 비율에 따라 각자 산정해 지급하는 별도의 계산 구조라, 이 시뮬레이션 결과와 정확히 일치하지 않을 수 있습니다. 정확한 연계 가능 여부와 예상 수급액은 국민연금공단(국번없이 1355) 또는 가입했던 직역연금 관리기관에 문의하세요.
+        이 시뮬레이션은 국민연금과 직역연금을 <strong>각자의 계산식으로 따로 구해 단순 합산</strong>하는 방식입니다. 실제 연계연금은 두 기관이 가입기간 비율에 따라 각자 산정해 지급하는 별도의 계산 구조라, 이 시뮬레이션 결과와 정확히 일치하지 않을 수 있습니다. 정확한 연계 가능 여부와 예상 수급액은 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>(국번없이 1355) 또는 가입했던 직역연금 관리기관에 문의하세요.
       </div>
     </div>
   </div>
@@ -594,7 +594,7 @@ function runSimulation() {
     html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">⚠</span><span>' + warnings.join(" / ") + '</span></div>';
   }
 
-  html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">ℹ</span><span>공적연금(국민연금·직역연금)은 평생 지급되지만, 퇴직연금·개인연금은 설정하신 ' + payoutYears + '년 동안만 지급된다고 가정한 값입니다. 세후 금액은 각 연금별 세제(공적연금소득세·퇴직소득세·사적연금소득세·이자소득세 등)를 항목별로 근사 적용한 참고용 추정치이며, 다른 소득이 있거나 개별 상황이 다르면 실제 세액과 차이가 클 수 있습니다. 정확한 세액은 국세청 홈택스 또는 세무사를 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">ℹ</span><span>공적연금(국민연금·직역연금)은 평생 지급되지만, 퇴직연금·개인연금은 설정하신 ' + payoutYears + '년 동안만 지급된다고 가정한 값입니다. 세후 금액은 각 연금별 세제(공적연금소득세·퇴직소득세·사적연금소득세·이자소득세 등)를 항목별로 근사 적용한 참고용 추정치이며, 다른 소득이 있거나 개별 상황이 다르면 실제 세액과 차이가 클 수 있습니다. 정확한 세액은 <a href="https://hometax.go.kr" target="_blank" rel="noopener">국세청 홈택스</a> 또는 세무사를 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

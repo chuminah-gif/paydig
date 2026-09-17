@@ -161,7 +161,7 @@
       <h2>퇴직금 계산 방식 안내</h2>
       <p>퇴직금은 <strong>1일 평균임금 × 30 × (재직일수 ÷ 365)</strong>로 계산됩니다. 평균임금은 퇴직 전 3개월간 받은 임금총액을 그 기간의 총 일수(약 91일)로 나눈 값으로, 상여금·연차수당 일부도 포함될 수 있어 실제 급여명세서와 차이가 있을 수 있습니다.</p>
       <div class="info-callout">
-        계속근로기간이 <strong>1년 미만</strong>이면 법정 퇴직금 지급 의무가 없습니다. 또한 4인 이하 사업장도 일부 예외가 있을 수 있으니 정확한 지급 여부는 근로계약과 고용노동부 상담을 통해 확인하세요.
+        계속근로기간이 <strong>1년 미만</strong>이면 법정 퇴직금 지급 의무가 없습니다. 또한 4인 이하 사업장도 일부 예외가 있을 수 있으니 정확한 지급 여부는 근로계약과 <a href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부</a> 상담을 통해 확인하세요.
       </div>
       <h2>자주 묻는 질문</h2>
       <h3>Q. 퇴직연금 DB형 계산기와 무엇이 다른가요?</h3>
@@ -239,7 +239,7 @@ function runSeveranceCalc() {
   html += '<tr><th>세후 예상 퇴직금</th><td><strong>' + formatWon(result.afterTax) + '</strong></td></tr>';
   html += '</table>';
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>평균임금은 3개월을 91일로 근사해 계산한 참고용 추정치이며, 상여금·연차수당 포함 여부에 따라 실제와 차이가 있을 수 있습니다. 정확한 금액은 고용노동부·세무사를 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>평균임금은 3개월을 91일로 근사해 계산한 참고용 추정치이며, 상여금·연차수당 포함 여부에 따라 실제와 차이가 있을 수 있습니다. 정확한 금액은 <a href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부</a>·세무사를 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

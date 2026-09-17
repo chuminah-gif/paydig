@@ -292,7 +292,7 @@ function runPersonalCalc() {
     html += '</table>';
   }
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>본 결과는 입력하신 가정(적립액·수익률)에 기반한 참고용 시뮬레이션이며, 실제 수익률(공시이율)이나 사업비를 반영하지 않았습니다. 보험차익 비과세는 10년 이상 유지 및 관련 요건(월납입한도 등) 충족을 전제로 하며, 정확한 세액은 가입한 보험사 또는 국세청을 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>본 결과는 입력하신 가정(적립액·수익률)에 기반한 참고용 시뮬레이션이며, 실제 수익률(공시이율)이나 사업비를 반영하지 않았습니다. 보험차익 비과세는 10년 이상 유지 및 관련 요건(월납입한도 등) 충족을 전제로 하며, 정확한 세액은 가입한 보험사 또는 <a href="https://www.nts.go.kr" target="_blank" rel="noopener">국세청</a>을 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

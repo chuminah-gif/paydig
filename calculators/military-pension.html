@@ -150,7 +150,7 @@
         <li>지급률 합계는 근사 상한(약 76.5%)을 넘지 않도록 제한했습니다.</li>
       </ul>
       <div class="info-callout">
-        실제 연금액은 계급·병과별 세부 규정, 재평가율, 명예전역·조기전역 여부 등에 따라 달라질 수 있습니다. 정확한 금액은 국방부 및 군인연금과를 통해 확인하세요.
+        실제 연금액은 계급·병과별 세부 규정, 재평가율, 명예전역·조기전역 여부 등에 따라 달라질 수 있습니다. 정확한 금액은 <a href="https://www.mps.mil.kr" target="_blank" rel="noopener">군인연금 정보포털(국방부 군인연금과)</a>을 통해 확인하세요.
       </div>
 
       <h2>주의할 점</h2>
@@ -255,7 +255,7 @@ function runCalc() {
     html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>군인연금 퇴역연금은 최소 복무기간 20년(240개월)을 채워야 수급 자격이 발생합니다. 입력하신 복무기간은 이에 미달하며, 미달 시 퇴역일시금 등으로 지급될 수 있습니다.</span></div>';
   }
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>공개된 산정식을 단순화해 계산한 참고용 수치이며, 실제 연금액과는 차이가 있을 수 있습니다. 세후 금액은 이 연금만 받는다고 가정한 근사치이므로, 다른 소득이 있는 경우 실제 세율 구간은 달라집니다. 정확한 금액은 국방부 군인연금과 및 국세청을 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>공개된 산정식을 단순화해 계산한 참고용 수치이며, 실제 연금액과는 차이가 있을 수 있습니다. 세후 금액은 이 연금만 받는다고 가정한 근사치이므로, 다른 소득이 있는 경우 실제 세율 구간은 달라집니다. 정확한 금액은 <a href="https://www.mps.mil.kr" target="_blank" rel="noopener">군인연금 정보포털</a> 및 <a href="https://www.nts.go.kr" target="_blank" rel="noopener">국세청</a>을 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

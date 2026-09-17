@@ -173,7 +173,7 @@
     <div class="card prose">
       <h2>소득대체율과 적정 노후생활비, 먼저 짚고 갈게요</h2>
       <p><strong>소득대체율</strong>은 은퇴 후 받는 돈이 은퇴 전 소득의 몇 %인지를 나타내는 지표입니다. 100%면 지금과 똑같은 생활 수준, 50%면 지금의 절반 수준으로 산다는 뜻입니다. 국민연금만 40년 가입했을 때의 이론상 소득대체율은 2026년 기준 43%(2025년 41.5%에서 인상)이지만, 실제로는 평균 가입기간이 40년에 훨씬 못 미쳐 개인이 체감하는 대체율은 이보다 낮은 경우가 많습니다.</p>
-      <p>국민연금연구원 조사에 따르면 노후 적정생활비는 <strong>1인 가구 월 192만원, 부부 가구 월 296만원</strong> 수준으로 조사된 바 있습니다(오늘 기준 금액이며, 조사 시점에 따라 달라질 수 있는 참고치입니다).</p>
+      <p><a href="https://institute.nps.or.kr" target="_blank" rel="noopener">국민연금연구원</a> 조사에 따르면 노후 적정생활비는 <strong>1인 가구 월 192만원, 부부 가구 월 296만원</strong> 수준으로 조사된 바 있습니다(오늘 기준 금액이며, 조사 시점에 따라 달라질 수 있는 참고치입니다).</p>
       <div class="info-callout">
         이 대시보드는 연금 통합 시뮬레이션에서 계산한 "예상 은퇴 후 총 월 수령액"을 입력받아 지금 소득과 비교하는 도구입니다. 은퇴 후 수령액 자체를 아직 계산하지 않았다면 <a href="../simulation.html">연금 통합 시뮬레이션</a>을 먼저 이용해 주세요.
       </div>
@@ -323,7 +323,7 @@ function runRetirementGapCalc() {
     html += '<div class="disclaimer-box" style="background:#e9f9f0; border-color:#a7e3c3; color:#146c43; margin-top:16px;"><span class="mark">✓</span><span>예상 은퇴 후 수령액이 노후 적정생활비 기준을 충족하는 것으로 보입니다. 다만 예상 수령액에 물가연동이 안 되는 퇴직연금·개인연금 비중이 크거나, 의료비 등 예상치 못한 지출이 있다면 실제로는 부족할 수 있습니다.</span></div>';
   }
 
-  html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">ℹ</span><span>노후 적정생활비(오늘 기준 1인 192만원/부부 296만원)는 국민연금연구원 조사 기준 참고치이며, 개인 상황에 따라 실제 필요 금액은 다를 수 있습니다.</span></div>';
+  html += '<div class="disclaimer-box" style="margin-top:14px;"><span class="mark">ℹ</span><span>노후 적정생활비(오늘 기준 1인 192만원/부부 296만원)는 <a href="https://institute.nps.or.kr" target="_blank" rel="noopener">국민연금연구원</a> 조사 기준 참고치이며, 개인 상황에 따라 실제 필요 금액은 다를 수 있습니다.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

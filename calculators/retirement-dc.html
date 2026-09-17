@@ -294,7 +294,7 @@ function runDCCalc() {
     html += '</table>';
   }
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>본 결과는 입력하신 가정(적립액·수익률)에 기반한 참고용 시뮬레이션이며, 실제 수익률을 보장하지 않습니다. 세금은 DC 적립금 전체를 퇴직소득으로 간주해 퇴직소득세 산식을 근사 적용한 것으로, 실제로는 회사 적립분과 개인 추가납입·운용수익 부분의 과세 방식이 다를 수 있습니다. 정확한 세액은 국세청 홈택스를 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>본 결과는 입력하신 가정(적립액·수익률)에 기반한 참고용 시뮬레이션이며, 실제 수익률을 보장하지 않습니다. 세금은 DC 적립금 전체를 퇴직소득으로 간주해 퇴직소득세 산식을 근사 적용한 것으로, 실제로는 회사 적립분과 개인 추가납입·운용수익 부분의 과세 방식이 다를 수 있습니다. 정확한 세액은 <a href="https://hometax.go.kr" target="_blank" rel="noopener">국세청 홈택스</a>를 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

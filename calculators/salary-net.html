@@ -206,7 +206,7 @@
         <li>"실수령액 → 연봉" 역산은 위 계산을 반대로 탐색하는 방식으로, 정확한 세전 연봉이 아닌 근사치입니다.</li>
       </ul>
       <div class="info-callout">
-        경로우대자·장애인 추가 인적공제, 6세 이하 자녀 세액공제 등 개인별 특수 항목은 반영되지 않습니다. 정확한 금액은 국민연금공단, 공무원연금공단, 사립학교교직원연금공단, 국민건강보험공단, 근로복지공단, 국세청 홈택스를 통해 확인하세요.
+        경로우대자·장애인 추가 인적공제, 6세 이하 자녀 세액공제 등 개인별 특수 항목은 반영되지 않습니다. 정확한 금액은 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>, <a href="https://www.geps.or.kr" target="_blank" rel="noopener">공무원연금공단</a>, <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>, <a href="https://www.nhis.or.kr" target="_blank" rel="noopener">국민건강보험공단</a>, <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>, <a href="https://hometax.go.kr" target="_blank" rel="noopener">국세청 홈택스</a>를 통해 확인하세요.
       </div>
 
       <h2>자주 묻는 질문</h2>
@@ -332,7 +332,7 @@ function runSalaryNetCalc() {
   }
 
   var ratioLabel = result.withholdingRatio === 1 ? "" : ' 원천징수 비율 ' + Math.round(result.withholdingRatio * 100) + '%를 적용했습니다.';
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>4대보험은 2026년 근로자 부담 요율, 소득세는 근로소득공제표와 입력하신 부양가족 수를 반영한 근사치입니다.' + ratioLabel + ' 경로우대·장애인 등 추가 인적공제는 반영되지 않았으므로 정확한 금액은 국세청 홈택스 등에서 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>4대보험은 2026년 근로자 부담 요율, 소득세는 근로소득공제표와 입력하신 부양가족 수를 반영한 근사치입니다.' + ratioLabel + ' 경로우대·장애인 등 추가 인적공제는 반영되지 않았으므로 정확한 금액은 <a href="https://hometax.go.kr" target="_blank" rel="noopener">국세청 홈택스</a> 등에서 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

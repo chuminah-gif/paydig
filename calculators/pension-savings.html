@@ -287,7 +287,7 @@ function runSavingsCalc() {
 
   html += privatePensionResultTableHtml(result.futureValue, result.years, result.annualReturnPercent, payoutType, payoutYears, returnRate, startAge);
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>입력하신 적립액·수익률을 그대로 유지한다고 가정한 참고용 시뮬레이션으로, 신탁형·펀드형·보험형 중 실제 상품의 수익률·사업비 구조에 따라 결과가 달라질 수 있습니다. 세액공제를 받은 연금저축 재원 기준 세율이며, IRP 등 다른 연금계좌와 합산한 사적연금액이 연 1,500만원을 초과하면 종합과세로 전환될 수 있습니다. 정확한 세액은 국세청 홈택스를 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>입력하신 적립액·수익률을 그대로 유지한다고 가정한 참고용 시뮬레이션으로, 신탁형·펀드형·보험형 중 실제 상품의 수익률·사업비 구조에 따라 결과가 달라질 수 있습니다. 세액공제를 받은 연금저축 재원 기준 세율이며, IRP 등 다른 연금계좌와 합산한 사적연금액이 연 1,500만원을 초과하면 종합과세로 전환될 수 있습니다. 정확한 세액은 <a href="https://hometax.go.kr" target="_blank" rel="noopener">국세청 홈택스</a>를 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }
