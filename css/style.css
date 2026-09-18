@@ -128,11 +128,6 @@ h1, h2, h3, h4 {
   text-decoration: none;
 }
 
-.main-nav a.emph {
-  color: var(--color-accent-dark);
-  background: var(--color-accent-soft);
-}
-
 .main-nav a.active {
   color: var(--color-accent-dark);
   background: var(--color-accent-soft);

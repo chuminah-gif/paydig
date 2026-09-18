@@ -61,7 +61,7 @@ my $HEADER_TMPL = <<'HEADER';
           <a href="__CALC__retirement-dashboard.html">노후설계 대시보드</a>
         </div>
       </div>
-      <a href="__CALC__year-end-tax.html" class="emph">연말정산</a>
+      <a href="__CALC__year-end-tax.html">연말정산</a>
       <a href="__ROOT__news/index.html">소식</a>
       <a href="__ROOT__guide/index.html">가이드</a>
       <a href="__ROOT__about.html">사이트소개</a>
