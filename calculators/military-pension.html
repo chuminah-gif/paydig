@@ -123,9 +123,9 @@
       </div>
 
       <div class="field">
-        <label for="prePay">2013년 6월 이전 복무분 평균보수월액 (만원, 선택)</label>
-        <input type="number" id="prePay" placeholder="비우면 위 금액을 그대로 사용" min="0" />
-        <div class="hint">실제 연금의 종전 구간은 당시 보수(2007~2009년 평균 등을 현재가치로 환산한 평균보수월액)를 기준으로 합니다. 이 값은 보통 위 평균 기준소득월액보다 낮으므로, 연금 예상 조회 화면에 나온 값을 알고 있다면 입력하세요. 종전 구간이 없으면 무시됩니다.</div>
+        <label for="prePay">2013년 6월 이전 근무 당시 월급 수준 (만원, 선택 · 모르면 비워두세요)</label>
+        <input type="number" id="prePay" placeholder="모르면 비워두세요" min="0" />
+        <div class="hint">옛 방식으로 계산되는 기간(2009년 이전 재직, 군인연금은 2013년 6월 이전 복무)은 재직 전체 평균이 아니라 <strong>그 시절 받던 월 보수(기본급+수당)의 평균을 지금 가치로 환산한 금액</strong>입니다. 보통 위에 입력한 평균 기준소득월액보다 낮습니다. 공단의 연금 예상액 산정 내역에서 확인할 수 있으며, 모르면 비워 두세요. 비우면 결과 아래에 "기준이 낮을 때의 참고 금액"을 함께 보여드립니다. 해당 기간이 없으면 무시됩니다.</div>
       </div>
 
       <button class="btn btn-primary" onclick="runCalc()">예상 연금액 계산하기</button>
@@ -274,6 +274,10 @@ function runCalc() {
   var mfmt = function (n) { return (Math.round(n * 10) / 10).toString(); };
   html += '<tr><th>복무 구간</th><td>' + [md.seg1Years > 0 ? '2013년 7월 이전 ' + mfmt(md.seg1Years) + '년(종전 산식 연 2.5%·20년 초과 2%)' : '', md.seg2Years > 0 ? '2013년 7월 이후 ' + mfmt(md.seg2Years) + '년(연 1.9%)' : ''].filter(Boolean).join(' + ') + (md.excessYears > 0.05 ? '<div class="table-formula">33년 초과 ' + mfmt(md.excessYears) + '년은 반영되지 않습니다</div>' : '') + '</td></tr>';
   html += '<tr><th>적용 지급률 합계</th><td>' + result.ratePercent.toFixed(1) + '%</td></tr>'; 
+  if (md.seg1Years > 0 && !result.usedPrePay) {
+    var mlow = result.monthly - 0.3 * result.effectiveIncomeMonthly * md.p1Percent / 100;
+    html += '<tr><th>참고: 옛 구간 기준이 낮다면</th><td>월 약 ' + formatWon(mlow) + '<div class="table-formula">2013년 6월 이전 복무 당시 월급 수준(현재가치)이 입력하신 평균 기준소득월액의 70%인 경우의 금액입니다. 기준이 낮을수록 실제 연금은 위 금액보다 줄어듭니다</div></td></tr>';
+  }
   if (md.seg1Years > 0) { html += '<tr><th>2013년 6월 이전 복무분 기준</th><td>' + (result.usedPrePay ? '입력하신 평균보수월액 적용' : '평균 기준소득월액을 그대로 적용(추정)') + '<div class="table-formula">' + (result.usedPrePay ? '' : '실제 기준은 당시 보수를 현재가치로 환산한 평균보수월액이라 이 계산기의 금액이 실제와 다를 수 있습니다') + '</div></td></tr>'; }
   if (result.militaryRoundedUp) { html += '<tr><th>복무기간 인정</th><td>20년으로 인정<div class="table-formula">복무기간 19년 6개월 이상~20년 미만은 20년으로 보아 퇴역연금을 지급합니다</div></td></tr>'; }
   html += occupationalStartAgeRowsHtml(result, retireYear, 0, true);

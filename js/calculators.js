@@ -332,6 +332,10 @@ function occupationalDetailRowsHtml(result) {
     (d.excessYears > 0.05 ? '<div class="table-formula">상한 초과 ' + fmt(d.excessYears) + '년은 연금에 반영되지 않습니다.</div>' : '') +
     (d.capYears < 36 ? '<div class="table-formula">2016년 1월 1일 기준 재직 ' + fmt(d.yearsAt2016) + '년 → 상한 ' + d.capYears + '년(경과규정)</div>' : '') +
     '</td></tr>';
+  if (d.seg1Years > 0 && !result.usedPrePay) {
+    var low70 = result.monthly - 0.3 * result.effectiveIncomeMonthly * d.p1Percent / 100;
+    html += '<tr><th>참고: 옛 구간 기준이 낮다면</th><td>월 약 ' + formatWon(low70) + '<div class="table-formula">2009년 이전 근무 당시 월급 수준(현재가치)이 입력하신 평균 기준소득월액의 70%인 경우의 금액입니다. 공단 공개 사례에서는 약 72%였습니다. 기준이 낮을수록 실제 연금은 위 금액보다 줄어듭니다</div></td></tr>';
+  }
   if (d.seg1Years > 0) {
     html += '<tr><th>2009년 이전 재직분 기준</th><td>' + (result.usedPrePay ? '입력하신 평균보수월액 적용' : '평균 기준소득월액을 그대로 적용(추정)') + '<div class="table-formula">' + (result.usedPrePay ? '2009년 이전 ' + fmt(d.seg1Years) + '년분만 입력한 평균보수월액 기준' : '실제 기준은 2007~2009년 보수를 현재가치로 환산한 평균보수월액이라 평균 기준소득월액보다 낮은 경우가 많아 이 금액은 실제보다 높을 수 있습니다(공단 공개 산정 사례: 1987년 임용·2021년 퇴직자는 종전 구간 기준 보수가 평균 기준소득월액의 약 72%였고, 같은 입력을 이 계산기에 그대로 넣으면 실제보다 약 29% 높게 나옴). 종전 구간 평균보수월액을 아래 칸에 입력하면 더 정확해집니다') + '</div></td></tr>';
   }
