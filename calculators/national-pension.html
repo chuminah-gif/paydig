@@ -122,6 +122,30 @@
         <div class="hint">국민연금 보험료 산정 기준이 된 세전 평균 월소득(기준소득월액)을 만원 단위로 입력하세요.</div>
       </div>
 
+      <div class="field">
+        <label for="pre2002Years">이 중 2001년 12월 이전 가입기간 (년, 선택)</label>
+        <input type="number" id="pre2002Years" placeholder="예: 0" min="0" value="0" step="0.5" />
+        <div class="hint">국민연금은 2002년 1월 이후 낸 보험료에 해당하는 연금만 과세됩니다. 2001년 이전에 가입한 기간이 있으면 입력하세요. 세후 금액 계산에만 쓰이며 연금액에는 영향이 없습니다.</div>
+      </div>
+
+      <div class="field">
+        <label for="shiftYears">수급 시기</label>
+        <select id="shiftYears">
+          <option value="0" selected>정상 수급 (수급개시연령부터)</option>
+          <option value="-1">조기노령연금 1년 앞당김 (6% 감액)</option>
+          <option value="-2">조기노령연금 2년 앞당김 (12% 감액)</option>
+          <option value="-3">조기노령연금 3년 앞당김 (18% 감액)</option>
+          <option value="-4">조기노령연금 4년 앞당김 (24% 감액)</option>
+          <option value="-5">조기노령연금 5년 앞당김 (30% 감액)</option>
+          <option value="1">연기연금 1년 늦춤 (7.2% 가산)</option>
+          <option value="2">연기연금 2년 늦춤 (14.4% 가산)</option>
+          <option value="3">연기연금 3년 늦춤 (21.6% 가산)</option>
+          <option value="4">연기연금 4년 늦춤 (28.8% 가산)</option>
+          <option value="5">연기연금 5년 늦춤 (36% 가산)</option>
+        </select>
+        <div class="hint">조기노령연금은 10년 이상 가입하고 소득이 있는 업무에 종사하지 않을 때 신청할 수 있으며, 감액된 금액이 평생 유지됩니다.</div>
+      </div>
+
       <button class="btn btn-primary" onclick="runNationalCalc()">예상 연금액 계산하기</button>
     </div>
 
@@ -170,9 +194,9 @@
       <h3>Q. 몇 년을 가입해야 국민연금을 받을 수 있나요?</h3>
       <p>최소 가입기간 10년(120개월)을 채워야 노령연금 수급자격이 발생합니다. 10년 미만이면 60세 도달 시 그동안 낸 보험료에 이자를 더한 반환일시금을 받거나, 임의계속가입으로 부족한 기간을 추가로 채우는 방법이 있습니다.</p>
       <h3>Q. 국민연금 수급액에도 세금이 붙나요?</h3>
-      <p>네, 노령연금은 연금소득세 과세 대상입니다. 이 계산기는 연금소득공제와 종합소득세 기본세율을 적용한 참고용 세후 금액을 함께 보여드리지만, 국민연금이 유일한 소득이라고 가정한 근사치이므로 다른 소득이 있으면 실제 세율 구간은 달라질 수 있습니다.</p>
+      <p>네, 노령연금은 연금소득세 과세 대상이며, 2002년 이후 낸 보험료에 해당하는 부분만 과세됩니다(2001년 이전 가입기간이 있으면 입력란에 적으면 반영됩니다). 이 계산기는 연금소득공제와 종합소득세 기본세율을 적용한 참고용 세후 금액을 함께 보여드리지만, 국민연금이 유일한 소득이라고 가정한 근사치이므로 다른 소득이 있으면 실제 세율 구간은 달라질 수 있습니다.</p>
       <h3>Q. 일찍 받거나 늦게 받으면 금액이 달라지나요?</h3>
-      <p>네. 조기노령연금으로 최대 5년 앞당기면 1년당 약 6%씩(최대 30%) 감액되고, 반대로 연기연금으로 최대 5년 늦추면 1년당 약 7.2%씩 가산됩니다. 이 계산기는 정규 수급개시연령 기준 금액만 계산하므로, 조기·연기 수령 시 예상액은 이 감액·가산 비율을 별도로 적용해 가늠해야 합니다.</p>
+      <p>네. 조기노령연금으로 최대 5년 앞당기면 1년당 약 6%씩(최대 30%) 감액되고, 반대로 연기연금으로 최대 5년 늦추면 1년당 약 7.2%씩 가산됩니다. 입력란의 "수급 시기"에서 앞당기거나 늦추는 연수를 고르면 이 감액·가산 비율을 적용한 금액을 보여드립니다. 조기노령연금은 감액된 금액이 평생 유지되고, 연기연금은 늦춘 기간만큼 가산된 금액을 받습니다.</p>
     </div>
   </div>
 </section>
@@ -223,7 +247,9 @@ function runNationalCalc() {
   var months = getNumberValue("joinMonths");
   var avgIncome = getNumberValue("avgIncome");
 
-  var result = calcNationalPension({ years: years, months: months, avgIncomeManwon: avgIncome });
+  var shiftYears = parseInt(document.getElementById("shiftYears").value, 10) || 0;
+  var pre2002Years = getNumberValue("pre2002Years");
+  var result = calcNationalPension({ years: years, months: months, avgIncomeManwon: avgIncome, shiftYears: shiftYears, pre2002Years: pre2002Years });
 
   if (result.error) {
     showError("resultCard", result.error);
@@ -263,12 +289,17 @@ function runNationalCalc() {
   html += '<table class="result-table">';
   html += '<tr><th>총 가입기간</th><td>' + Math.floor(result.totalMonths / 12) + '년 ' + (result.totalMonths % 12) + '개월</td></tr>';
   if (startAge) {
-    html += '<tr><th>예상 수급개시연령</th><td>만 ' + startAge + '세</td></tr>';
+    html += '<tr><th>예상 수급개시연령</th><td>만 ' + startAge + '세' + (result.shiftYears !== 0 ? ' → 실제 수령 만 ' + (startAge + result.shiftYears) + '세' : '') + '</td></tr>';
   }
-  html += publicPensionTaxRowsHtml(result.monthly);
+  if (result.shiftYears !== 0) {
+    var kind = result.shiftYears < 0 ? "조기노령연금 " + (-result.shiftYears) + "년 앞당김" : "연기연금 " + result.shiftYears + "년 늦춤";
+    var pct = Math.abs(result.adjustFactor - 1) * 100;
+    html += '<tr><th>수급 시기 조정</th><td>' + kind + '<div class="table-formula">정상 수급 ' + formatWon(result.baseMonthly) + ' × (1 ' + (result.shiftYears < 0 ? '−' : '+') + ' ' + fmtPct(pct) + '%)</div></td></tr>';
+  }
+  html += publicPensionTaxRowsHtml(result.monthly, result.taxableRatio);
   html += '</table>';
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>본 결과는 공개된 산정식을 단순화한 참고용 추정치입니다. 세후 금액은 이 연금이 유일한 소득이라고 가정한 근사치이며, 다른 소득이 있으면 세율 구간이 달라질 수 있습니다. 정확한 금액은 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a> 및 <a href="https://www.nts.go.kr" target="_blank" rel="noopener">국세청</a>을 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>본 결과는 공개된 산정식을 단순화한 참고용 추정치입니다. 국민연금은 가입 시기별 산식 차이, 매년 재평가된 소득, 부양가족연금액, 재직자 감액 등이 반영되지 않았고, 과세 대상 비율은 가입기간(개월) 기준 근사입니다(공단은 환산소득 누계액 기준). 세후 금액은 이 연금이 유일한 소득이라고 가정한 근사치이며, 다른 소득이 있으면 세율 구간이 달라질 수 있습니다. 정확한 금액은 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a> 및 <a href="https://www.nts.go.kr" target="_blank" rel="noopener">국세청</a>을 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

@@ -143,9 +143,14 @@
             </div>
             <div class="hint">국민연금 보험료를 낸(낼 예정인) 기간입니다. 직역연금에서는 같은 개념을 "재직기간"(군인연금은 "복무기간")이라고 부릅니다.</div>
           </div>
-          <div class="field" style="margin-bottom:0;">
+          <div class="field">
             <label for="nat-income">평균 소득월액 (만원)</label>
             <input type="number" id="nat-income" placeholder="예: 320" />
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="nat-pre2002">이 중 2001년 12월 이전 가입기간 (년, 선택)</label>
+            <input type="number" id="nat-pre2002" placeholder="예: 0" step="0.5" />
+            <div class="hint">2002년 이후 낸 보험료에 해당하는 연금만 과세되므로 세후 금액에만 반영됩니다.</div>
           </div>
         </div>
       </div>
@@ -443,7 +448,8 @@ function runSimulation() {
     var r = calcNationalPension({
       years: getNumberValue("nat-years"),
       months: getNumberValue("nat-months"),
-      avgIncomeManwon: getNumberValue("nat-income")
+      avgIncomeManwon: getNumberValue("nat-income"),
+      pre2002Years: getNumberValue("nat-pre2002")
     });
     if (r.error) { errors.push("국민연금: " + r.error); }
     else if (!r.eligible) {
@@ -464,7 +470,7 @@ function runSimulation() {
       }
     }
     else {
-      var natTax = calcPublicPensionTax(r.monthly * 12);
+      var natTax = calcPublicPensionTax(r.monthly * 12, r.taxableRatio);
       var natAfter = clampNonNegative(r.monthly - natTax.monthlyTax);
       totalMonthlyPreTax += r.monthly;
       totalMonthlyAfterTax += natAfter;
@@ -511,7 +517,7 @@ function runSimulation() {
       }
     }
     else {
-      var occTax = calcPublicPensionTax(r2.monthly * 12);
+      var occTax = calcPublicPensionTax(r2.monthly * 12, occupationalTaxableRatio(r2.totalMonths / 12, getNumberValue("occ-retireYear")));
       var occAfter = clampNonNegative(r2.monthly - occTax.monthlyTax);
       totalMonthlyPreTax += r2.monthly;
       totalMonthlyAfterTax += occAfter;

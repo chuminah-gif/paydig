@@ -111,6 +111,16 @@
         <input type="number" id="months" placeholder="예: 12" min="1" max="18" value="12" />
       </div>
 
+      <div class="field">
+        <label for="leaveMode">육아휴직 유형</label>
+        <select id="leaveMode">
+          <option value="normal" selected>일반 육아휴직</option>
+          <option value="sixsix">6+6 부모육아휴직제 (부모 모두 사용)</option>
+          <option value="single">한부모 근로자</option>
+        </select>
+        <div class="hint">6+6은 자녀가 생후 18개월 이내일 때 부모가 모두 육아휴직을 사용하는 경우 각자의 첫 6개월에 적용됩니다(월 상한 250·250·300·350·400·450만원). 한부모는 첫 6개월 통상임금 100%, 월 상한 300만원입니다. 7개월 이후는 모두 통상임금 80%(상한 160만원)로 같습니다.</div>
+      </div>
+
       <button class="btn btn-primary" onclick="runParentalLeaveCalc()">계산하기</button>
     </div>
 
@@ -164,11 +174,11 @@
         <tr><td>7개월차 이후</td><td>통상임금 80%</td><td>160만원</td></tr>
       </table>
       <div class="info-callout">
-        2025년부터 <strong>사후지급금 제도가 폐지</strong>되어, 육아휴직 기간 중 매달 급여 전액을 바로 지급받습니다(과거에는 일부를 복직 후 지급). 이 계산기는 일반 육아휴직 기준이며, 부모가 함께 육아휴직을 사용하면 첫 6개월 동안 상한액이 대폭 올라가는 <strong>"6+6 부모육아휴직제"</strong> 특례는 반영되어 있지 않습니다. 해당 시 <a href="https://www.work24.go.kr" target="_blank" rel="noopener">고용24(워크넷)</a>에서 별도로 확인하세요.
+        2025년부터 <strong>사후지급금 제도가 폐지</strong>되어, 육아휴직 기간 중 매달 급여 전액을 바로 지급받습니다(과거에는 일부를 복직 후 지급). 부모가 함께 육아휴직을 사용하면 첫 6개월 동안 상한액이 올라가는 <strong>"6+6 부모육아휴직제"</strong>(월 상한 250·250·300·350·400·450만원)와 한부모 특례(첫 6개월 상한 300만원)는 위 "육아휴직 유형"에서 선택할 수 있습니다. 요건 충족 여부는 <a href="https://www.work24.go.kr" target="_blank" rel="noopener">고용24(워크넷)</a>에서 확인하세요.
       </div>
       <h2>자주 묻는 질문</h2>
       <h3>Q. 6+6 부모육아휴직제는 무엇인가요?</h3>
-      <p>자녀가 생후 18개월 이내일 때 부모가 함께(동시 또는 순차) 육아휴직을 사용하면, 첫 6개월 동안 더 높은 상한액이 적용되는 제도입니다. 정확한 월별 상한액은 매년 바뀔 수 있어 <a href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부</a> 공지를 확인하는 것이 안전합니다.</p>
+      <p>자녀가 생후 18개월 이내일 때 부모가 함께(동시 또는 순차) 육아휴직을 사용하면, 첫 6개월 동안 더 높은 상한액이 적용되는 제도입니다. 2026년 기준 월 상한액은 1개월 250만원, 2개월 250만원, 3개월 300만원, 4개월 350만원, 5개월 400만원, 6개월 450만원이며 통상임금의 100%가 지급됩니다(부모 합산 최대 약 4,000만원). 상한액은 매년 바뀔 수 있어 <a href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부</a> 공지를 함께 확인하세요.</p>
       <h3>Q. 육아휴직급여에도 세금이 붙나요?</h3>
       <p>육아휴직급여는 비과세 소득입니다.</p>
     </div>
@@ -219,7 +229,7 @@ function runParentalLeaveCalc() {
   var wage = getNumberValue("monthlyWage");
   var months = getNumberValue("months");
 
-  var result = calcParentalLeavePay({ monthlyWageManwon: wage, months: months });
+  var result = calcParentalLeavePay({ monthlyWageManwon: wage, months: months, mode: document.getElementById("leaveMode").value });
   if (result.error) {
     showError("resultCard", result.error);
     return;
@@ -242,7 +252,7 @@ function runParentalLeaveCalc() {
   html += '<tr><th>합계</th><td><strong>' + formatWon(result.total) + '</strong></td></tr>';
   html += '</table></div>';
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>일반 육아휴직 기준 참고용 추정치이며, "6+6 부모육아휴직제" 등 특례는 반영되어 있지 않습니다. 정확한 금액은 <a href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부</a>·<a href="https://www.work24.go.kr" target="_blank" rel="noopener">고용24</a>를 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>선택하신 유형 기준의 참고용 추정치입니다. 하한액(월 70만원)과 고용보험 가입기간(180일 이상) 등 수급 요건은 별도로 확인해야 합니다. 정확한 금액은 <a href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부</a>·<a href="https://www.work24.go.kr" target="_blank" rel="noopener">고용24</a>를 통해 확인하세요.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

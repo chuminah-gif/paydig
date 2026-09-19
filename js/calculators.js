@@ -68,12 +68,22 @@ function calcNationalPension(input) {
     };
   }
 
-  var monthly = calcNationalBasicMonthly(totalMonths, avgIncomeMonthly);
+  var baseMonthly = calcNationalBasicMonthly(totalMonths, avgIncomeMonthly);
+
+  // 조기노령연금: 수급개시연령보다 1년 앞당길 때마다 6%(월 0.5%) 감액, 최대 5년(30%)
+  // 연기연금: 1년 늦출 때마다 7.2%(월 0.6%) 가산, 최대 5년(36%)
+  var shift = Math.min(Math.max(Math.round(input.shiftYears) || 0, -5), 5);
+  var adjustFactor = shift < 0 ? 1 + 0.06 * shift : 1 + 0.072 * shift;
+  var monthly = baseMonthly * adjustFactor;
 
   return {
     monthly: monthly,
     yearly: monthly * 12,
+    baseMonthly: baseMonthly,
+    shiftYears: shift,
+    adjustFactor: adjustFactor,
     totalMonths: totalMonths,
+    taxableRatio: publicPensionTaxableRatio(totalMonths / 12, input.pre2002Years),
     eligible: true
   };
 }
@@ -199,6 +209,66 @@ function calcCivilSchoolPensionPercent(totalYears, retireYear, avgIncomeMonthly)
   };
 }
 
+// 공적연금 과세 대상 비율: 2001년 12월 31일 이전 기간(pre2002Years)은 과세하지 않으므로 (전체 − 이전) ÷ 전체
+function publicPensionTaxableRatio(totalYears, pre2002Years) {
+  if (!(totalYears > 0)) return 1;
+  var pre = Math.min(Math.max(pre2002Years || 0, 0), totalYears);
+  return (totalYears - pre) / totalYears;
+}
+
+// 직역연금(공무원·사학·군인)의 2001년 이전 기간 = 임용(입대)연도 역산값 기준
+function occupationalTaxableRatio(totalYears, retireYear) {
+  var start = retireYear - totalYears;
+  var pre = Math.max(0, Math.min(2002, retireYear) - start);
+  return publicPensionTaxableRatio(totalYears, pre);
+}
+
+/* 공무원·사학연금 퇴직연금 지급개시연령 (공무원연금공단 안내: 1996년 이후 임용자는 퇴직연도별로 단계적 상향)
+   2016~2021년 퇴직 60세, 2022~2023년 61세, 2024~2026년 62세, 2027~2029년 63세, 2030~2032년 64세, 2033년 이후 65세.
+   1996년 이전 임용자는 재직기간 요건에 따른 별도 특례(퇴직 즉시 지급 등)가 있어 null을 돌려줍니다. */
+function occupationalPensionStartAge(retireYear, startYear) {
+  if (startYear < 1996) return null;
+  if (retireYear <= 2021) return 60;
+  if (retireYear <= 2023) return 61;
+  if (retireYear <= 2026) return 62;
+  if (retireYear <= 2029) return 63;
+  if (retireYear <= 2032) return 64;
+  return 65;
+}
+
+// 조기퇴직연금: 지급개시연령에 미달하는 연수 1년당 5% 감액 (최대 5년, 25%)
+function earlyRetirementPensionFactor(shortfallYears) {
+  var y = Math.min(Math.max(Math.ceil(shortfallYears - 1e-9), 0), 5);
+  return 1 - 0.05 * y;
+}
+
+// 공무원·사학·군인연금 결과 표에 붙는 지급개시연령·조기수령 행 (birthYear는 선택 입력)
+function occupationalStartAgeRowsHtml(result, retireYear, birthYear, isMilitary) {
+  if (isMilitary) {
+    return '<tr><th>연금 지급 시기</th><td>전역(퇴직) 다음 달부터<div class="table-formula">복무 20년 이상이면 지급개시연령 제한 없이 전역 후 바로 퇴역연금을 받습니다</div></td></tr>';
+  }
+  var startAge = occupationalPensionStartAge(retireYear, result.startYear);
+  if (startAge === null) {
+    return '<tr><th>연금 지급 시기</th><td>임용 시기 특례 대상<div class="table-formula">1996년 이전 임용자는 재직기간 요건에 따라 퇴직 즉시 지급되는 등 별도 규정이 있어 공단에서 확인이 필요합니다</div></td></tr>';
+  }
+  var html = '<tr><th>연금 지급개시연령</th><td>만 ' + startAge + '세<div class="table-formula">' + retireYear + '년 퇴직 기준(1996년 이후 임용자, 퇴직연도별 단계 상향)</div></td></tr>';
+  if (birthYear > 0) {
+    var retireAge = retireYear - birthYear;
+    if (retireAge >= startAge) {
+      html += '<tr><th>퇴직 시 나이</th><td>만 ' + retireAge + '세 (퇴직 직후부터 지급)</td></tr>';
+    } else {
+      var shortfall = startAge - retireAge;
+      var factor = earlyRetirementPensionFactor(shortfall);
+      html += '<tr><th>퇴직 시 나이</th><td>만 ' + retireAge + '세 — 지급개시까지 ' + shortfall + '년</td></tr>';
+      if (shortfall > 5) {
+        return html + '<tr><th>조기퇴직연금</th><td>신청 불가<div class="table-formula">조기퇴직연금은 지급개시연령까지 5년 이내로 남은 경우에만 신청할 수 있습니다</div></td></tr>';
+      }
+      html += '<tr><th>조기퇴직연금 선택 시</th><td>월 ' + formatWon(result.monthly * factor) + '<div class="table-formula">미달 ' + Math.ceil(shortfall - 1e-9) + '년 × 5% 감액 → 연금의 ' + Math.round(factor * 100) + '% (최대 25% 감액, 감액은 평생 유지)</div></td></tr>';
+    }
+  }
+  return html;
+}
+
 // 공무원·사학연금 결과 표의 산정 내역 행 (재직기간 구간·상한·소득재분배)
 function occupationalDetailRowsHtml(result) {
   var d = result.detail;
@@ -230,6 +300,15 @@ function calcOccupationalPension(input) {
     return { error: "재직기간, 평균 기준소득월액, 퇴직(예정)연도를 올바르게 입력해 주세요." };
   }
 
+  // 군인연금: 복무 19년 6개월 이상~20년 미만은 20년으로 보아 퇴역연금 수급 (찾기쉬운 생활법령정보)
+  var militaryRoundedUp = isMilitary && totalMonths >= 234 && totalMonths < 240;
+  if (militaryRoundedUp) totalMonths = 240;
+
+  // 공무원연금 기준소득월액 상한: 전체 공무원 평균의 160% (공무원연금공단)
+  var incomeCapped = false;
+  var incomeCapWon = Math.round(OCCUPATIONAL_REDIST_A_2026 * 1.6);
+  if ((input.type === "civil" || input.type === "civilServant") && avgIncomeMonthly > incomeCapWon) { avgIncomeMonthly = incomeCapWon; incomeCapped = true; }
+
   var serviceYearsFull = totalMonths / 12;
   var startYear = Math.round(input.retireYear - serviceYearsFull);
 
@@ -257,7 +336,11 @@ function calcOccupationalPension(input) {
     avgAnnualRate: avgAnnualRate,
     startYear: startYear,
     eligible: eligible,
-    detail: detail
+    detail: detail,
+    incomeCapped: incomeCapped,
+    incomeCapWon: incomeCapWon,
+    militaryRoundedUp: militaryRoundedUp,
+    effectiveIncomeMonthly: avgIncomeMonthly
   };
 }
 
@@ -444,8 +527,12 @@ function progressiveIncomeTax(base) {
 }
 
 // 공적연금소득세 근사 (국민연금·직역연금이 유일한 소득이라고 가정한 단순 추정)
-function calcPublicPensionTax(annualPensionWon) {
-  var w = clampNonNegative(annualPensionWon);
+// taxableRatio: 과세 대상 비율(0~1). 공적연금은 2002.1.1 이후 납입기간·재직기간에 해당하는 연금만 과세하므로
+//   과세대상 연금액 = 연금액 × (2002년 이후 기간 ÷ 전체 기간) (국민연금공단·공무원연금공단 안내). 생략하면 전액 과세로 봅니다.
+// 연금소득만 있는 경우 표준세액공제 7만원을 적용합니다.
+function calcPublicPensionTax(annualPensionWon, taxableRatio) {
+  var ratio = taxableRatio > 0 && taxableRatio < 1 ? taxableRatio : (taxableRatio === 0 ? 0 : 1);
+  var w = clampNonNegative(annualPensionWon) * ratio;
   var deduction, deductionFormula;
   if (w <= 3500000) { deduction = w; deductionFormula = "연금액 전액"; }
   else if (w <= 7000000) { deduction = 3500000 + (w - 3500000) * 0.4; deductionFormula = "350만원 + (연금액 − 350만원) × 40%"; }
@@ -458,10 +545,12 @@ function calcPublicPensionTax(annualPensionWon) {
   var basicDeduction = 1500000; // 본인 기본공제만 반영 (단순화)
   var taxBase = clampNonNegative(pensionIncome - basicDeduction);
   var bracket = incomeTaxBracket(taxBase);
-  var incomeTax = clampNonNegative(taxBase * bracket.rate - bracket.deduction);
+  var computedTax = clampNonNegative(taxBase * bracket.rate - bracket.deduction);
+  var incomeTax = clampNonNegative(computedTax - 70000); // 표준세액공제 7만원 (연금소득만 있는 경우)
   var totalTax = clampNonNegative(incomeTax * 1.1); // 지방소득세 10% 포함
 
   var appliedDeductionFormula = deductionCapped ? "900만원 한도 적용" : deductionFormula;
+  var ratioText = ratio < 1 ? "과세대상 연금 " + formatWon(w) + "(연금의 " + fmtPct(ratio * 100) + "%) 기준, " : "";
   return {
     annualTax: totalTax,
     monthlyTax: totalTax / 12,
@@ -470,7 +559,8 @@ function calcPublicPensionTax(annualPensionWon) {
     taxBase: taxBase,
     bracketRatePercent: bracket.rate * 100,
     bracketDeduction: bracket.deduction,
-    formula: "연금소득공제(" + appliedDeductionFormula + ") 반영 후 과세표준 " + formatWon(taxBase) + " × " + fmtPct(bracket.rate * 100) + "% − 누진공제 " + formatWon(bracket.deduction) + " (연, 지방소득세 포함) ÷ 12개월"
+    taxableRatio: ratio,
+    formula: ratioText + "연금소득공제(" + appliedDeductionFormula + ") 반영 후 과세표준 " + formatWon(taxBase) + " × " + fmtPct(bracket.rate * 100) + "% − 누진공제 " + formatWon(bracket.deduction) + " − 표준세액공제 7만원 (연, 지방소득세 포함) ÷ 12개월"
   };
 }
 
@@ -524,11 +614,12 @@ function privatePensionTaxRate(age) {
 var INTEREST_INCOME_TAX_RATE = 0.154;
 
 // 공적연금(국민연금·직역연금) 세전/세후 표 행 HTML
-function publicPensionTaxRowsHtml(monthly) {
-  var tax = calcPublicPensionTax(monthly * 12);
+function publicPensionTaxRowsHtml(monthly, taxableRatio) {
+  var tax = calcPublicPensionTax(monthly * 12, taxableRatio);
   var afterTax = clampNonNegative(monthly - tax.monthlyTax);
   return (
     '<tr><th>세전 월 수급액</th><td>' + formatWon(monthly) + '</td></tr>' +
+    (tax.taxableRatio < 1 ? '<tr><th>과세 대상 연금 비율</th><td>' + fmtPct(tax.taxableRatio * 100) + '%<div class="table-formula">2002년 이전 납입·재직 기간에 해당하는 연금은 과세하지 않습니다</div></td></tr>' : '') +
     '<tr><th>예상 세금 (연금소득세, 단독소득 가정)</th><td>-' + formatWon(tax.monthlyTax) + '<div class="table-formula">' + tax.formula + '</div></td></tr>' +
     '<tr><th>세후 실수령액 (추정)</th><td><strong>' + formatWon(afterTax) + '</strong></td></tr>'
   );
@@ -960,9 +1051,14 @@ function calcAnnualLeave(input) {
    ------------------------------------------------------------------------- */
 var PARENTAL_LEAVE_LOWER_BOUND = 700000; // 하한액(참고치)
 
-function parentalLeaveMonthlyPay(monthlyOrdinaryWageWon, monthIndex) {
+// 6+6 부모육아휴직제: 자녀 생후 18개월 이내 부모 모두 육아휴직 시 각자 첫 6개월 통상임금 100%, 월 상한 250·250·300·350·400·450만원 (고용노동부)
+var PARENTAL_LEAVE_SIX_PLUS_SIX_CAPS = [2500000, 2500000, 3000000, 3500000, 4000000, 4500000];
+// mode: "normal"(일반) | "sixsix"(6+6) | "single"(한부모: 1~6개월 100%·상한 300만원)
+function parentalLeaveMonthlyPay(monthlyOrdinaryWageWon, monthIndex, mode) {
   var rate, cap;
-  if (monthIndex <= 3) { rate = 1.0; cap = 2500000; }
+  if (mode === "sixsix" && monthIndex <= 6) { rate = 1.0; cap = PARENTAL_LEAVE_SIX_PLUS_SIX_CAPS[monthIndex - 1]; }
+  else if (mode === "single" && monthIndex <= 6) { rate = 1.0; cap = 3000000; }
+  else if (monthIndex <= 3) { rate = 1.0; cap = 2500000; }
   else if (monthIndex <= 6) { rate = 1.0; cap = 2000000; }
   else { rate = 0.8; cap = 1600000; }
   var pay = monthlyOrdinaryWageWon * rate;
@@ -980,8 +1076,9 @@ function calcParentalLeavePay(input) {
   var rows = [];
   var total = 0;
   for (var m = 1; m <= months; m++) {
-    var pay = parentalLeaveMonthlyPay(monthlyWageWon, m);
-    var tier = m <= 3 ? "통상임금 100%, 상한 250만원" : m <= 6 ? "통상임금 100%, 상한 200만원" : "통상임금 80%, 상한 160만원";
+    var pay = parentalLeaveMonthlyPay(monthlyWageWon, m, input.mode);
+    var special = (input.mode === "sixsix" || input.mode === "single") && m <= 6;
+    var tier = special ? (input.mode === "sixsix" ? "6+6 특례: 통상임금 100%, 상한 " + (PARENTAL_LEAVE_SIX_PLUS_SIX_CAPS[m - 1] / 10000) + "만원" : "한부모 특례: 통상임금 100%, 상한 300만원") : m <= 3 ? "통상임금 100%, 상한 250만원" : m <= 6 ? "통상임금 100%, 상한 200만원" : "통상임금 80%, 상한 160만원";
     rows.push({ month: m, pay: pay, tier: tier });
     total += pay;
   }
@@ -1012,11 +1109,13 @@ var MINIMUM_WAGE_DAILY_2026 = MINIMUM_WAGE_2026 * 8; // 82,560원
 function calcIndustrialAccidentPremium(input) {
   var totalWageWon = input.totalWageManwon * 10000;
   var industry = INDUSTRIAL_ACCIDENT_RATES[input.industry];
-  if (totalWageWon <= 0 || !industry) {
+  if (totalWageWon <= 0 || (!industry && !(input.customRatePermil > 0))) {
     return { error: "보수총액과 업종을 올바르게 입력해 주세요." };
   }
-  var totalRate = industry.rate + COMMUTE_ACCIDENT_RATE_2026;
-  return { industryLabel: industry.label, rate: totalRate, baseRate: industry.rate, commuteRate: COMMUTE_ACCIDENT_RATE_2026, premium: totalWageWon * totalRate };
+  var custom = input.customRatePermil > 0;
+  var baseRate = custom ? input.customRatePermil / 1000 : industry.rate;
+  var totalRate = baseRate + COMMUTE_ACCIDENT_RATE_2026;
+  return { industryLabel: custom ? "직접 입력한 요율" : industry.label, custom: custom, rate: totalRate, baseRate: baseRate, commuteRate: COMMUTE_ACCIDENT_RATE_2026, premium: totalWageWon * totalRate };
 }
 
 function calcWorkInjuryLeaveBenefit(input) {
@@ -1186,8 +1285,20 @@ function calcYearEndTax(input) {
   var laborIncome = clampNonNegative(totalGross - laborDeduction);
 
   // ---- 소득공제 ----
-  var personalDeduction = (1 + dependents) * 1500000;
-  f.personalDeduction = "(본인 포함 " + (1 + dependents) + "명) × 150만원";
+  var seniorCount = Math.max(0, Math.round(input.seniorCount || 0));      // 경로우대(만 70세 이상) 기본공제대상자 수
+  var disabledCount = Math.max(0, Math.round(input.disabledCount || 0)); // 장애인 기본공제대상자 수
+  var extraPersonal = seniorCount * 1000000 + disabledCount * 2000000;
+  var extraNotes = [];
+  if (seniorCount > 0) extraNotes.push("경로우대 " + seniorCount + "명 × 100만원");
+  if (disabledCount > 0) extraNotes.push("장애인 " + disabledCount + "명 × 200만원");
+  // 한부모(100만원)와 부녀자(50만원) 공제는 중복 적용되지 않고 한부모 공제가 우선합니다. 부녀자 공제는 종합소득금액 3천만원 이하(총급여 약 4,147만원 이하)일 때만 해당합니다.
+  if (input.singleParent) { extraPersonal += 1000000; extraNotes.push("한부모 100만원"); }
+  else if (input.womanHousehold) {
+    if (totalGross <= 41470588) { extraPersonal += 500000; extraNotes.push("부녀자 50만원"); }
+    else extraNotes.push("부녀자 공제는 총급여 약 4,147만원 이하만 해당(미적용)");
+  }
+  var personalDeduction = (1 + dependents) * 1500000 + extraPersonal;
+  f.personalDeduction = "(본인 포함 " + (1 + dependents) + "명) × 150만원" + (extraNotes.length ? " + " + extraNotes.join(" + ") : "");
 
   var monthlyInsurance = calcInsuranceBreakdown(totalGross / 12, pensionType);
   var insuranceAnnual = monthlyInsurance.total * 12;
@@ -1229,6 +1340,14 @@ function calcYearEndTax(input) {
     : childCount === 2 ? "2명 55만원"
     : "2명 55만원 + (" + (childCount - 2) + "명 × 40만원)";
 
+  // 출산·입양 세액공제(해당 과세연도 출산·입양): 첫째 30만원, 둘째 50만원, 셋째 이상 70만원
+  var birthOrder = Math.round(input.birthOrder || 0);
+  var birthCredit = birthOrder <= 0 ? 0 : birthOrder === 1 ? 300000 : birthOrder === 2 ? 500000 : 700000;
+  f.birthCredit = birthOrder <= 0 ? "해당 없음" : (birthOrder >= 3 ? "셋째 이상" : (birthOrder === 1 ? "첫째" : "둘째")) + " 출산·입양 " + (birthCredit / 10000) + "만원";
+  // 혼인세액공제(생애 1회, 2024~2026년 혼인신고): 50만원
+  var marriageCredit = input.marriage ? 500000 : 0;
+  f.marriageCredit = marriageCredit > 0 ? "혼인신고 50만원(생애 1회)" : "해당 없음";
+
   var pensionCredit = pensionAccountTaxCredit(pensionContribution, totalGross);
   var pensionRate = totalGross <= 55000000 ? 16.5 : 13.2;
   f.pensionCredit = "납입액(900만원 한도) " + formatWon(Math.min(pensionContribution, 9000000)) + " × " + pensionRate + "%";
@@ -1264,6 +1383,7 @@ function calcYearEndTax(input) {
 
   // 표준세액공제(13만원): 특별소득공제(주택자금)·특별세액공제(보험료·의료비·교육비·기부금)·월세 세액공제를 합쳐도
   // 13만원에 못 미치면, 그 공제들을 신청하지 않고 표준세액공제 13만원을 받는 편이 유리합니다.
+  // 국세청 안내: 특별소득공제·특별세액공제·월세액 세액공제를 신청하지 않을 때만 표준세액공제 13만원이 적용됩니다.
   var specialCreditSum = medicalCredit + insuranceCredit + educationCredit + rentCredit + donationCreditAmount;
   var standardCredit = 0;
   if (housingDeduction <= 0 && specialCreditSum < 130000) {
@@ -1273,7 +1393,7 @@ function calcYearEndTax(input) {
     }
     medicalCredit = 0; insuranceCredit = 0; educationCredit = 0; rentCredit = 0; donationCreditAmount = 0;
   }
-  var totalTaxCredit = earnedIncomeCredit + childCredit + pensionCredit + medicalCredit +
+  var totalTaxCredit = earnedIncomeCredit + childCredit + birthCredit + marriageCredit + pensionCredit + medicalCredit +
     insuranceCredit + educationCredit + rentCredit + donationCreditAmount + standardCredit;
 
   var finalTax = clampNonNegative(computedTax - totalTaxCredit);
@@ -1298,6 +1418,8 @@ function calcYearEndTax(input) {
     computedTax: computedTax,
     earnedIncomeCredit: earnedIncomeCredit,
     childCredit: childCredit,
+    birthCredit: birthCredit,
+    marriageCredit: marriageCredit,
     pensionCredit: pensionCredit,
     medicalCredit: medicalCredit,
     insuranceCredit: insuranceCredit,

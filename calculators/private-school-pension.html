@@ -117,6 +117,12 @@
       </div>
 
       <div class="field">
+        <label for="birthYear">출생연도 (선택)</label>
+        <input type="number" id="birthYear" placeholder="예: 1980" min="1930" max="2010" />
+        <div class="hint">입력하면 퇴직 시 나이와 연금 지급개시연령을 비교해, 개시 전에 퇴직할 때의 조기퇴직연금(1년당 5% 감액) 금액도 함께 보여드립니다.</div>
+      </div>
+
+      <div class="field">
         <label for="avgIncome">평균기준소득월액 (만원)</label>
         <input type="number" id="avgIncome" placeholder="예: 400" min="0" />
         <div class="hint">재직기간 전체를 평균한 기준소득월액(세전, 연금 산정 기준)을 만원 단위로 입력하세요.</div>
@@ -152,6 +158,8 @@
         <li><strong>재직기간 상한</strong>: 신규 임용자는 최대 36년까지 반영합니다. 다만 2016년 1월 1일 당시 재직기간이 21년 이상이던 분은 33년, 17년 이상 21년 미만은 34년, 15년 이상 17년 미만은 35년이 상한입니다. 임용연도를 역산해 이 상한을 자동으로 적용합니다.</li>
         <li><strong>소득재분배</strong>: 2016년 이후 재직분은 재직 30년까지 지급률 중 1%p에 소득재분배가 적용됩니다. 비교 기준(A값)은 전체 공무원 기준소득월액 평균액(2026년 5월~2027년 4월 시행 595만원)으로 두었습니다.</li>
         <li>2009년 이전 재직분은 실제로는 당시 보수(현재가치 환산)를 기준으로 하지만, 여기서는 입력한 평균기준소득월액을 그대로 씁니다.</li>
+        <li><strong>지급개시연령</strong>: 1996년 이후 임용자는 퇴직 연도에 따라 60세(2016~2021년 퇴직)에서 65세(2033년 이후 퇴직)까지 단계적으로 늦춰지며, 출생연도를 입력하면 개시 전 퇴직 시 조기퇴직연금(1년당 5%, 최대 25% 감액) 금액도 보여드립니다. 1996년 이전 임용자는 별도 특례가 있어 공단 확인이 필요합니다.</li>
+        <li><strong>세금</strong>: 2002년 이후 재직기간에 해당하는 연금만 과세되며, 임용연도를 역산해 반영합니다.</li>
       </ul>
       <div class="info-callout">
         이 계산기는 재직기간 전체에 같은 평균기준소득월액을 적용하는 추정치입니다. 실제 연금액은 재직기간 중 매년의 기준소득월액, 재평가율, 퇴직 시점의 A값, 사립학교 교직원 유형(교원/사무직원)별 세부 규정 등에 따라 달라지므로 <strong>참고용으로만 활용</strong>하시고, 정확한 금액은 <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>을 통해 확인하세요.
@@ -218,6 +226,7 @@ function runCalc() {
   var months = getNumberValue("joinMonths");
   var avgIncome = getNumberValue("avgIncome");
   var retireYear = getNumberValue("retireYear");
+  var birthYear = getNumberValue("birthYear");
 
   var result = calcOccupationalPension({ years: years, months: months, avgIncomeManwon: avgIncome, retireYear: retireYear });
 
@@ -260,9 +269,10 @@ function runCalc() {
   html += '<table class="result-table">';
   html += '<tr><th>총 재직기간</th><td>' + Math.floor(result.totalMonths / 12) + '년 ' + (result.totalMonths % 12) + '개월</td></tr>';
   html += occupationalDetailRowsHtml(result);
+  html += occupationalStartAgeRowsHtml(result, retireYear, birthYear, false);
   var allowanceOk = calcRetirementAllowance(result.totalMonths, avgIncome * 10000);
   if (allowanceOk !== null) { html += '<tr><th>별도 지급: 퇴직수당(일시금)</th><td>약 ' + formatWon(allowanceOk) + '</td></tr>'; }
-  html += publicPensionTaxRowsHtml(result.monthly);
+  html += publicPensionTaxRowsHtml(result.monthly, occupationalTaxableRatio(result.totalMonths / 12, retireYear));
   html += '</table>';
 
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>사립학교교직원연금공단이 공개한 산정 방식을 근사해 계산한 참고용 수치입니다. 세후 금액은 이 연금이 유일한 소득원이라는 가정 아래 계산했으므로, 다른 소득이 함께 있다면 실제 적용 세율은 달라질 수 있습니다. 정확한 금액은 <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>에서 확인하세요.</span></div>';

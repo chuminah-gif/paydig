@@ -119,6 +119,11 @@
           <div class="hint">2026년 고시 요율 중 대표 업종 예시이며, 모든 업종에 출퇴근재해 요율 0.06%가 더해져 계산됩니다. 정확한 업종별 요율은 <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>에서 사업종류 코드로 확인하세요.</div>
         </div>
         <div class="field">
+          <label for="customRate">내 사업장 산재보험료율 직접 입력 (‰, 선택)</label>
+          <input type="number" id="customRate" placeholder="예: 8 (=0.8%)" min="0" step="0.1" />
+          <div class="hint">4대보험 고지서나 근로복지공단 보험료 조회에 나온 사업종류별 요율(천분율)을 입력하면 위 업종 선택 대신 이 요율을 씁니다. 출퇴근재해 요율 0.06%는 자동으로 더해집니다.</div>
+        </div>
+        <div class="field">
           <label for="totalWage">전 직원 보수총액 (연간, 세전, 만원)</label>
           <input type="number" id="totalWage" placeholder="예: 30000" min="0" />
         </div>
@@ -248,7 +253,7 @@ function runPremiumCalc() {
   var industry = document.getElementById("industry").value;
   var totalWage = getNumberValue("totalWage");
 
-  var result = calcIndustrialAccidentPremium({ industry: industry, totalWageManwon: totalWage });
+  var result = calcIndustrialAccidentPremium({ industry: industry, totalWageManwon: totalWage, customRatePermil: getNumberValue("customRate") });
   if (result.error) {
     showError("resultCard", result.error);
     return;
@@ -263,7 +268,7 @@ function runPremiumCalc() {
   html += '<div class="amount">' + formatWon(result.premium) + '</div>';
   html += '<div class="amount-yearly">' + result.industryLabel + ' · 요율 ' + (result.rate * 100).toFixed(2) + '%</div>';
   html += '</div>';
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>대표 업종 예시 요율을 적용한 참고용 추정치입니다. 실제 사업종류 코드별 요율은 <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>에서 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>' + (result.custom ? '직접 입력하신 요율을 적용한 추정치입니다.' : '대표 업종 예시 요율을 적용한 참고용 추정치입니다.') + ' 실제 사업종류 코드별 요율은 <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>에서 확인하세요.</span></div>';
   document.getElementById("resultCard").innerHTML = html;
 }
 
