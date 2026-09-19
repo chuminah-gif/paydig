@@ -485,14 +485,26 @@ function runSimulation() {
     if (r2.error) { errors.push(occTypeLabel + ": " + r2.error); }
     else if (r2.totalMonths < occMinIn) {
       // 최소 재직기간 미달이면 연금이 아니라 퇴직일시금이 원칙이라 합계에 넣지 않습니다. 연계가 가능하면 연계 시 월 수급액을 따로 보여줍니다.
+      var occLumpText;
+      if (occType === "military") {
+        occLumpText = "퇴직(전역)일시금(금액은 연금관리기관 확인)";
+      } else {
+        var occLump = calcCivilServantSeveranceLump(r2.totalMonths, getNumberValue("occ-income") * 10000);
+        occLumpText = occLump === null
+          ? "재직 1년 미만은 기여금 반환 대상(금액은 공단 확인)"
+          : "퇴직일시금 약 " + formatWon(occLump) + "(퇴직수당 별도)";
+        if (occLump !== null && occType === "privateSchool") {
+          warnings.push("사학연금 퇴직일시금은 공무원연금과 같은 산식을 준용해 개략 추정한 값입니다.");
+        }
+      }
       if (linkPossible) {
         var occLinkTax = calcPublicPensionTax(r2.monthly * 12);
         warnings.push(occTypeLabel + " 재직기간은 최소 " + (occMinIn / 12) + "년(" + occMinIn + "개월)에 미달해 단독으로는 퇴직일시금으로 지급됩니다. 다만 국민연금과 합산하면 연계 요건을 채우므로 ① 연계하지 않고 일시금을 받거나 ② 연계를 신청해 연금으로 받는 두 가지 선택지가 있습니다. 연계 시 " + occTypeLabel + " 몫의 월 수급액은 이 시뮬레이션의 계산식으로 추정한 값이며, 실제 연계연금은 각 기관이 따로 산정하므로 달라질 수 있습니다. 실제 연계 가능 여부와 유불리는 연금관리기관에 확인하세요.");
-        rows.push({ name: occTypeLabel, type: "일시금 vs 연계", displayText: "① 연계 안 하면 퇴직일시금(월 연금 없음) · ② 연계하면 월 세전 약 " + formatWon(r2.monthly) + "(추정)" });
+        rows.push({ name: occTypeLabel, type: "일시금 vs 연계", displayText: "① 연계 안 하면 " + occLumpText + " · ② 연계하면 월 세전 약 " + formatWon(r2.monthly) + "(추정)" });
         linkExtraPre += r2.monthly;
       } else {
         warnings.push(occTypeLabel + "은 최소 재직(복무)기간 " + (occMinIn / 12) + "년(" + occMinIn + "개월)을 채워야 연금으로 받을 수 있습니다. 입력하신 기간은 이에 미달해 원칙적으로 퇴직일시금으로 지급되므로 월 수령액 합계에 넣지 않았습니다." + (natOn ? " 국민연금과 합산해도 연계 요건(" + (occMinIn / 12) + "년)에는 못 미칩니다." : " 국민연금 가입 이력이 있다면 국민연금 항목도 함께 체크해 공적연금 연계제도로 연금을 받을 수 있는지 확인해 보세요."));
-        rows.push({ name: occTypeLabel, type: "퇴직일시금(원칙)", displayText: "월 연금 없음 · 일시금으로 지급" });
+        rows.push({ name: occTypeLabel, type: "퇴직일시금(원칙)", displayText: "월 연금 없음 · " + occLumpText });
       }
     }
     else {

@@ -82,6 +82,20 @@ function calcNationalPension(input) {
 }
 
 /* -------------------------------------------------------------------------
+   공무원연금 퇴직일시금 (재직기간 10년 미만 퇴직 시)
+   퇴직일시금 = 평균기준소득월액 × 재직연수 × 0.975
+              + 평균기준소득월액 × 재직연수 × (5년 초과 재직연수 × 0.0065)
+   (인사혁신처 공개 급여체계 기준. 재직 1년 미만은 퇴직일시금이 아니라 기여금 반환 대상이라 null)
+   ※ 퇴직수당(재직 1년 이상 별도 지급)은 포함하지 않습니다.
+   ------------------------------------------------------------------------- */
+function calcCivilServantSeveranceLump(totalMonths, avgIncomeMonthly) {
+  var years = totalMonths / 12;
+  if (years < 1 || avgIncomeMonthly <= 0) return null;
+  var factor = 0.975 + 0.0065 * Math.max(0, years - 5);
+  return avgIncomeMonthly * years * factor;
+}
+
+/* -------------------------------------------------------------------------
    국민연금 수급개시연령 (출생연도 기준, 노령연금)
    ------------------------------------------------------------------------- */
 function nationalPensionStartAge(birthYear) {

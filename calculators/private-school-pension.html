@@ -226,6 +226,25 @@ function runCalc() {
 
   var html = "";
   html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
+
+  if (!result.eligible) {
+    var lump = calcCivilServantSeveranceLump(result.totalMonths, avgIncome * 10000);
+    var shortMonths = 120 - result.totalMonths;
+    html += '<div class="result-headline">';
+    html += '<div class="label">퇴직연금 수급 요건 미충족</div>';
+    html += '<div class="amount">월 연금 없음</div>';
+    html += '<div class="amount-yearly">' + (lump === null ? '재직 1년 미만은 퇴직일시금 대신 기여금 반환 대상' : '원칙적으로 퇴직일시금 약 ' + formatWon(lump) + ' (개략 추정)') + '</div>';
+    html += '</div>';
+    html += '<table class="result-table">';
+    html += '<tr><th>총 재직기간</th><td>' + Math.floor(result.totalMonths / 12) + '년 ' + (result.totalMonths % 12) + '개월</td></tr>';
+    html += '<tr><th>연금 수급에 필요한 기간</th><td>최소 10년(120개월) — ' + Math.ceil(shortMonths / 12 * 10) / 10 + '년 부족</td></tr>';
+    html += '</table>';
+    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>사학연금 퇴직연금은 최소 재직기간 10년(120개월)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않고 퇴직일시금이 지급되는 것이 원칙입니다. 위 금액은 공무원연금 퇴직일시금 산식(<strong>평균기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산</strong>)을 준용해 단순화한 개략 추정이며 퇴직수당은 포함하지 않았습니다. 국민연금 가입 이력이 있다면 <a href="../simulation.html">공적연금 연계제도</a>로 두 기간을 합쳐 연금을 받을 수 있는지 확인해 보세요.</span></div>';
+    html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>정확한 금액은 <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>에서 확인하세요.</span></div>';
+    document.getElementById("resultCard").innerHTML = html;
+    return;
+  }
+
   html += '<div class="result-headline">';
   html += '<div class="label">예상 월 수급액 (세전)</div>';
   html += '<div class="amount">' + formatWon(result.monthly) + '</div>';
@@ -239,10 +258,6 @@ function runCalc() {
   html += '<tr><th>연평균 적용비율</th><td>' + result.avgAnnualRate.toFixed(3) + '%</td></tr>';
   html += publicPensionTaxRowsHtml(result.monthly);
   html += '</table>';
-
-  if (!result.eligible) {
-    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>사학연금 퇴직연금은 최소 재직기간 10년(120개월)을 채워야 수급 자격이 발생합니다. 입력하신 재직기간은 이에 미달하며, 미달 시 퇴직일시금 등으로 지급될 수 있습니다.</span></div>';
-  }
 
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>사립학교교직원연금공단이 공개한 산정 방식을 근사해 계산한 참고용 수치입니다. 세후 금액은 이 연금이 유일한 소득원이라는 가정 아래 계산했으므로, 다른 소득이 함께 있다면 실제 적용 세율은 달라질 수 있습니다. 정확한 금액은 <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>에서 확인하세요.</span></div>';
 
