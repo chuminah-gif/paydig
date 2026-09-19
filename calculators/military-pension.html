@@ -113,7 +113,7 @@
       <div class="field">
         <label for="retireYear">전역(예정) 연도</label>
         <input type="number" id="retireYear" placeholder="예: 2040" min="1990" max="2080" />
-        <div class="hint">연도별 적용비율이 다르므로 전역 연도를 기준으로 계산합니다.</div>
+        <div class="hint">군인연금은 복무 시기와 관계없이 지급률이 같아 연금액에는 영향이 없고, 임관 시기를 추정해 화면에 보여주는 데만 씁니다.</div>
       </div>
 
       <div class="field">
@@ -140,14 +140,14 @@
   <div class="container">
     <div class="card prose">
       <h2>군인연금 계산 방식 안내</h2>
-      <p>군인연금법은 공무원연금법의 산정방식을 준용하되, 최소 복무기간 및 계급정년 등 군 특성을 반영한 별도 규정을 두고 있습니다. 이 계산기는 공무원연금과 동일한 산정 구조를 근사 적용합니다.</p>
+      <p>군인연금은 공무원·사학연금과 달리 복무기간 1년당 평균기준소득월액의 1.9%를 전 기간에 동일하게 적용하고, 최소 복무기간(20년)과 연금액 상한(평균기준소득월액의 62.7%) 등 군 특성을 반영한 별도 규정을 두고 있습니다. 이 계산기는 그 산식을 그대로 적용합니다.</p>
       <p style="font-family: monospace; background:#f5f7fa; padding:10px 14px; border-radius:8px;">
-        연금월액 = 평균기준소득월액 × Σ(복무연도별 적용비율)
+        연금월액 = 평균기준소득월액 × 복무연수 × 1.9%  (최대 62.7%)
       </p>
       <ul>
-        <li>복무기간 1년당 적용비율은 2020년 기준 1.7%에서 2035년까지 단계적으로 1.0%로 낮아지는 구조를 반영했습니다.</li>
+        <li>복무기간 1년당 지급률은 임관 시기와 관계없이 1.9%로 동일하게 적용합니다(공무원·사학연금과 같은 연도별 인하가 없습니다).</li>
         <li>군인연금은 다른 직역연금과 달리 <strong>최소 복무기간 20년(240개월)</strong>을 채워야 퇴역연금 수급자격이 발생합니다.</li>
-        <li>지급률 합계는 근사 상한(약 76.5%)을 넘지 않도록 제한했습니다.</li>
+        <li>연금액은 평균기준소득월액의 62.7%(복무 33년 상당)를 넘을 수 없어, 그 이상 복무해도 더 늘지 않습니다.</li>
       </ul>
       <div class="info-callout">
         실제 연금액은 계급·병과별 세부 규정, 재평가율, 명예전역·조기전역 여부 등에 따라 달라질 수 있습니다. 정확한 금액은 <a href="https://www.mps.mil.kr" target="_blank" rel="noopener">군인연금 정보포털(국방부 군인연금과)</a>을 통해 확인하세요.
@@ -162,10 +162,10 @@
         <tr><th>복무기간</th><td>20년 (최소 요건 충족)</td></tr>
         <tr><th>전역 예정 연도</th><td>2045년</td></tr>
         <tr><th>추정 임관연도</th><td>약 2025년</td></tr>
-        <tr><th>지급률 합계</th><td>약 22.6%</td></tr>
-        <tr><th>예상 월 수급액 (세전)</th><td>약 95만원 (947,800원)</td></tr>
+        <tr><th>지급률 합계</th><td>약 38.0%</td></tr>
+        <tr><th>예상 월 수급액 (세전)</th><td>약 160만원 (1,596,000원)</td></tr>
       </table>
-      <p>같은 20년을 복무하더라도 임관 시기가 2020년대 중반이면 지급률이 계속 낮아지는 구간(2020~2035년 1.7%→1.0%)과 대부분 겹치기 때문에, 2015년 이전에 임관해 복무기간 일부가 구법 적용비율(1.9%)로 계산되는 경우보다 지급률 합계가 상대적으로 낮게 나옵니다.</p>
+      <p>20년 × 1.9% = 38%이므로 평균기준소득월액 420만원의 38%가 월 연금이 됩니다. 군인연금은 공무원·사학연금과 달리 임관 시기에 따라 지급률이 달라지지 않는 점이 특징입니다.</p>
 
       <h2>자주 묻는 질문</h2>
       <h3>Q. 19년 11개월을 복무하고 전역하면 연금을 못 받나요?</h3>
@@ -224,7 +224,7 @@ function runCalc() {
   var avgIncome = getNumberValue("avgIncome");
   var retireYear = getNumberValue("retireYear");
 
-  var result = calcOccupationalPension({ years: years, months: months, avgIncomeManwon: avgIncome, retireYear: retireYear });
+  var result = calcOccupationalPension({ type: "military", years: years, months: months, avgIncomeManwon: avgIncome, retireYear: retireYear });
 
   if (result.error) {
     showError("resultCard", result.error);

@@ -476,6 +476,7 @@ function runSimulation() {
     var occType = document.getElementById("occ-type").value;
     var occTypeLabel = occType === "military" ? "군인연금" : occType === "privateSchool" ? "사학연금" : "공무원연금";
     var r2 = calcOccupationalPension({
+      type: occType,
       years: getNumberValue("occ-years"),
       months: getNumberValue("occ-months"),
       avgIncomeManwon: getNumberValue("occ-income"),

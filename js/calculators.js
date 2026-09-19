@@ -130,30 +130,25 @@ function nationalPensionStartAge(birthYear) {
 }
 
 /* -------------------------------------------------------------------------
-   공무원연금 / 군인연금 / 사학연금 (직역연금 공통 구조)
-   연금월액 = 평균기준소득월액 × Σ(재직연도별 적용비율)
-   2016년 공무원연금법 개정에 따른 재직기간 1년당 적용비율(신법) 단계적 인하 구조를 근사 반영:
-     2015년 이전            : 연 1.9% (구법 단순 근사치)
-     2016~2019년            : 1.878% → 1.797% (연 0.027%p씩 단계적 인하)
-     2020~2035년            : 1.7% → 1.0% (연 약 0.0467%p씩 단계적 인하)
-     2036년 이후             : 1.0% 고정
-   군인연금 및 사학연금은 공무원연금 산정방식을 준용하는 구조를 근사 적용합니다.
+   공무원연금 / 사학연금 / 군인연금 (직역연금)
+   연금월액 = 평균기준소득월액 × Σ(재직연도별 지급률)
+
+   [공무원·사학연금] 재직기간 1년당 지급률 (공무원연금공단 안내 기준)
+     2015년 이전 : 연 1.9% 로 단순 근사 (2009년 이전 재직분은 더 높은 별도 산식이 있어 실제보다 낮게 나올 수 있음)
+     2016년      : 1.878% → 2035년 이후 : 1.7%  (연도별 표는 시행령 부칙 기준이며, 여기서는 두 끝점을 잇는 선형 근사)
+     재직기간은 최대 36년까지 반영. 소득재분배(30년까지 1.7% 중 1%p에 적용)는 반영하지 않음.
+   [군인연금] 복무기간 1년당 평균기준소득월액의 1.9%(전 기간 동일), 연금액은 평균기준소득월액의 62.7% 초과 불가
    ------------------------------------------------------------------------- */
 function occupationalAnnualRatePercent(year) {
   if (year <= 2015) return 1.9;
-  if (year <= 2019) {
-    // 2016: 1.878, 2017: 1.851, 2018: 1.824, 2019: 1.797
-    return 1.878 - (year - 2016) * 0.027;
-  }
-  if (year <= 2035) {
-    return 1.7 - (year - 2020) * (0.7 / 15);
-  }
-  return 1.0;
+  if (year >= 2035) return 1.7;
+  return 1.878 - (year - 2016) * ((1.878 - 1.7) / 19);
 }
 
 function calcOccupationalPension(input) {
   var totalMonths = input.years * 12 + input.months;
   var avgIncomeMonthly = input.avgIncomeManwon * 10000;
+  var isMilitary = input.type === "military";
 
   if (totalMonths <= 0 || avgIncomeMonthly <= 0 || !input.retireYear) {
     return { error: "재직기간, 평균 기준소득월액, 퇴직(예정)연도를 올바르게 입력해 주세요." };
@@ -162,27 +157,29 @@ function calcOccupationalPension(input) {
   var serviceYearsFull = totalMonths / 12;
   var startYear = Math.round(input.retireYear - serviceYearsFull);
 
-  var rateSumPercent = 0;
-  var yearCount = 0;
-  for (var y = startYear; y < input.retireYear; y++) {
-    rateSumPercent += occupationalAnnualRatePercent(y);
-    yearCount++;
+  var avgAnnualRate;
+  var cappedRatePercent;
+  if (isMilitary) {
+    avgAnnualRate = 1.9;
+    cappedRatePercent = Math.min(1.9 * serviceYearsFull, 62.7);
+  } else {
+    var rateSumPercent = 0;
+    var yearCount = 0;
+    for (var y = startYear; y < input.retireYear; y++) {
+      rateSumPercent += occupationalAnnualRatePercent(y);
+      yearCount++;
+    }
+    if (yearCount === 0) {
+      rateSumPercent = occupationalAnnualRatePercent(input.retireYear) * serviceYearsFull;
+      yearCount = 1;
+    }
+    avgAnnualRate = rateSumPercent / yearCount;
+    cappedRatePercent = avgAnnualRate * Math.min(serviceYearsFull, 36);
   }
-  if (yearCount === 0) {
-    rateSumPercent = occupationalAnnualRatePercent(input.retireYear) * serviceYearsFull;
-    yearCount = 1;
-  }
-
-  // 실제 근무연수(월단위 소수 포함) 비율로 환산
-  var avgAnnualRate = rateSumPercent / yearCount;
-  var totalRatePercent = avgAnnualRate * serviceYearsFull;
-
-  // 최대 지급률 상한 (근사치: 대략 재직기간 36년 수준에서 포화되는 구조를 단순 반영)
-  var cappedRatePercent = Math.min(totalRatePercent, 76.5);
 
   var monthly = avgIncomeMonthly * (cappedRatePercent / 100);
 
-  var eligible = totalMonths >= 120; // 최소 재직기간 10년 (2016년 이후 임용 기준)
+  var eligible = isMilitary ? totalMonths >= 240 : totalMonths >= 120; // 최소 재직(복무)기간: 공무원·사학 10년, 군인 20년
 
   return {
     monthly: clampNonNegative(monthly),
@@ -581,34 +578,22 @@ function laborIncomeDeduction(annualGrossWon) {
   if (g <= 15000000) return 3500000 + (g - 5000000) * 0.4;
   if (g <= 45000000) return 7500000 + (g - 15000000) * 0.15;
   if (g <= 100000000) return 12000000 + (g - 45000000) * 0.05;
-  return 14750000 + (g - 100000000) * 0.02;
+  return Math.min(14750000 + (g - 100000000) * 0.02, 20000000); // 근로소득공제 한도 2,000만원
 }
 
-// 월 소득세·지방소득세 근사 (근로소득공제 → 근로소득금액 → 인적공제(부양가족 수 × 150만원, 본인 포함) → 종합소득세 기본세율)
-// familyCount: 부양가족 수(본인 포함, 국세청 간이세액표의 "공제대상가족수"와 같은 개념). 경로우대·장애인 추가공제는 미반영.
+// 월 소득세·지방소득세: 국세청 근로소득 간이세액표(js/withholding-table.js)에서 월 급여(비과세 제외)와
+// 공제대상가족 수(본인 포함)로 조회합니다. 실제 급여명세서의 원천징수 방식과 같아, 4대보험료 소득공제·근로소득세액공제
+// 등이 이미 반영된 값입니다. 8세 이상 20세 이하 자녀 추가 공제와 경로우대·장애인 공제는 반영하지 않습니다.
 function calcMonthlyIncomeTax(monthlyGrossWon, familyCount) {
-  var fc = familyCount > 0 ? familyCount : 1;
-  var annualGross = clampNonNegative(monthlyGrossWon) * 12;
-  var deduction = laborIncomeDeduction(annualGross);
-  var laborIncome = clampNonNegative(annualGross - deduction);
-  var basicDeduction = fc * 1500000;
-  var taxBase = clampNonNegative(laborIncome - basicDeduction);
-  var bracket = incomeTaxBracket(taxBase);
-  var annualTax = clampNonNegative(taxBase * bracket.rate - bracket.deduction);
-  var incomeTax = clampNonNegative(annualTax / 12);
+  var fc = Math.min(Math.max(Math.round(familyCount) || 1, 1), 11);
+  var monthly = clampNonNegative(monthlyGrossWon);
+  var incomeTax = lookupWithholdingTax(monthly, fc);
   var localTax = incomeTax * 0.1; // 지방소득세 = 소득세의 10% (법정 비율)
   return {
     incomeTax: incomeTax,
     localTax: localTax,
-    annualGross: annualGross,
-    laborDeduction: deduction,
-    laborIncome: laborIncome,
-    familyCount: fc,
-    basicDeduction: basicDeduction,
-    taxBase: taxBase,
-    bracketRatePercent: bracket.rate * 100,
-    bracketDeduction: bracket.deduction,
-    annualTax: annualTax
+    taxableMonthly: monthly,
+    familyCount: fc
   };
 }
 
@@ -632,10 +617,8 @@ function calcTakeHomePay(monthlyGrossWon, pensionType, options) {
     localTax: incomeTax * 0.1,
     baseIncomeTax: baseTax.incomeTax,
     withholdingRatio: withholdingRatio,
-    taxBase: baseTax.taxBase,
-    bracketRatePercent: baseTax.bracketRatePercent,
-    bracketDeduction: baseTax.bracketDeduction,
-    annualTax: baseTax.annualTax
+    taxableMonthly: baseTax.taxableMonthly,
+    familyCount: baseTax.familyCount
   };
   var totalDeduct = insurance.total + tax.incomeTax + tax.localTax;
   return {
@@ -661,7 +644,15 @@ function solveGrossFromNet(targetMonthlyNetWon, pensionType, options) {
     var net = calcTakeHomePay(mid, pensionType, options).net;
     if (net < target) lo = mid; else hi = mid;
   }
-  return calcTakeHomePay((lo + hi) / 2, pensionType, options);
+  var gross = (lo + hi) / 2;
+  // 간이세액표는 구간별로 세액이 계단식으로 바뀌어 실수령액이 구간 경계에서 소폭 줄어들 수 있으므로,
+  // 목표 실수령액을 처음 달성하는 가장 낮은 급여를 근처에서 다시 찾습니다.
+  for (var back = 0; back < 2000; back++) {
+    var lower = gross - 100;
+    if (lower <= 0 || calcTakeHomePay(lower, pensionType, options).net < target) break;
+    gross = lower;
+  }
+  return calcTakeHomePay(gross, pensionType, options);
 }
 
 /* -------------------------------------------------------------------------
@@ -755,7 +746,7 @@ function insuranceDeductDetailHtml(insurance, tax) {
   if (tax) {
     html += '<div class="d-group-label">세금</div>';
     var ratioNote = tax.withholdingRatio && tax.withholdingRatio !== 1 ? " × 원천징수비율 " + Math.round(tax.withholdingRatio * 100) + "%" : "";
-    var taxFormula = "연 과세표준 " + formatWon(tax.taxBase) + " × " + fmtPct(tax.bracketRatePercent) + "% − 누진공제 " + formatWon(tax.bracketDeduction) + ratioNote + ", 12개월 분할";
+    var taxFormula = "국세청 간이세액표: 월 급여 " + formatWon(tax.taxableMonthly) + ", 공제대상가족 " + tax.familyCount + "명" + ratioNote;
     html += dRow("소득세", taxFormula, formatWon(tax.incomeTax));
     html += dRow("지방소득세", formatWon(tax.incomeTax) + " × 10%", formatWon(tax.localTax));
   }
@@ -1093,7 +1084,7 @@ function calcYearEndTax(input) {
   else if (totalGross <= 15000000) f.laborDeduction = "350만원 + (" + formatWon(totalGross) + " − 500만원) × 40%";
   else if (totalGross <= 45000000) f.laborDeduction = "750만원 + (" + formatWon(totalGross) + " − 1,500만원) × 15%";
   else if (totalGross <= 100000000) f.laborDeduction = "1,200만원 + (" + formatWon(totalGross) + " − 4,500만원) × 5%";
-  else f.laborDeduction = "1,475만원 + (" + formatWon(totalGross) + " − 1억원) × 2%";
+  else f.laborDeduction = "1,475만원 + (" + formatWon(totalGross) + " − 1억원) × 2% (한도 2,000만원)";
   var laborIncome = clampNonNegative(totalGross - laborDeduction);
 
   // ---- 소득공제 ----
