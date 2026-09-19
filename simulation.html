@@ -489,12 +489,13 @@ function runSimulation() {
       if (occType === "military") {
         occLumpText = "퇴직(전역)일시금(금액은 연금관리기관 확인)";
       } else {
-        var occLump = calcCivilServantSeveranceLump(r2.totalMonths, getNumberValue("occ-income") * 10000);
+        var occLump = calcSeveranceLumpSum(r2.totalMonths, getNumberValue("occ-income") * 10000);
+        var occAllowance = calcRetirementAllowance(r2.totalMonths, getNumberValue("occ-income") * 10000);
         occLumpText = occLump === null
           ? "재직 1년 미만은 기여금 반환 대상(금액은 공단 확인)"
-          : "퇴직일시금 약 " + formatWon(occLump) + "(퇴직수당 별도)";
-        if (occLump !== null && occType === "privateSchool") {
-          warnings.push("사학연금 퇴직일시금은 공무원연금과 같은 산식을 준용해 개략 추정한 값입니다.");
+          : "퇴직일시금 약 " + formatWon(occLump) + " + 퇴직수당 약 " + formatWon(occAllowance);
+        if (occLump !== null) {
+          warnings.push("퇴직일시금과 퇴직수당은 서로 별개의 급여로, 재직 1년 이상이면 함께 지급됩니다. 퇴직일시금은 " + (occType === "privateSchool" ? "사립학교교직원연금공단이 공개한" : "공무원연금법 제51조가 준용하는 제43조제5항의") + " 산식(기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산), 퇴직수당은 공단이 공개한 재직기간별 지급비율(2010년 이후 재직 기간 기준)을 입력하신 평균 기준소득월액에 적용한 개략 추정입니다.");
         }
       }
       if (linkPossible) {

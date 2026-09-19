@@ -82,17 +82,27 @@ function calcNationalPension(input) {
 }
 
 /* -------------------------------------------------------------------------
-   공무원연금 퇴직일시금 (재직기간 10년 미만 퇴직 시)
-   퇴직일시금 = 평균기준소득월액 × 재직연수 × 0.975
-              + 평균기준소득월액 × 재직연수 × (5년 초과 재직연수 × 0.0065)
-   (인사혁신처 공개 급여체계 기준. 재직 1년 미만은 퇴직일시금이 아니라 기여금 반환 대상이라 null)
-   ※ 퇴직수당(재직 1년 이상 별도 지급)은 포함하지 않습니다.
+   공무원·사학연금 퇴직일시금 (재직기간 10년 미만 퇴직 시)
+   퇴직일시금 = 기준소득월액 × 재직연수 × 0.975
+              + 기준소득월액 × 재직연수 × (5년 초과 재직연수 × 0.0065)   (5년 미만이면 첫 항만)
+   - 사학연금: 사립학교교직원연금공단 공개 산식(재직월수 기준 표기와 동일한 식)
+   - 공무원연금: 공무원연금법 제51조가 제43조제5항의 산식(0.975, 5년 초과분 0.0065)을 그대로 적용
+   재직 1년 미만은 퇴직일시금이 아니라 기여금 반환 대상이라 null
    ------------------------------------------------------------------------- */
-function calcCivilServantSeveranceLump(totalMonths, avgIncomeMonthly) {
+function calcSeveranceLumpSum(totalMonths, avgIncomeMonthly) {
   var years = totalMonths / 12;
   if (years < 1 || avgIncomeMonthly <= 0) return null;
   var factor = 0.975 + 0.0065 * Math.max(0, years - 5);
   return avgIncomeMonthly * years * factor;
+}
+
+/* 퇴직수당: 재직 1년 이상이면 퇴직일시금과 별도로 지급 (공무원연금공단·사학연금공단 공개 표, 2010년 이후 기간 기준)
+   퇴직수당 = 기준소득월액 × 재직연수 × 지급비율 (1~5년 6.5%, 5~10년 22.75%, 10~15년 29.25%, 15~20년 32.5%, 20년 이상 39%) */
+function calcRetirementAllowance(totalMonths, avgIncomeMonthly) {
+  var years = totalMonths / 12;
+  if (years < 1 || avgIncomeMonthly <= 0) return null;
+  var rate = years < 5 ? 0.065 : years < 10 ? 0.2275 : years < 15 ? 0.2925 : years < 20 ? 0.325 : 0.39;
+  return avgIncomeMonthly * years * rate;
 }
 
 /* -------------------------------------------------------------------------
