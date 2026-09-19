@@ -652,6 +652,16 @@ function calcPublicPensionTax(annualPensionWon, taxableRatio) {
   };
 }
 
+// 여러 공적연금(국민연금·직역연금)을 함께 받으면 연금소득이 합산 과세되므로, 과세 대상 금액을 합쳐 한 번에 세금을 계산하고 연금별 과세 대상 금액 비율로 나눕니다.
+// items: [{ monthly, ratio }] → { monthlyTaxes: [연금별 월 세금], total, formula }
+function calcCombinedPublicPensionTax(items) {
+  var taxable = items.map(function (it) { return it.monthly * 12 * (it.ratio > 0 && it.ratio <= 1 ? it.ratio : (it.ratio === 0 ? 0 : 1)); });
+  var sum = taxable.reduce(function (a, b) { return a + b; }, 0);
+  var tax = calcPublicPensionTax(sum);
+  var monthlyTaxes = taxable.map(function (t) { return sum > 0 ? tax.monthlyTax * (t / sum) : 0; });
+  return { monthlyTaxes: monthlyTaxes, total: tax.monthlyTax, formula: (items.length > 1 ? "공적연금 합산 과세: 연금 합계 " + formatWon(sum) + " 기준 — " : "") + tax.formula };
+}
+
 // 퇴직소득세 (근속연수공제 → 환산급여 → 환산급여공제 → 세율 적용, 지방소득세 포함)
 function calcRetirementIncomeTax(lumpSum, years) {
   lumpSum = clampNonNegative(lumpSum);

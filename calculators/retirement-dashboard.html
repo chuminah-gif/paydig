@@ -259,6 +259,18 @@
 <script src="../js/calculators.js"></script>
 <script src="../js/main.js"></script>
 <script>
+// 연금 통합 시뮬레이션에서 넘어온 값(세후 월 수령액, 가입 연금 종류)을 입력란에 채웁니다.
+(function prefillFromSimulation() {
+  try {
+    var q = new URLSearchParams(window.location.search);
+    var monthly = parseFloat(q.get("monthly"));
+    if (monthly > 0) document.getElementById("projectedMonthly").value = monthly;
+    var type = q.get("pension");
+    var sel = document.getElementById("pensionType");
+    if (type && sel && sel.querySelector('option[value="' + type + '"]')) sel.value = type;
+  } catch (e) {}
+})();
+
 function runRetirementGapCalc() {
   var currentSalary = getNumberValue("currentSalary");
   var pensionType = document.getElementById("pensionType").value;

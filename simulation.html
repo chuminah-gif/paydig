@@ -152,6 +152,22 @@
             <input type="number" id="nat-startYear" placeholder="예: 1998" />
             <div class="hint">입력하면 가입 시기별 산식 상수(1988~1998년 2.4, 1999~2007년 1.8 등)를 반영합니다. 비우면 2026년 기준 상수로 계산해 오래 가입한 분은 실제보다 적게 나올 수 있습니다.</div>
           </div>
+          <div class="field">
+            <label for="nat-shift">수급 시기</label>
+            <select id="nat-shift">
+              <option value="0" selected>정상 수급</option>
+              <option value="-1">조기노령연금 1년 앞당김 (6% 감액)</option>
+              <option value="-2">조기노령연금 2년 앞당김 (12% 감액)</option>
+              <option value="-3">조기노령연금 3년 앞당김 (18% 감액)</option>
+              <option value="-4">조기노령연금 4년 앞당김 (24% 감액)</option>
+              <option value="-5">조기노령연금 5년 앞당김 (30% 감액)</option>
+              <option value="1">연기연금 1년 늦춤 (7.2% 가산)</option>
+              <option value="2">연기연금 2년 늦춤 (14.4% 가산)</option>
+              <option value="3">연기연금 3년 늦춤 (21.6% 가산)</option>
+              <option value="4">연기연금 4년 늦춤 (28.8% 가산)</option>
+              <option value="5">연기연금 5년 늦춤 (36% 가산)</option>
+            </select>
+          </div>
           <div class="field" style="margin-bottom:0;">
             <label for="nat-pre2002">이 중 2001년 12월 이전 가입기간 (년, 선택)</label>
             <input type="number" id="nat-pre2002" placeholder="예: 0" step="0.5" />
@@ -188,9 +204,15 @@
             <label for="occ-income">평균기준소득월액 (만원)</label>
             <input type="number" id="occ-income" placeholder="예: 450" />
           </div>
-          <div class="field" style="margin-bottom:0;">
+          <div class="field">
             <label for="occ-retireYear">퇴직(예정) 연도</label>
             <input type="number" id="occ-retireYear" placeholder="예: 2045" />
+            <div class="hint">임용(임관) 시기는 퇴직 연도에서 재직기간을 빼 추정하며, 2009년(군인연금은 2013년 6월) 이전 재직분은 종전 산식(연 2.5% 등)으로 계산합니다.</div>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label for="occ-prePay">종전 구간 평균보수월액 (만원, 선택)</label>
+            <input type="number" id="occ-prePay" placeholder="비우면 위 금액을 그대로 사용" />
+            <div class="hint">2009년 12월(군인연금은 2013년 6월) 이전 재직분이 있으면, 실제 산정 기준인 당시 보수(현재가치 환산) 평균을 입력하세요. 보통 위 금액보다 낮아 비우면 실제보다 높게 나올 수 있습니다.</div>
           </div>
         </div>
       </div>
@@ -435,6 +457,7 @@ function runSimulation() {
   var rows = [];
   var totalMonthlyPreTax = 0;
   var totalMonthlyAfterTax = 0;
+  var pubItems = []; // 공적연금(국민연금·직역연금) — 합산 과세를 위해 모아 둡니다
   var totalLumpSum = 0;
   var errors = [];
   var warnings = [];
@@ -455,7 +478,8 @@ function runSimulation() {
       months: getNumberValue("nat-months"),
       avgIncomeManwon: getNumberValue("nat-income"),
       pre2002Years: getNumberValue("nat-pre2002"),
-      startYear: getNumberValue("nat-startYear")
+      startYear: getNumberValue("nat-startYear"),
+      shiftYears: parseInt(document.getElementById("nat-shift").value, 10) || 0
     });
     if (r.error) { errors.push("국민연금: " + r.error); }
     else if (!r.eligible) {
@@ -476,11 +500,10 @@ function runSimulation() {
       }
     }
     else {
-      var natTax = calcPublicPensionTax(r.monthly * 12, r.taxableRatio);
-      var natAfter = clampNonNegative(r.monthly - natTax.monthlyTax);
       totalMonthlyPreTax += r.monthly;
-      totalMonthlyAfterTax += natAfter;
-      rows.push({ name: "국민연금", type: "평생 매월", amount: r.monthly, afterTax: natAfter, taxNote: natTax.formula });
+      var natRow = { name: "국민연금", type: "평생 매월", amount: r.monthly, afterTax: r.monthly, taxNote: "" };
+      rows.push(natRow);
+      pubItems.push({ monthly: r.monthly, ratio: r.taxableRatio, row: natRow });
     }
   }
 
@@ -489,6 +512,7 @@ function runSimulation() {
     var occTypeLabel = occType === "military" ? "군인연금" : occType === "privateSchool" ? "사학연금" : "공무원연금";
     var r2 = calcOccupationalPension({
       type: occType,
+      prePayManwon: getNumberValue("occ-prePay"),
       years: getNumberValue("occ-years"),
       months: getNumberValue("occ-months"),
       avgIncomeManwon: getNumberValue("occ-income"),
@@ -523,15 +547,23 @@ function runSimulation() {
       }
     }
     else {
-      if (r2.detail && r2.detail.seg1Years > 0) {
+      if (r2.detail && r2.detail.seg1Years > 0 && !r2.usedPrePay) {
         warnings.push(occTypeLabel + " 종전 구간(" + (occType === "military" ? "2013년 6월" : "2009년 12월") + " 이전 " + (Math.round(r2.detail.seg1Years * 10) / 10) + "년)의 실제 산정 기준은 당시 보수를 현재가치로 환산한 평균보수월액이라 입력하신 평균 기준소득월액보다 낮은 경우가 많습니다. 이 시뮬레이션은 입력값을 그대로 쓰므로 실제보다 높게 나올 수 있으니, 각 연금 계산기의 '종전 구간 평균보수월액' 칸으로 다시 확인해 보세요.");
       }
-      var occTax = calcPublicPensionTax(r2.monthly * 12, occupationalTaxableRatio(r2.totalMonths / 12, getNumberValue("occ-retireYear")));
-      var occAfter = clampNonNegative(r2.monthly - occTax.monthlyTax);
       totalMonthlyPreTax += r2.monthly;
-      totalMonthlyAfterTax += occAfter;
-      rows.push({ name: occTypeLabel, type: "평생 매월", amount: r2.monthly, afterTax: occAfter, taxNote: occTax.formula });
+      var occRow = { name: occTypeLabel, type: "평생 매월", amount: r2.monthly, afterTax: r2.monthly, taxNote: "" };
+      rows.push(occRow);
+      pubItems.push({ monthly: r2.monthly, ratio: occupationalTaxableRatio(r2.totalMonths / 12, getNumberValue("occ-retireYear")), row: occRow });
     }
+  }
+
+  if (pubItems.length > 0) {
+    var pubTax = calcCombinedPublicPensionTax(pubItems);
+    pubItems.forEach(function (it, i) {
+      it.row.afterTax = clampNonNegative(it.monthly - pubTax.monthlyTaxes[i]);
+      it.row.taxNote = pubTax.formula;
+      totalMonthlyAfterTax += it.row.afterTax;
+    });
   }
 
   if (document.getElementById("chk-retire").checked) {
@@ -637,6 +669,8 @@ function runSimulation() {
   html += '<div class="summary-box"><div class="label">총 예상 월 수령액 (세후 추정)</div><div class="amount">' + formatWon(totalMonthlyAfterTax) + '</div></div>';
   html += '</div>';
   html += '<p style="font-size:0.85rem; color:var(--color-text-faint); margin:-8px 0 18px;">퇴직연금·개인연금 일시금 합계(세전): ' + formatWon(totalLumpSum) + '</p>';
+  var dashType = occOn ? document.getElementById("occ-type").value : "national";
+  html += '<p style="margin:0 0 18px;"><a class="btn btn-secondary" style="width:auto; display:inline-flex; padding:9px 16px;" href="calculators/retirement-dashboard.html?monthly=' + Math.round(totalMonthlyAfterTax / 10000) + '&pension=' + dashType + '">이 결과로 노후설계 대시보드 이어서 확인하기 →</a></p>';
 
   if (linkExtraPre > 0) {
     var linkTotalPre = totalMonthlyPreTax + linkExtraPre;
