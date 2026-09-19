@@ -235,12 +235,12 @@
         <div class="case-card">
           <div class="case-title">신용카드로만 2,000만원 사용</div>
           <div class="case-row"><span>카드 소득공제액</span><span>1,200,000원</span></div>
-          <div class="case-row highlight"><span>결정세액(지방소득세 포함)</span><span>2,588,133원</span></div>
+          <div class="case-row highlight"><span>결정세액(지방소득세 포함)</span><span>2,445,133원</span></div>
         </div>
         <div class="case-card">
           <div class="case-title">신용카드 1,000 + 체크카드 600 + 전통시장 400만원</div>
           <div class="case-row"><span>카드 소득공제액</span><span>2,800,000원</span></div>
-          <div class="case-row highlight"><span>결정세액(지방소득세 포함)</span><span>2,324,133원</span></div>
+          <div class="case-row highlight"><span>결정세액(지방소득세 포함)</span><span>2,181,133원</span></div>
         </div>
       </div>
       <div class="mistake-callout">
@@ -391,6 +391,7 @@ function runYearEndTaxCalc() {
   html += dRow("교육비 세액공제", f.educationCredit, "-" + formatWon(result.educationCredit));
   html += dRow("월세 세액공제", f.rentCredit, "-" + formatWon(result.rentCredit));
   html += dRow("기부금 세액공제", f.donationCredit, "-" + formatWon(result.donationCredit));
+  if (result.standardCredit > 0) { html += dRow("표준세액공제", "특별공제·월세 공제를 받지 않거나 합계가 13만원 미만일 때 적용", "-" + formatWon(result.standardCredit)); }
   html += dRow("세액공제 합계", null, "-" + formatWon(result.totalTaxCredit));
   html += dRow("결정세액(소득세)", "산출세액 − 세액공제 합계", formatWon(result.finalTax));
   html += dRow("지방소득세", f.finalLocalTax, formatWon(result.finalLocalTax));

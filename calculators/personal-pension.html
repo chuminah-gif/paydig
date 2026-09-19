@@ -275,7 +275,7 @@ function runPersonalCalc() {
     html += '<table class="result-table">';
     html += '<tr><th>운용 기간</th><td>' + result.years + '년</td></tr>';
     html += '<tr><th>적용 수익률</th><td>연 ' + result.annualReturnPercent + '%</td></tr>';
-    html += '<tr><th>과세 여부</th><td>' + (taxFree ? "10년 이상 유지 — 보험차익 비과세" : "차익 " + formatWon(gain) + " × 이자소득세 15.4%") + '</td></tr>';
+    html += '<tr><th>과세 여부</th><td>' + (taxFree ? "10년 이상 유지 — 보험차익 비과세(월 납입 150만원 이하·납입기간 5년 이상 등 요건 충족 시)" : "차익 " + formatWon(gain) + " × 이자소득세 15.4%") + '</td></tr>';
     html += '<tr><th>세후 월 지급액 (추정)</th><td><strong>' + formatWon(monthlyAfterTax) + '</strong></td></tr>';
     html += '</table>';
   } else {
@@ -287,7 +287,7 @@ function runPersonalCalc() {
     html += '<table class="result-table">';
     html += '<tr><th>운용 기간</th><td>' + result.years + '년</td></tr>';
     html += '<tr><th>적용 수익률</th><td>연 ' + result.annualReturnPercent + '%</td></tr>';
-    html += '<tr><th>과세 여부</th><td>' + (taxFree ? "10년 이상 유지 — 보험차익 비과세" : "차익 " + formatWon(gain) + " × 이자소득세 15.4%") + '</td></tr>';
+    html += '<tr><th>과세 여부</th><td>' + (taxFree ? "10년 이상 유지 — 보험차익 비과세(월 납입 150만원 이하·납입기간 5년 이상 등 요건 충족 시)" : "차익 " + formatWon(gain) + " × 이자소득세 15.4%") + '</td></tr>';
     html += '<tr><th>세후 실수령액 (추정)</th><td><strong>' + formatWon(afterTaxLump) + '</strong></td></tr>';
     html += '</table>';
   }

@@ -136,12 +136,12 @@
         <div class="case-card">
           <div class="case-title">주 14시간 근무</div>
           <div class="case-row"><span>주휴수당</span><span>0원 (대상 아님)</span></div>
-          <div class="case-row highlight"><span>월급여(약)</span><span>627,800원</span></div>
+          <div class="case-row highlight"><span>월급여(약)</span><span>629,520원</span></div>
         </div>
         <div class="case-card">
           <div class="case-title">주 15시간 근무</div>
           <div class="case-row"><span>주휴수당</span><span>주 3시간분 발생</span></div>
-          <div class="case-row highlight"><span>월급여(약)</span><span>807,171원</span></div>
+          <div class="case-row highlight"><span>월급여(약)</span><span>804,960원</span></div>
         </div>
       </div>
       <div class="mistake-callout">
@@ -153,7 +153,7 @@
       </div>
 
       <h2>최저시급 계산 방식 안내</h2>
-      <p>주 15시간 이상 근무하고 소정근로일을 개근하면 <strong>주휴수당</strong>(유급휴일 수당)이 발생합니다. 이 계산기는 주 근로시간에 비례해 최대 8시간까지 주휴시간을 인정하고, 이를 포함한 주급을 월 단위(365/7/12주)로 환산합니다.</p>
+      <p>주 15시간 이상 근무하고 소정근로일을 개근하면 <strong>주휴수당</strong>(유급휴일 수당)이 발생합니다. 이 계산기는 주 근로시간에 비례해 최대 8시간까지 주휴시간을 인정하고, 이를 포함한 근로시간을 월 소정근로시간((근로시간+주휴시간) × 365 ÷ 7 ÷ 12, 시간 단위 반올림)으로 환산해 월급을 계산합니다.</p>
       <div class="info-callout">
         표준적인 주 40시간 근무자의 경우 월 소정근로시간은 209시간(주휴 포함)으로, 2026년 최저시급(10,320원) 기준 월급은 약 215만 6,880원입니다.
       </div>
@@ -229,7 +229,7 @@ function runMinimumWageCalc() {
   html += '<table class="result-table">';
   html += '<tr><th>주휴시간</th><td>' + result.weeklyHolidayHours.toFixed(1) + '시간<div class="table-formula">' + (result.weeklyHours >= 15 ? "min(" + result.weeklyHours + "시간, 40시간) ÷ 5" : "주 15시간 미만이라 대상 아님") + '</div></td></tr>';
   html += '<tr><th>주급 (주휴수당 포함)</th><td>' + formatWon(result.weeklyPay) + '<div class="table-formula">' + result.hourly.toLocaleString("ko-KR") + '원 × (' + result.weeklyHours + '시간 + 주휴 ' + result.weeklyHolidayHours.toFixed(1) + '시간)</div></td></tr>';
-  html += '<tr><th>월급 (주휴수당 포함)</th><td><strong>' + formatWon(result.monthlyPay) + '</strong><div class="table-formula">주급 × (365 ÷ 7 ÷ 12)</div></td></tr>';
+  html += '<tr><th>월급 (주휴수당 포함)</th><td><strong>' + formatWon(result.monthlyPay) + '</strong><div class="table-formula">시급 × 월 소정근로시간 ' + result.monthlyHours + '시간 ((근로+주휴시간) × 365 ÷ 7 ÷ 12, 반올림)</div></td></tr>';
   html += '</table>';
 
   if (result.belowMinimum) {

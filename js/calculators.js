@@ -518,7 +518,8 @@ var RATE_HEALTH_INSURANCE = 0.03595;     // 건강보험 (근로자 부담분, 2
 var RATE_LONG_TERM_CARE_OF_PREMIUM = 0.1314; // 장기요양보험료율(2026) — 급여가 아닌 "건강보험료(본인부담분)"에 곱하는 비율
 var RATE_EMPLOYMENT_INSURANCE = 0.009;   // 고용보험 실업급여 (근로자 부담분, 2026)
 var MINIMUM_WAGE_2026 = 10320;           // 2026년 최저시급(원)
-var UNEMPLOYMENT_DAILY_CAP_2026 = 66000; // 구직급여 상한액(참고치, 고용노동부 매년 고시)
+var UNEMPLOYMENT_DAILY_CAP_2026 = 68100;   // 구직급여일액 상한액(고용노동부 고시, 2026년 1월 1일 이직자부터)
+var UNEMPLOYMENT_DAILY_FLOOR_2026 = MINIMUM_WAGE_2026 * 8 * 0.8; // 구직급여일액 하한액 = 최저임금 × 8시간 × 80% (2026년 66,048원)
 
 // 국민연금 기준소득월액 상한·하한 (2026.7~2027.6 적용, 국민연금공단 고시)
 var NATIONAL_PENSION_BASE_CEILING = 6590000;
@@ -666,13 +667,16 @@ function calcMinimumWage(input) {
 
   var weeklyHolidayHours = weeklyHours >= 15 ? Math.min(weeklyHours, 40) / 5 : 0;
   var weeklyPay = hourly * (weeklyHours + weeklyHolidayHours);
-  var monthlyPay = weeklyPay * (365 / 7 / 12);
+  // 월 소정근로시간(주휴 포함) = (주 근로시간 + 주휴시간) × 365 ÷ 7 ÷ 12 를 시간 단위로 반올림 (주 40시간 근무자는 209시간)
+  var monthlyHours = Math.round((weeklyHours + weeklyHolidayHours) * 365 / 7 / 12);
+  var monthlyPay = hourly * monthlyHours;
 
   return {
     hourly: hourly,
     weeklyHours: weeklyHours,
     weeklyHolidayHours: weeklyHolidayHours,
     weeklyPay: weeklyPay,
+    monthlyHours: monthlyHours,
     monthlyPay: monthlyPay,
     belowMinimum: hourly < MINIMUM_WAGE_2026,
     minimumWage: MINIMUM_WAGE_2026
@@ -700,10 +704,12 @@ function calcUnemploymentBenefit(input) {
   if (avgMonthlyWon <= 0 || !(input.insuredYears >= 0) || !input.age) {
     return { error: "이직 전 평균 월급여, 고용보험 가입기간, 연령을 올바르게 입력해 주세요." };
   }
-  var avgDailyWage = avgMonthlyWon / 30; // 평균임금 산정을 30일 기준으로 단순화한 근사치
-  var dailyBenefit = Math.min(avgDailyWage * 0.6, UNEMPLOYMENT_DAILY_CAP_2026);
+  var avgDailyWage = avgMonthlyWon * 12 / 365; // 평균임금 = 3개월 임금총액 ÷ 그 기간 일수 (월 평균 약 30.4일로 근사)
+  var rawDaily = avgDailyWage * 0.6;
+  var dailyBenefit = Math.max(Math.min(rawDaily, UNEMPLOYMENT_DAILY_CAP_2026), UNEMPLOYMENT_DAILY_FLOOR_2026);
+  var bound = rawDaily > UNEMPLOYMENT_DAILY_CAP_2026 ? "cap" : rawDaily < UNEMPLOYMENT_DAILY_FLOOR_2026 ? "floor" : null;
   var days = unemploymentBenefitDays(input.insuredYears, input.age);
-  return { dailyBenefit: dailyBenefit, days: days, total: dailyBenefit * days };
+  return { dailyBenefit: dailyBenefit, days: days, total: dailyBenefit * days, bound: bound, rawDaily: rawDaily };
 }
 
 /* 4대보험·실수령액류 계산기 공통: 상세 내역 HTML */
@@ -910,13 +916,15 @@ function calcParentalLeavePay(input) {
      아니므로 이 계산기에는 포함하지 않았습니다. 아래 안내문 참고.
    ------------------------------------------------------------------------- */
 var INDUSTRIAL_ACCIDENT_RATES = {
-  office: { label: "사무직(금융·보험 등)", rate: 0.007 },
-  retail: { label: "도소매·음식숙박업", rate: 0.009 },
-  manufacturing: { label: "제조업(일반)", rate: 0.015 },
-  transport: { label: "운수·창고·통신업", rate: 0.018 },
+  office: { label: "금융 및 보험업", rate: 0.005 },
+  retail: { label: "도소매·음식·숙박업", rate: 0.008 },
+  manufacturing: { label: "제조업(기계기구·금속·비금속광물제품)", rate: 0.013 },
+  transport: { label: "운수업(육상 및 수상운수업)", rate: 0.018 },
   construction: { label: "건설업", rate: 0.035 }
 };
 
+// 2026년도 사업종류별 산재보험료율(고용노동부고시 제2025-91호)의 대표 업종 요율. 모든 업종에 출퇴근재해 요율 0.06%가 함께 부과됩니다.
+var COMMUTE_ACCIDENT_RATE_2026 = 0.0006;
 var MINIMUM_WAGE_DAILY_2026 = MINIMUM_WAGE_2026 * 8; // 82,560원
 
 function calcIndustrialAccidentPremium(input) {
@@ -925,7 +933,8 @@ function calcIndustrialAccidentPremium(input) {
   if (totalWageWon <= 0 || !industry) {
     return { error: "보수총액과 업종을 올바르게 입력해 주세요." };
   }
-  return { industryLabel: industry.label, rate: industry.rate, premium: totalWageWon * industry.rate };
+  var totalRate = industry.rate + COMMUTE_ACCIDENT_RATE_2026;
+  return { industryLabel: industry.label, rate: totalRate, baseRate: industry.rate, commuteRate: COMMUTE_ACCIDENT_RATE_2026, premium: totalWageWon * totalRate };
 }
 
 function calcWorkInjuryLeaveBenefit(input) {
@@ -965,7 +974,8 @@ function calcWorkInjuryLeaveBenefit(input) {
    중이라 현재 시행 중인 금액을 사용했습니다.
    ------------------------------------------------------------------------- */
 function laborIncomeTaxCredit(computedTax, totalGrossWon) {
-  var credit = computedTax <= 500000 ? computedTax * 0.55 : 275000 + (computedTax - 500000) * 0.3;
+  // 소득세법 제59조: 산출세액 130만원 이하 55%, 130만원 초과분은 71만5천원 + 초과분의 30%
+  var credit = computedTax <= 1300000 ? computedTax * 0.55 : 715000 + (computedTax - 1300000) * 0.3;
 
   var cap;
   if (totalGrossWon <= 33000000) cap = 740000;
@@ -1121,8 +1131,8 @@ function calcYearEndTax(input) {
 
   // ---- 세액공제 ----
   var earnedIncomeCredit = laborIncomeTaxCredit(computedTax, totalGross);
-  var earnedCreditBase = computedTax <= 500000 ? computedTax * 0.55 : 275000 + (computedTax - 500000) * 0.3;
-  f.earnedIncomeCredit = (computedTax <= 500000 ? "산출세액 " + formatWon(computedTax) + " × 55%" : "27만5천원 + (산출세액 − 50만원) × 30%")
+  var earnedCreditBase = computedTax <= 1300000 ? computedTax * 0.55 : 715000 + (computedTax - 1300000) * 0.3;
+  f.earnedIncomeCredit = (computedTax <= 1300000 ? "산출세액 " + formatWon(computedTax) + " × 55%" : "71만5천원 + (산출세액 − 130만원) × 30%")
     + (earnedIncomeCredit < earnedCreditBase ? " → 한도 " + formatWon(earnedIncomeCredit) + " 적용" : "");
 
   var childCredit = childTaxCredit(childCount);
@@ -1164,8 +1174,19 @@ function calcYearEndTax(input) {
     : donationTotal <= 30000000 ? "1천만원 × 15% + (" + formatWon(donationTotal - 10000000) + ") × 30%"
     : "1천만원 × 15% + 2천만원 × 30% + (" + formatWon(donationTotal - 30000000) + ") × 40%";
 
+  // 표준세액공제(13만원): 특별소득공제(주택자금)·특별세액공제(보험료·의료비·교육비·기부금)·월세 세액공제를 합쳐도
+  // 13만원에 못 미치면, 그 공제들을 신청하지 않고 표준세액공제 13만원을 받는 편이 유리합니다.
+  var specialCreditSum = medicalCredit + insuranceCredit + educationCredit + rentCredit + donationCreditAmount;
+  var standardCredit = 0;
+  if (housingDeduction <= 0 && specialCreditSum < 130000) {
+    standardCredit = 130000;
+    if (specialCreditSum > 0) {
+      f.medicalCredit = f.insuranceCredit = f.educationCredit = f.rentCredit = f.donationCredit = "표준세액공제(13만원)가 더 유리해 적용 안 함";
+    }
+    medicalCredit = 0; insuranceCredit = 0; educationCredit = 0; rentCredit = 0; donationCreditAmount = 0;
+  }
   var totalTaxCredit = earnedIncomeCredit + childCredit + pensionCredit + medicalCredit +
-    insuranceCredit + educationCredit + rentCredit + donationCreditAmount;
+    insuranceCredit + educationCredit + rentCredit + donationCreditAmount + standardCredit;
 
   var finalTax = clampNonNegative(computedTax - totalTaxCredit);
   var finalLocalTax = finalTax * 0.1;
@@ -1195,6 +1216,7 @@ function calcYearEndTax(input) {
     educationCredit: educationCredit,
     rentCredit: rentCredit,
     donationCredit: donationCreditAmount,
+    standardCredit: standardCredit,
     totalTaxCredit: totalTaxCredit,
     finalTax: finalTax,
     finalLocalTax: finalLocalTax,
