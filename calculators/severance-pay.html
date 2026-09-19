@@ -239,7 +239,7 @@ function runSeveranceCalc() {
   html += '<tr><th>세후 예상 퇴직금</th><td><strong>' + formatWon(result.afterTax) + '</strong></td></tr>';
   html += '</table>';
 
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>평균임금은 3개월을 91일로 근사해 계산한 참고용 추정치이며, 상여금·연차수당 포함 여부에 따라 실제와 차이가 있을 수 있습니다. 정확한 금액은 <a href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부</a>·세무사를 통해 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>평균임금은 3개월을 91일로 근사해 계산한 참고용 추정치이며, 상여금·연차수당 포함 여부에 따라 실제와 차이가 있을 수 있습니다. 정확한 금액은 <a href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부</a>·세무사를 통해 확인하세요. 퇴직소득세는 2013년 이후 근속기간 기준 방식이며, 2012년 12월 31일 이전 근속기간이 있으면 그 기간은 종전 방식으로 따로 계산되어 세금이 달라질 수 있습니다.</span></div>';
 
   document.getElementById("resultCard").innerHTML = html;
 }

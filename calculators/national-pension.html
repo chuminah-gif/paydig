@@ -123,6 +123,12 @@
       </div>
 
       <div class="field">
+        <label for="startYear">국민연금 가입 시작 연도 (선택)</label>
+        <input type="number" id="startYear" placeholder="예: 1998" min="1988" max="2060" />
+        <div class="hint">국민연금은 가입 시기에 따라 산식의 계수가 다릅니다(1988~1998년 2.4, 1999~2007년 1.8, 2008년 1.5에서 매년 0.015씩 감소, 2026년 이후 1.29). 입력하면 가입기간이 끊김 없이 이어졌다고 보고 시기별 계수를 반영하며, 비워두면 공단 예상연금월액표처럼 전 기간을 2026년 기준(1.29)으로 계산해 오래 가입한 분은 실제보다 적게 나올 수 있습니다.</div>
+      </div>
+
+      <div class="field">
         <label for="pre2002Years">이 중 2001년 12월 이전 가입기간 (년, 선택)</label>
         <input type="number" id="pre2002Years" placeholder="예: 0" min="0" value="0" step="0.5" />
         <div class="hint">국민연금은 2002년 1월 이후 낸 보험료에 해당하는 연금만 과세됩니다. 2001년 이전에 가입한 기간이 있으면 입력하세요. 세후 금액 계산에만 쓰이며 연금액에는 영향이 없습니다.</div>
@@ -164,12 +170,13 @@
   <div class="container">
     <div class="card prose">
       <h2>국민연금 계산 방식 안내</h2>
-      <p>이 계산기는 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>이 공표한 <strong>2026년 예상연금월액표</strong>와 같은 산식으로 계산합니다. 공단 표의 가입기간(10~40년)과 평균소득월액(41만~659만원) 구간 값과 원 단위까지 일치하는 것을 확인했습니다.</p>
+      <p>이 계산기는 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>이 공표한 <strong>2026년 예상연금월액표</strong>와 같은 산식으로 계산하며, 가입 시작 연도를 입력하면 가입 시기별 상수(1988~1998년 2.4, 1999~2007년 1.8, 2008년 이후 매년 0.015씩 감소, 2026년 이후 1.29)도 반영합니다. 공단 표의 가입기간(10~40년)과 평균소득월액(41만~659만원) 구간 값과 원 단위까지 일치하는 것을 확인했습니다.</p>
       <p style="font-family: monospace; background:#f5f7fa; padding:10px 14px; border-radius:8px;">
         기본연금액(월) = 1.29 × (A + B) × (가입기간 ÷ 20년) ÷ 12
       </p>
       <ul>
         <li><strong>A값</strong>은 전체 가입자의 평균소득월액으로 2026년 3,193,511원, <strong>B값</strong>은 내 가입기간 중 기준소득월액의 평균(재평가)입니다. A값이 함께 들어가기 때문에 소득이 낮은 가입자의 소득대체율이 더 높습니다.</li>
+        <li>가입 시작 연도를 비워두면 공단 예상연금월액표와 같이 전 기간을 2026년 기준 상수(1.29)로 계산합니다. 2007년 이전부터 가입한 분은 실제 산식의 상수가 더 커서 이 값보다 연금이 많을 수 있으니 시작 연도를 입력해 확인하세요.</li>
         <li>가입기간이 10~20년이면 지급률이 50%에서 시작해 1년마다 5%p씩, 20년을 넘으면 1년마다 5%p씩 더해지는데, 이는 위 식의 가입기간 ÷ 20과 같습니다. 연금액은 내 기준소득월액 평균을 넘을 수 없습니다.</li>
         <li>가입기간이 10년 미만이면 노령연금 수급 자격 자체가 발생하지 않으므로 반환일시금과 연계 시 예상액을 별도로 안내합니다.</li>
       </ul>
@@ -249,7 +256,8 @@ function runNationalCalc() {
 
   var shiftYears = parseInt(document.getElementById("shiftYears").value, 10) || 0;
   var pre2002Years = getNumberValue("pre2002Years");
-  var result = calcNationalPension({ years: years, months: months, avgIncomeManwon: avgIncome, shiftYears: shiftYears, pre2002Years: pre2002Years });
+  var startYear = getNumberValue("startYear");
+  var result = calcNationalPension({ years: years, months: months, avgIncomeManwon: avgIncome, shiftYears: shiftYears, pre2002Years: pre2002Years, startYear: startYear });
 
   if (result.error) {
     showError("resultCard", result.error);
@@ -288,6 +296,9 @@ function runNationalCalc() {
 
   html += '<table class="result-table">';
   html += '<tr><th>총 가입기간</th><td>' + Math.floor(result.totalMonths / 12) + '년 ' + (result.totalMonths % 12) + '개월</td></tr>';
+  if (result.startYear) {
+    html += '<tr><th>가입 시기별 계수</th><td>가입 시작 ' + result.startYear + '년 반영<div class="table-formula">1988~1998년 2.4(A+0.75B) · 1999~2007년 1.8 · 2008~2025년 1.5→1.245 · 2026년 이후 1.29 를 가입월수로 가중평균</div></td></tr>';
+  }
   if (startAge) {
     html += '<tr><th>예상 수급개시연령</th><td>만 ' + startAge + '세' + (result.shiftYears !== 0 ? ' → 실제 수령 만 ' + (startAge + result.shiftYears) + '세' : '') + '</td></tr>';
   }

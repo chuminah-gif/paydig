@@ -122,6 +122,12 @@
         <div class="hint">복무기간 전체를 평균한 기준소득월액(세전, 연금 산정 기준)을 만원 단위로 입력하세요.</div>
       </div>
 
+      <div class="field">
+        <label for="prePay">2013년 6월 이전 복무분 평균보수월액 (만원, 선택)</label>
+        <input type="number" id="prePay" placeholder="비우면 위 금액을 그대로 사용" min="0" />
+        <div class="hint">실제 연금의 종전 구간은 당시 보수(2007~2009년 평균 등을 현재가치로 환산한 평균보수월액)를 기준으로 합니다. 이 값은 보통 위 평균 기준소득월액보다 낮으므로, 연금 예상 조회 화면에 나온 값을 알고 있다면 입력하세요. 종전 구간이 없으면 무시됩니다.</div>
+      </div>
+
       <button class="btn btn-primary" onclick="runCalc()">예상 연금액 계산하기</button>
     </div>
 
@@ -140,14 +146,15 @@
   <div class="container">
     <div class="card prose">
       <h2>군인연금 계산 방식 안내</h2>
-      <p>군인연금은 공무원·사학연금과 달리 복무기간 1년당 평균기준소득월액의 1.9%를 전 기간에 동일하게 적용하고, 최소 복무기간(20년)과 연금액 상한(평균기준소득월액의 62.7%) 등 군 특성을 반영한 별도 규정을 두고 있습니다. 이 계산기는 그 산식을 그대로 적용합니다.</p>
+      <p>군인연금은 2013년 7월 1일 개혁을 기준으로 복무기간을 나눠 각각 산정한 뒤 합산합니다. 임관 시기에 따라 결과가 크게 달라지며, 최소 복무기간(20년)과 복무기간 상한(33년) 등 군 특성을 반영한 별도 규정이 있습니다.</p>
       <p style="font-family: monospace; background:#f5f7fa; padding:10px 14px; border-radius:8px;">
-        연금월액 = 평균기준소득월액 × 복무연수 × 1.9%  (최대 62.7%)
+        연금월액 = (2013.6 이전 복무분: 평균보수월액 × 지급률) + (2013.7 이후 복무분: 평균기준소득월액 × 복무연수 × 1.9%)
       </p>
       <ul>
-        <li>복무기간 1년당 지급률은 임관 시기와 관계없이 1.9%로 동일하게 적용합니다(공무원·사학연금과 같은 연도별 인하가 없습니다).</li>
+        <li><strong>2013년 7월 1일 이전 복무기간</strong>: 종전 산식에 따라 복무 20년까지 1년당 2.5%, 20년을 넘는 기간은 1년당 2%를 적용합니다(33년 복무 시 76%). 이 기간의 기준은 당시 보수(현재가치 환산)입니다.</li>
+        <li><strong>2013년 7월 1일 이후 복무기간</strong>: 평균기준소득월액에 1년당 1.9%를 적용합니다(33년 복무 시 62.7%). 공무원·사학연금처럼 연도별로 지급률이 낮아지지는 않습니다.</li>
         <li>군인연금은 다른 직역연금과 달리 <strong>최소 복무기간 20년(240개월)</strong>을 채워야 퇴역연금 수급자격이 발생합니다. 복무기간 19년 6개월 이상~20년 미만은 20년으로 인정합니다. 퇴역연금은 전역 후 지급개시연령 제한 없이 바로 받으며, 2001년 이전 복무기간에 해당하는 연금은 과세하지 않습니다.</li>
-        <li>연금액은 평균기준소득월액의 62.7%(복무 33년 상당)를 넘을 수 없어, 그 이상 복무해도 더 늘지 않습니다.</li>
+        <li>복무기간은 최대 33년까지만 반영하며, 그 이상 복무해도 연금액이 늘지 않습니다. 이 계산기는 임관연도를 전역 연도에서 복무기간을 빼 역산해 2013년 7월 전후 기간을 나눕니다.</li>
       </ul>
       <div class="info-callout">
         실제 연금액은 계급·병과별 세부 규정, 재평가율, 명예전역·조기전역 여부 등에 따라 달라질 수 있습니다. 정확한 금액은 <a href="https://www.mps.mil.kr" target="_blank" rel="noopener">군인연금 정보포털(국방부 군인연금과)</a>을 통해 확인하세요.
@@ -165,7 +172,7 @@
         <tr><th>지급률 합계</th><td>약 38.0%</td></tr>
         <tr><th>예상 월 수급액 (세전)</th><td>약 160만원 (1,596,000원)</td></tr>
       </table>
-      <p>20년 × 1.9% = 38%이므로 평균기준소득월액 420만원의 38%가 월 연금이 됩니다. 군인연금은 공무원·사학연금과 달리 임관 시기에 따라 지급률이 달라지지 않는 점이 특징입니다.</p>
+      <p>2025년에 임관해 20년을 복무하면 전 기간이 2013년 7월 이후라 20년 × 1.9% = 38%이므로 평균기준소득월액 420만원의 38%가 월 연금이 됩니다. 같은 20년 복무라도 2003년에 임관해 2023년에 전역했다면 약 10.5년은 종전 산식(1년당 2.5%), 약 9.5년은 새 산식(1.9%)이 적용돼 지급률 합계가 약 44%가 됩니다. 이처럼 임관 시기에 따라 결과가 달라집니다.</p>
 
       <h2>자주 묻는 질문</h2>
       <h3>Q. 19년 11개월을 복무하고 전역하면 연금을 못 받나요?</h3>
@@ -224,7 +231,7 @@ function runCalc() {
   var avgIncome = getNumberValue("avgIncome");
   var retireYear = getNumberValue("retireYear");
 
-  var result = calcOccupationalPension({ type: "military", years: years, months: months, avgIncomeManwon: avgIncome, retireYear: retireYear });
+  var result = calcOccupationalPension({ type: "military", prePayManwon: getNumberValue("prePay"), years: years, months: months, avgIncomeManwon: avgIncome, retireYear: retireYear });
 
   if (result.error) {
     showError("resultCard", result.error);
@@ -263,8 +270,11 @@ function runCalc() {
   html += '<table class="result-table">';
   html += '<tr><th>총 복무기간</th><td>' + Math.floor(result.totalMonths / 12) + '년 ' + (result.totalMonths % 12) + '개월</td></tr>';
   html += '<tr><th>추정 임관연도</th><td>약 ' + result.startYear + '년</td></tr>';
-  html += '<tr><th>적용 지급률 합계</th><td>' + result.ratePercent.toFixed(1) + '%</td></tr>';
-  html += '<tr><th>연평균 적용비율</th><td>' + result.avgAnnualRate.toFixed(3) + '%</td></tr>';
+  var md = result.detail;
+  var mfmt = function (n) { return (Math.round(n * 10) / 10).toString(); };
+  html += '<tr><th>복무 구간</th><td>' + [md.seg1Years > 0 ? '2013년 7월 이전 ' + mfmt(md.seg1Years) + '년(종전 산식 연 2.5%·20년 초과 2%)' : '', md.seg2Years > 0 ? '2013년 7월 이후 ' + mfmt(md.seg2Years) + '년(연 1.9%)' : ''].filter(Boolean).join(' + ') + (md.excessYears > 0.05 ? '<div class="table-formula">33년 초과 ' + mfmt(md.excessYears) + '년은 반영되지 않습니다</div>' : '') + '</td></tr>';
+  html += '<tr><th>적용 지급률 합계</th><td>' + result.ratePercent.toFixed(1) + '%</td></tr>'; 
+  if (md.seg1Years > 0) { html += '<tr><th>2013년 6월 이전 복무분 기준</th><td>' + (result.usedPrePay ? '입력하신 평균보수월액 적용' : '평균 기준소득월액을 그대로 적용(추정)') + '<div class="table-formula">' + (result.usedPrePay ? '' : '실제 기준은 당시 보수를 현재가치로 환산한 평균보수월액이라 이 계산기의 금액이 실제와 다를 수 있습니다') + '</div></td></tr>'; }
   if (result.militaryRoundedUp) { html += '<tr><th>복무기간 인정</th><td>20년으로 인정<div class="table-formula">복무기간 19년 6개월 이상~20년 미만은 20년으로 보아 퇴역연금을 지급합니다</div></td></tr>'; }
   html += occupationalStartAgeRowsHtml(result, retireYear, 0, true);
   html += publicPensionTaxRowsHtml(result.monthly, occupationalTaxableRatio(result.totalMonths / 12, retireYear));

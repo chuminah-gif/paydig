@@ -147,6 +147,11 @@
             <label for="nat-income">평균 소득월액 (만원)</label>
             <input type="number" id="nat-income" placeholder="예: 320" />
           </div>
+          <div class="field">
+            <label for="nat-startYear">국민연금 가입 시작 연도 (선택)</label>
+            <input type="number" id="nat-startYear" placeholder="예: 1998" />
+            <div class="hint">입력하면 가입 시기별 산식 상수(1988~1998년 2.4, 1999~2007년 1.8 등)를 반영합니다. 비우면 2026년 기준 상수로 계산해 오래 가입한 분은 실제보다 적게 나올 수 있습니다.</div>
+          </div>
           <div class="field" style="margin-bottom:0;">
             <label for="nat-pre2002">이 중 2001년 12월 이전 가입기간 (년, 선택)</label>
             <input type="number" id="nat-pre2002" placeholder="예: 0" step="0.5" />
@@ -449,7 +454,8 @@ function runSimulation() {
       years: getNumberValue("nat-years"),
       months: getNumberValue("nat-months"),
       avgIncomeManwon: getNumberValue("nat-income"),
-      pre2002Years: getNumberValue("nat-pre2002")
+      pre2002Years: getNumberValue("nat-pre2002"),
+      startYear: getNumberValue("nat-startYear")
     });
     if (r.error) { errors.push("국민연금: " + r.error); }
     else if (!r.eligible) {
@@ -517,6 +523,9 @@ function runSimulation() {
       }
     }
     else {
+      if (r2.detail && r2.detail.seg1Years > 0) {
+        warnings.push(occTypeLabel + " 종전 구간(" + (occType === "military" ? "2013년 6월" : "2009년 12월") + " 이전 " + (Math.round(r2.detail.seg1Years * 10) / 10) + "년)의 실제 산정 기준은 당시 보수를 현재가치로 환산한 평균보수월액이라 입력하신 평균 기준소득월액보다 낮은 경우가 많습니다. 이 시뮬레이션은 입력값을 그대로 쓰므로 실제보다 높게 나올 수 있으니, 각 연금 계산기의 '종전 구간 평균보수월액' 칸으로 다시 확인해 보세요.");
+      }
       var occTax = calcPublicPensionTax(r2.monthly * 12, occupationalTaxableRatio(r2.totalMonths / 12, getNumberValue("occ-retireYear")));
       var occAfter = clampNonNegative(r2.monthly - occTax.monthlyTax);
       totalMonthlyPreTax += r2.monthly;

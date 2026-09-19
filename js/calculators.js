@@ -30,18 +30,63 @@ function clampNonNegative(n) {
    ------------------------------------------------------------------------- */
 var NATIONAL_PENSION_A_2026 = 3193511;
 
-function calcNationalBasicMonthly(totalMonths, avgIncomeMonthly) {
+/* 국민연금법 제51조·부칙의 가입시기별 상수 (국민연금공단·보건복지부 공개 산식)
+   기본연금액 = [2.4(A+0.75B)×P1/P + 1.8(A+B)×P2/P + 1.5(A+B)×P3/P + 1.485(A+B)×P4/P + … + 1.245(A+B)×P(2025)/P + 1.29(A+B)×P(2026~)/P] × (1 + 0.05n/12)
+     P1: 1988~1998년 가입월수, P2: 1999~2007년, P3: 2008년, 이후 매년 상수가 0.015씩 낮아져 2025년 1.245, 2026년 이후 1.29(연금개혁 소득대체율 43%)
+   가입 시작 연도를 입력하지 않으면 공단 '예상연금월액표'와 같이 전 기간을 1.29로 계산합니다. */
+function nationalPensionPeriodTerm(year, A, B) {
+  if (year < 1999) return 2.4 * (A + 0.75 * B);
+  if (year < 2008) return 1.8 * (A + B);
+  if (year < 2026) return (1.5 - 0.015 * (year - 2008)) * (A + B);
+  return 1.29 * (A + B);
+}
+
+// startYear: 가입 시작 연도(선택, 가입이 끊김 없이 이어졌다고 가정). 없으면 전 기간 1.29
+function calcNationalBasicMonthly(totalMonths, avgIncomeMonthly, startYear) {
   var years = totalMonths / 12;
-  var monthly = 0.005375 * (NATIONAL_PENSION_A_2026 + avgIncomeMonthly) * years;
-  return clampNonNegative(Math.min(monthly, avgIncomeMonthly));
+  var A = NATIONAL_PENSION_A_2026, B = avgIncomeMonthly;
+  var term;
+  if (startYear >= 1988) {
+    var sum = 0, remaining = years, y = Math.floor(startYear), pos = startYear;
+    while (remaining > 1e-9) {
+      var span = Math.min(remaining, (y + 1) - pos);
+      sum += nationalPensionPeriodTerm(y, A, B) * span;
+      remaining -= span; pos = y + 1; y += 1;
+    }
+    term = sum / years;
+  } else {
+    term = 1.29 * (A + B);
+  }
+  // 월 연금액 = 기본연금액(연) ÷ 12. 지급률(10~20년 50%+연 5%p)·20년 초과 가산(연 5%p)은 모두 가입연수 ÷ 20 과 같음
+  var monthly = term / 12 * (years / 20);
+  return clampNonNegative(Math.min(monthly, B));
 }
 
 /* 공적연금 연계 시 국민연금 가입기간이 10년 미만인 경우의 연계노령연금액
    연계노령연금액 = 기본연금액 × (국민연금 가입기간 ÷ 20)   (찾기쉬운 생활법령정보, 1년 미만 월수는 1/12년)
    기본연금액은 가입기간 20년 미만이면 가입기간과 무관한 1.29(A+B)/12 이므로 위 식과 같은 값입니다.
    가입 시점별 계수와 미래 A값은 반영하지 않은 개략 추정입니다. */
-function calcNationalLinkedPension(totalMonths, avgIncomeMonthly) {
-  return calcNationalBasicMonthly(totalMonths, avgIncomeMonthly);
+function calcNationalLinkedPension(totalMonths, avgIncomeMonthly, startYear) {
+  return calcNationalBasicMonthly(totalMonths, avgIncomeMonthly, startYear);
+}
+
+function nationalContributionRate(year) {
+  if (year < 1993) return 0.03;
+  if (year < 1998) return 0.06;
+  if (year < 2026) return 0.09;
+  return 0.095;
+}
+
+// 낸 보험료 총액 개략치: 가입 시작 연도가 없으면 현행 9%를 전 기간에 적용
+function nationalContributionTotal(totalMonths, avgIncomeMonthly, startYear) {
+  if (!(startYear >= 1988)) return avgIncomeMonthly * 0.09 * totalMonths;
+  var total = 0, remaining = totalMonths / 12, y = Math.floor(startYear), pos = startYear;
+  while (remaining > 1e-9) {
+    var span = Math.min(remaining, (y + 1) - pos);
+    total += avgIncomeMonthly * nationalContributionRate(y) * span * 12;
+    remaining -= span; pos = y + 1; y += 1;
+  }
+  return total;
 }
 
 function calcNationalPension(input) {
@@ -61,14 +106,14 @@ function calcNationalPension(input) {
       yearly: 0,
       totalMonths: totalMonths,
       eligible: false,
-      // 사업장가입자 기준 보험료율 9%(본인 4.5% + 사업주 4.5%)로 낸 총액의 개략치(이자·과거 요율 미반영)
-      refundEstimate: avgIncomeMonthly * 0.09 * totalMonths,
+      // 사업장가입자 기준 낸 보험료 총액(본인+사업주)의 개략치(이자 미반영). 가입 시작 연도를 입력하면 연도별 요율(1988~92년 3%, 93~97년 6%, 98~2025년 9%, 2026년 9.5%)을 적용
+      refundEstimate: nationalContributionTotal(totalMonths, avgIncomeMonthly, input.startYear),
       // 공적연금 연계 시 국민연금 몫(연계노령연금) 개략 추정
-      linkedMonthly: calcNationalLinkedPension(totalMonths, avgIncomeMonthly)
+      linkedMonthly: calcNationalLinkedPension(totalMonths, avgIncomeMonthly, input.startYear)
     };
   }
 
-  var baseMonthly = calcNationalBasicMonthly(totalMonths, avgIncomeMonthly);
+  var baseMonthly = calcNationalBasicMonthly(totalMonths, avgIncomeMonthly, input.startYear);
 
   // 조기노령연금: 수급개시연령보다 1년 앞당길 때마다 6%(월 0.5%) 감액, 최대 5년(30%)
   // 연기연금: 1년 늦출 때마다 7.2%(월 0.6%) 가산, 최대 5년(36%)
@@ -83,7 +128,8 @@ function calcNationalPension(input) {
     shiftYears: shift,
     adjustFactor: adjustFactor,
     totalMonths: totalMonths,
-    taxableRatio: publicPensionTaxableRatio(totalMonths / 12, input.pre2002Years),
+    taxableRatio: publicPensionTaxableRatio(totalMonths / 12, input.pre2002Years > 0 ? input.pre2002Years : (input.startYear >= 1988 ? Math.max(0, Math.min(2002, input.startYear + totalMonths / 12) - input.startYear) : 0)),
+    startYear: input.startYear >= 1988 ? input.startYear : null,
     eligible: true
   };
 }
@@ -200,6 +246,7 @@ function calcCivilSchoolPensionPercent(totalYears, retireYear, avgIncomeMonthly)
 
   return {
     percent: totalPercent,
+    p1Percent: p1,
     countedYears: counted,
     capYears: capYears,
     yearsAt2016: yearsAt2016,
@@ -285,10 +332,41 @@ function occupationalDetailRowsHtml(result) {
     (d.excessYears > 0.05 ? '<div class="table-formula">상한 초과 ' + fmt(d.excessYears) + '년은 연금에 반영되지 않습니다.</div>' : '') +
     (d.capYears < 36 ? '<div class="table-formula">2016년 1월 1일 기준 재직 ' + fmt(d.yearsAt2016) + '년 → 상한 ' + d.capYears + '년(경과규정)</div>' : '') +
     '</td></tr>';
+  if (d.seg1Years > 0) {
+    html += '<tr><th>2009년 이전 재직분 기준</th><td>' + (result.usedPrePay ? '입력하신 평균보수월액 적용' : '평균 기준소득월액을 그대로 적용(추정)') + '<div class="table-formula">' + (result.usedPrePay ? '2009년 이전 ' + fmt(d.seg1Years) + '년분만 입력한 평균보수월액 기준' : '실제 기준은 2007~2009년 보수를 현재가치로 환산한 평균보수월액이라 평균 기준소득월액보다 낮은 경우가 많아 이 금액은 실제보다 높을 수 있습니다(공단 공개 산정 사례: 1987년 임용·2021년 퇴직자는 종전 구간 기준 보수가 평균 기준소득월액의 약 72%였고, 같은 입력을 이 계산기에 그대로 넣으면 실제보다 약 29% 높게 나옴). 종전 구간 평균보수월액을 아래 칸에 입력하면 더 정확해집니다') + '</div></td></tr>';
+  }
   html += '<tr><th>적용 지급률 합계</th><td>' + result.ratePercent.toFixed(1) + '%' +
     (d.seg3Years > 0 ? '<div class="table-formula">2016년 이후 재직분은 소득재분배 적용비율 ' + (d.redistFactor * 100).toFixed(1) + '%(전체 공무원 평균 ' + Math.round(OCCUPATIONAL_REDIST_A_2026 / 10000) * 1 + '만원 기준 A값 반영) 적용</div>' : '') +
     '</td></tr>';
   return html;
+}
+
+/* 군인연금 퇴역연금 (군인연금법 부칙 경과규정, 국군재정관리단·찾기쉬운 생활법령정보)
+   2013년 7월 1일 이전 복무기간: 평균보수월액 × (복무 20년까지 1년당 2.5%, 20년 초과분 1년당 2%)  — 33년이면 76%
+   2013년 7월 1일 이후 복무기간: 평균기준소득월액 × 1년당 1.9%  — 33년이면 62.7%
+   두 기간을 각각 산정해 합산합니다. 복무기간은 33년까지만 반영합니다.
+   ※ 2013년 이전 구간의 기준은 실제로는 당시 보수(현재가치 환산)이지만 여기서는 입력한 평균 기준소득월액을 씁니다. */
+var MILITARY_REFORM_YEAR = 2013.5;
+
+function calcMilitaryPensionPercent(totalYears, retireYear) {
+  var start = retireYear - totalYears;
+  var s1 = Math.max(0, Math.min(MILITARY_REFORM_YEAR, retireYear) - start);
+  var s2 = Math.max(0, retireYear - Math.max(MILITARY_REFORM_YEAR, start));
+  var counted = Math.min(totalYears, 33);
+  var excess = totalYears - counted;
+  var cut2 = Math.min(s2, excess); s2 -= cut2; excess -= cut2;
+  s1 -= Math.min(s1, excess);
+  var p1 = s1 <= 20 ? s1 * 2.5 : 50 + (s1 - 20) * 2;
+  var p2 = s2 * 1.9;
+  return {
+    percent: p1 + p2,
+    p1Percent: p1,
+    countedYears: counted,
+    capYears: 33,
+    excessYears: totalYears - counted,
+    seg1Years: s1,
+    seg2Years: s2
+  };
 }
 
 function calcOccupationalPension(input) {
@@ -316,15 +394,24 @@ function calcOccupationalPension(input) {
   var cappedRatePercent;
   var detail = null;
   if (isMilitary) {
-    avgAnnualRate = 1.9;
-    cappedRatePercent = Math.min(1.9 * serviceYearsFull, 62.7);
+    detail = calcMilitaryPensionPercent(serviceYearsFull, input.retireYear);
+    cappedRatePercent = detail.percent;
+    avgAnnualRate = detail.countedYears > 0 ? detail.percent / detail.countedYears : 0;
   } else {
     detail = calcCivilSchoolPensionPercent(serviceYearsFull, input.retireYear, avgIncomeMonthly);
     cappedRatePercent = detail.percent;
     avgAnnualRate = detail.countedYears > 0 ? detail.percent / detail.countedYears : 0;
   }
 
-  var monthly = avgIncomeMonthly * (cappedRatePercent / 100);
+  // 2009년 이전(군인연금은 2013년 6월 이전) 재직분의 기준은 당시 보수를 현재가치로 환산한 평균보수월액이라 평균기준소득월액과 다를 수 있어 별도 입력을 받습니다.
+  var pre1Won = input.prePayManwon > 0 ? input.prePayManwon * 10000 : 0;
+  var monthly;
+  if (pre1Won > 0 && detail && detail.p1Percent > 0) {
+    monthly = avgIncomeMonthly * ((cappedRatePercent - detail.p1Percent) / 100) + pre1Won * (detail.p1Percent / 100);
+    cappedRatePercent = monthly / avgIncomeMonthly * 100;
+  } else {
+    monthly = avgIncomeMonthly * (cappedRatePercent / 100);
+  }
 
   var eligible = isMilitary ? totalMonths >= 240 : totalMonths >= 120; // 최소 재직(복무)기간: 공무원·사학 10년, 군인 20년
 
@@ -340,6 +427,7 @@ function calcOccupationalPension(input) {
     incomeCapped: incomeCapped,
     incomeCapWon: incomeCapWon,
     militaryRoundedUp: militaryRoundedUp,
+    usedPrePay: pre1Won > 0 && !!detail && detail.p1Percent > 0,
     effectiveIncomeMonthly: avgIncomeMonthly
   };
 }

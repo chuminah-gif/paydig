@@ -128,6 +128,12 @@
         <div class="hint">재직기간 전체를 평균한 기준소득월액(세전, 연금 산정 기준)을 만원 단위로 입력하세요.</div>
       </div>
 
+      <div class="field">
+        <label for="prePay">2009년 12월 이전 재직분 평균보수월액 (만원, 선택)</label>
+        <input type="number" id="prePay" placeholder="비우면 위 금액을 그대로 사용" min="0" />
+        <div class="hint">실제 연금의 종전 구간은 당시 보수(2007~2009년 평균 등을 현재가치로 환산한 평균보수월액)를 기준으로 합니다. 이 값은 보통 위 평균 기준소득월액보다 낮으므로, 연금 예상 조회 화면에 나온 값을 알고 있다면 입력하세요. 종전 구간이 없으면 무시됩니다.</div>
+      </div>
+
       <button class="btn btn-primary" onclick="runCalc()">예상 연금액 계산하기</button>
     </div>
 
@@ -156,7 +162,7 @@
       <ul>
         <li><strong>재직기간 상한</strong>: 신규 임용자는 최대 36년까지 반영합니다. 다만 2016년 1월 1일 당시 재직기간이 21년 이상이던 분은 33년, 17년 이상 21년 미만은 34년, 15년 이상 17년 미만은 35년이 상한입니다(부칙 경과규정). 계산기는 임용연도를 역산해 이 상한을 자동으로 적용합니다.</li>
         <li><strong>소득재분배</strong>: 2016년 이후 재직분은 재직 30년까지 지급률 중 1%p에 소득재분배가 적용됩니다. 본인 평균기준소득월액이 전체 공무원 평균(A값, 2026년 5월~2027년 4월 시행 595만원, 인사혁신처 고시)보다 낮으면 그 부분이 유리하게, 높으면 불리하게 조정됩니다. 이 계산기는 입력한 평균기준소득월액을 그대로 비교값으로 사용합니다.</li>
-        <li>2009년 이전 재직분은 실제로는 당시 보수(현재가치 환산)를 기준으로 하지만, 여기서는 입력한 평균기준소득월액을 그대로 씁니다.</li>
+        <li>2009년 이전 재직분은 실제로는 2007~2009년 보수를 현재가치로 환산한 평균보수월액이 기준이며, 이 값은 평균기준소득월액보다 낮은 경우가 많습니다. 위 입력란에 "2009년 12월 이전 재직분 평균보수월액"을 넣으면 그 값으로 계산하고, 비우면 평균기준소득월액을 그대로 써서 실제보다 높게 나올 수 있습니다(공단 공개 사례에서 최대 약 29% 차이).</li>
         <li><strong>지급개시연령</strong>: 1996년 이후 임용자는 퇴직 연도에 따라 60세(2016~2021년 퇴직), 61세(2022~2023년), 62세(2024~2026년), 63세(2027~2029년), 64세(2030~2032년), 65세(2033년 이후)로 단계적으로 늦춰집니다. 출생연도를 입력하면 개시 전 퇴직 시 조기퇴직연금(미달 1년당 5%, 최대 25% 감액) 금액도 보여드립니다. 1996년 이전 임용자는 재직기간 요건에 따른 별도 특례가 있어 공단 확인이 필요합니다.</li>
         <li><strong>기준소득월액 상한</strong>: 전체 공무원 평균의 160%(2026년 952만원)를 넘는 금액은 상한으로 계산합니다.</li>
       </ul>
@@ -238,7 +244,7 @@ function runCalc() {
   var retireYear = getNumberValue("retireYear");
   var birthYear = getNumberValue("birthYear");
 
-  var result = calcOccupationalPension({ type: "civil", years: years, months: months, avgIncomeManwon: avgIncome, retireYear: retireYear });
+  var result = calcOccupationalPension({ type: "civil", prePayManwon: getNumberValue("prePay"), years: years, months: months, avgIncomeManwon: avgIncome, retireYear: retireYear });
 
   if (result.error) {
     showError("resultCard", result.error);
@@ -282,7 +288,7 @@ function runCalc() {
   html += occupationalStartAgeRowsHtml(result, retireYear, birthYear, false);
   if (result.incomeCapped) { html += '<tr><th>기준소득월액 상한 적용</th><td>' + formatWon(result.incomeCapWon) + '<div class="table-formula">입력한 금액이 전체 공무원 평균의 160% 상한을 넘어 상한으로 계산했습니다</div></td></tr>'; }
   var allowanceOk = calcRetirementAllowance(result.totalMonths, result.effectiveIncomeMonthly);
-  if (allowanceOk !== null) { html += '<tr><th>별도 지급: 퇴직수당(일시금)</th><td>약 ' + formatWon(allowanceOk) + '</td></tr>'; }
+  if (allowanceOk !== null) { html += '<tr><th>별도 지급: 퇴직수당(일시금)</th><td>약 ' + formatWon(allowanceOk) + '<div class="table-formula">2010년 이후 재직분 지급률 기준 추정입니다. 2009년 이전 재직분은 지급률·기준(최종 보수월액)이 달라 실제와 차이가 날 수 있습니다</div></td></tr>'; }
   html += publicPensionTaxRowsHtml(result.monthly, occupationalTaxableRatio(result.totalMonths / 12, retireYear));
   html += '</table>';
 

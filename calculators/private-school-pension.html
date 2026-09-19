@@ -128,6 +128,12 @@
         <div class="hint">재직기간 전체를 평균한 기준소득월액(세전, 연금 산정 기준)을 만원 단위로 입력하세요.</div>
       </div>
 
+      <div class="field">
+        <label for="prePay">2009년 12월 이전 재직분 평균보수월액 (만원, 선택)</label>
+        <input type="number" id="prePay" placeholder="비우면 위 금액을 그대로 사용" min="0" />
+        <div class="hint">실제 연금의 종전 구간은 당시 보수(2007~2009년 평균 등을 현재가치로 환산한 평균보수월액)를 기준으로 합니다. 이 값은 보통 위 평균 기준소득월액보다 낮으므로, 연금 예상 조회 화면에 나온 값을 알고 있다면 입력하세요. 종전 구간이 없으면 무시됩니다.</div>
+      </div>
+
       <button class="btn btn-primary" onclick="runCalc()">예상 연금액 계산하기</button>
     </div>
 
@@ -157,7 +163,7 @@
         <li>사학연금은 공무원연금과 마찬가지로 <strong>최소 재직기간 10년(120개월)</strong>을 채워야 퇴직연금 수급자격이 발생합니다.</li>
         <li><strong>재직기간 상한</strong>: 신규 임용자는 최대 36년까지 반영합니다. 다만 2016년 1월 1일 당시 재직기간이 21년 이상이던 분은 33년, 17년 이상 21년 미만은 34년, 15년 이상 17년 미만은 35년이 상한입니다. 임용연도를 역산해 이 상한을 자동으로 적용합니다.</li>
         <li><strong>소득재분배</strong>: 2016년 이후 재직분은 재직 30년까지 지급률 중 1%p에 소득재분배가 적용됩니다. 비교 기준(A값)은 전체 공무원 기준소득월액 평균액(2026년 5월~2027년 4월 시행 595만원)으로 두었습니다.</li>
-        <li>2009년 이전 재직분은 실제로는 당시 보수(현재가치 환산)를 기준으로 하지만, 여기서는 입력한 평균기준소득월액을 그대로 씁니다.</li>
+        <li>2009년 이전 재직분은 실제로는 2007~2009년 보수를 현재가치로 환산한 평균보수월액이 기준이며, 이 값은 평균기준소득월액보다 낮은 경우가 많습니다. 위 입력란에 "2009년 12월 이전 재직분 평균보수월액"을 넣으면 그 값으로 계산하고, 비우면 평균기준소득월액을 그대로 써서 실제보다 높게 나올 수 있습니다(공단 공개 사례에서 최대 약 29% 차이).</li>
         <li><strong>지급개시연령</strong>: 1996년 이후 임용자는 퇴직 연도에 따라 60세(2016~2021년 퇴직)에서 65세(2033년 이후 퇴직)까지 단계적으로 늦춰지며, 출생연도를 입력하면 개시 전 퇴직 시 조기퇴직연금(1년당 5%, 최대 25% 감액) 금액도 보여드립니다. 1996년 이전 임용자는 별도 특례가 있어 공단 확인이 필요합니다.</li>
         <li><strong>세금</strong>: 2002년 이후 재직기간에 해당하는 연금만 과세되며, 임용연도를 역산해 반영합니다.</li>
       </ul>
@@ -228,7 +234,7 @@ function runCalc() {
   var retireYear = getNumberValue("retireYear");
   var birthYear = getNumberValue("birthYear");
 
-  var result = calcOccupationalPension({ years: years, months: months, avgIncomeManwon: avgIncome, retireYear: retireYear });
+  var result = calcOccupationalPension({ prePayManwon: getNumberValue("prePay"), years: years, months: months, avgIncomeManwon: avgIncome, retireYear: retireYear });
 
   if (result.error) {
     showError("resultCard", result.error);
@@ -271,7 +277,7 @@ function runCalc() {
   html += occupationalDetailRowsHtml(result);
   html += occupationalStartAgeRowsHtml(result, retireYear, birthYear, false);
   var allowanceOk = calcRetirementAllowance(result.totalMonths, avgIncome * 10000);
-  if (allowanceOk !== null) { html += '<tr><th>별도 지급: 퇴직수당(일시금)</th><td>약 ' + formatWon(allowanceOk) + '</td></tr>'; }
+  if (allowanceOk !== null) { html += '<tr><th>별도 지급: 퇴직수당(일시금)</th><td>약 ' + formatWon(allowanceOk) + '<div class="table-formula">2010년 이후 재직분 지급률 기준 추정입니다. 2009년 이전 재직분은 지급률·기준(최종 보수월액)이 달라 실제와 차이가 날 수 있습니다</div></td></tr>'; }
   html += publicPensionTaxRowsHtml(result.monthly, occupationalTaxableRatio(result.totalMonths / 12, retireYear));
   html += '</table>';
 
