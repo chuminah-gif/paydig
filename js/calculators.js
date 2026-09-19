@@ -21,39 +21,27 @@ function clampNonNegative(n) {
 
 /* -------------------------------------------------------------------------
    국민연금 (National Pension)
-   국민연금공단이 공표하는 예상연금월액표(가입기간 × 평균소득월액별 공식 표)의
-   실제 수치를 앵커 포인트로 삼아 선형 보간/외삽하는 방식으로 계산합니다.
-   각 가입기간(10/20/30/40년) 구간에서 월 수급액은 평균소득월액(B)에 대해
-   매우 높은 선형성을 보이므로, 구간별 절편(a)과 기울기(b)를 이용해
-   monthly = a(years) + b(years) × B 형태로 근사합니다.
+   국민연금공단 '2026년 예상연금월액표'(2026.1, A값 3,193,511원)와 같은 산식으로 계산합니다.
+     기본연금액(월) = 1.29 × (A + B) × (가입연수 ÷ 20) ÷ 12  = 0.005375 × (A + B) × 가입연수
+     · A : 연금 수급 직전 3년간 전체 가입자 평균소득월액의 평균 (2026년 3,193,511원)
+     · B : 본인 가입기간 중 기준소득월액 평균(재평가)  · 10~20년 지급률 50%+연 5%p, 20년 초과분 연 5%p 가산과 동일한 식
+     · 연금액은 본인 기준소득월액 평균(B)을 넘을 수 없음(공단 표 하단 주의사항)
+   공단 표의 10·15·20·25·30·35·40년, B 100~600만원 값과 일치하는 것을 확인했습니다.
    ------------------------------------------------------------------------- */
-function nationalPensionCoefficients(years) {
-  // 앵커: (10년, 20년) 구간과 (20년 이상) 구간의 절편(a)·기울기(b)
-  var a10 = 171650, b10 = 0.05375;
-  var a20 = 257476, b20 = 0.080624;
-  var slopeA20plus = 17165, slopeB20plus = 0.005375;
+var NATIONAL_PENSION_A_2026 = 3193511;
 
-  if (years <= 20) {
-    var t = (years - 10) / 10;
-    return {
-      a: a10 + (a20 - a10) * t,
-      b: b10 + (b20 - b10) * t
-    };
-  }
-  return {
-    a: a20 + slopeA20plus * (years - 20),
-    b: b20 + slopeB20plus * (years - 20)
-  };
+function calcNationalBasicMonthly(totalMonths, avgIncomeMonthly) {
+  var years = totalMonths / 12;
+  var monthly = 0.005375 * (NATIONAL_PENSION_A_2026 + avgIncomeMonthly) * years;
+  return clampNonNegative(Math.min(monthly, avgIncomeMonthly));
 }
 
 /* 공적연금 연계 시 국민연금 가입기간이 10년 미만인 경우의 연계노령연금액
    연계노령연금액 = 기본연금액 × (국민연금 가입기간 ÷ 20)   (찾기쉬운 생활법령정보, 1년 미만 월수는 1/12년)
-   기본연금액은 가입기간 20년 미만이면 가입기간과 무관한 1.29(A+B)/12 이고, 10~20년 구간의 지급률(50%+5%/년)이
-   곧 가입기간÷20이므로, 10년 앵커값(= 기본연금액 × 50%, 2026년 A값 3,193,511원 기준)에 (가입월수÷120)을 곱하면 같은 값입니다.
-   가입 시점별 계수(1.5~1.245)와 미래 A값은 반영하지 않은 개략 추정입니다. */
+   기본연금액은 가입기간 20년 미만이면 가입기간과 무관한 1.29(A+B)/12 이므로 위 식과 같은 값입니다.
+   가입 시점별 계수와 미래 A값은 반영하지 않은 개략 추정입니다. */
 function calcNationalLinkedPension(totalMonths, avgIncomeMonthly) {
-  var a10 = 171650, b10 = 0.05375;
-  return clampNonNegative((a10 + b10 * avgIncomeMonthly) * (totalMonths / 120));
+  return calcNationalBasicMonthly(totalMonths, avgIncomeMonthly);
 }
 
 function calcNationalPension(input) {
@@ -67,7 +55,6 @@ function calcNationalPension(input) {
   var eligible = totalMonths >= 120; // 최소 가입기간 10년
 
   // 10년 미만이면 노령연금 자체가 없어(반환일시금으로 지급) 월 수급액을 계산하지 않습니다.
-  // 앵커(10·20년) 사이를 잇는 근사식은 10년 미만 구간에서는 성립하지 않으므로 외삽하지 않습니다.
   if (!eligible) {
     return {
       monthly: 0,
@@ -81,9 +68,7 @@ function calcNationalPension(input) {
     };
   }
 
-  var years = totalMonths / 12;
-  var coef = nationalPensionCoefficients(years);
-  var monthly = clampNonNegative(coef.a + coef.b * avgIncomeMonthly);
+  var monthly = calcNationalBasicMonthly(totalMonths, avgIncomeMonthly);
 
   return {
     monthly: monthly,
@@ -131,18 +116,109 @@ function nationalPensionStartAge(birthYear) {
 
 /* -------------------------------------------------------------------------
    공무원연금 / 사학연금 / 군인연금 (직역연금)
-   연금월액 = 평균기준소득월액 × Σ(재직연도별 지급률)
 
-   [공무원·사학연금] 재직기간 1년당 지급률 (공무원연금공단 안내 기준)
-     2015년 이전 : 연 1.9% 로 단순 근사 (2009년 이전 재직분은 더 높은 별도 산식이 있어 실제보다 낮게 나올 수 있음)
-     2016년      : 1.878% → 2035년 이후 : 1.7%  (연도별 표는 시행령 부칙 기준이며, 여기서는 두 끝점을 잇는 선형 근사)
-     재직기간은 최대 36년까지 반영. 소득재분배(30년까지 1.7% 중 1%p에 적용)는 반영하지 않음.
+   [공무원·사학연금] 재직기간을 3구간으로 나눠 각각 산정한 뒤 합산 (공무원연금공단 '연금액 산정' 안내, 공무원연금법 부칙)
+     1기간 (2009.12.31 이전) : 재직 1년당 2.5% (20년 초과분은 1년당 2%)
+     2기간 (2010.1.1~2015.12.31) : 재직 1년당 1.9%
+     3기간 (2016.1.1 이후) : 연도별 지급률 — 2016년 1.878%에서 2020년 1.79%까지 매년 0.022%p,
+        2021~2025년 1.78%→1.74%(매년 0.01%p), 2026~2035년 1.736%→1.7%(매년 0.004%p), 2035년 이후 1.7%
+        재직 30년까지는 지급률 중 1%p에 소득재분배(본인 소득과 전체 공무원 평균소득 A의 중간 수준으로 조정)를 적용
+        소득재분배 적용비율 = ((1+r)/2) ÷ r,  r = 본인 평균기준소득월액 ÷ A 를 0.1 단위로 내림(0.2 미만은 0.2, 1.6 초과는 1.6로 고정)
+        A(전체 공무원 기준소득월액 평균액) 2026.5.1~2027.4.30 : 5,950,000원 (인사혁신처장 고시)
+     재직기간 상한 : 36년. 다만 2016.1.1 당시 재직기간이 21년 이상이면 33년, 17년 이상이면 34년, 15년 이상이면 35년 (부칙 경과규정)
+   ※ 1기간은 실제로는 2009년 이전 보수(현재가치 환산)를 기준으로 하지만 여기서는 입력한 평균 기준소득월액을 그대로 사용합니다.
    [군인연금] 복무기간 1년당 평균기준소득월액의 1.9%(전 기간 동일), 연금액은 평균기준소득월액의 62.7% 초과 불가
    ------------------------------------------------------------------------- */
+var OCCUPATIONAL_REDIST_A_2026 = 5950000;
+
 function occupationalAnnualRatePercent(year) {
   if (year <= 2015) return 1.9;
-  if (year >= 2035) return 1.7;
-  return 1.878 - (year - 2016) * ((1.878 - 1.7) / 19);
+  if (year <= 2020) return 1.878 - (year - 2016) * 0.022;
+  if (year <= 2025) return 1.78 - (year - 2021) * 0.01;
+  if (year < 2035) return 1.736 - (year - 2026) * 0.004;
+  return 1.7;
+}
+
+function occupationalCapYears(yearsAt2016) {
+  if (yearsAt2016 >= 21) return 33;
+  if (yearsAt2016 >= 17) return 34;
+  if (yearsAt2016 >= 15) return 35;
+  return 36;
+}
+
+// 소득재분배 적용비율 (공무원연금법 시행령 별표 구조: 구간 하한 기준)
+function occupationalRedistributionFactor(avgIncomeMonthly) {
+  var r = avgIncomeMonthly / OCCUPATIONAL_REDIST_A_2026;
+  var low = Math.floor(r * 10 + 1e-9) / 10;
+  if (low < 0.2) low = 0.2;
+  if (low > 1.6) low = 1.6;
+  return ((1 + low) / 2) / low;
+}
+
+function calcCivilSchoolPensionPercent(totalYears, retireYear, avgIncomeMonthly) {
+  var start = retireYear - totalYears;
+  var s1 = Math.max(0, Math.min(2010, retireYear) - start);
+  var s2 = Math.max(0, Math.min(2016, retireYear) - Math.max(2010, start));
+  var s3 = Math.max(0, retireYear - Math.max(2016, start));
+  var yearsAt2016 = s1 + s2;
+  var capYears = occupationalCapYears(yearsAt2016);
+  var counted = Math.min(totalYears, capYears);
+  var excess = totalYears - counted;
+
+  // 상한을 넘는 기간은 가장 늦은 기간부터 제외
+  var cut3 = Math.min(s3, excess); s3 -= cut3; excess -= cut3;
+  var cut2 = Math.min(s2, excess); s2 -= cut2; excess -= cut2;
+  s1 -= Math.min(s1, excess);
+
+  var p1 = s1 <= 20 ? s1 * 2.5 : 50 + (s1 - 20) * 2;
+  var p2 = s2 * 1.9;
+
+  var factor = occupationalRedistributionFactor(avgIncomeMonthly);
+  var startSeg3 = Math.max(2016, start);
+  var p3 = 0;        // 본인 소득 기준 부분(지급률 - 1%p, 30년 초과분은 전체 지급률)
+  var p3Redist = 0;  // 소득재분배 적용 부분(1%p)
+  var cum = 0;
+  for (var i = 0; i < s3; i++) {
+    var frac = Math.min(1, s3 - i);
+    var rate = occupationalAnnualRatePercent(Math.floor(startSeg3 + i + 1e-9));
+    var inRedist = Math.max(0, Math.min(frac, 30 - cum));
+    p3 += inRedist * (rate - 1.0) + (frac - inRedist) * rate;
+    p3Redist += inRedist * 1.0;
+    cum += frac;
+  }
+  var totalPercent = p1 + p2 + p3 + p3Redist * factor;
+
+  return {
+    percent: totalPercent,
+    countedYears: counted,
+    capYears: capYears,
+    yearsAt2016: yearsAt2016,
+    excessYears: totalYears - counted,
+    seg1Years: s1, seg2Years: s2, seg3Years: s3,
+    redistFactor: factor
+  };
+}
+
+// 공무원·사학연금 결과 표의 산정 내역 행 (재직기간 구간·상한·소득재분배)
+function occupationalDetailRowsHtml(result) {
+  var d = result.detail;
+  if (!d) return "";
+  var fmt = function (n) { return (Math.round(n * 10) / 10).toString(); };
+  var html = '';
+  html += '<tr><th>추정 임용연도</th><td>약 ' + result.startYear + '년</td></tr>';
+  var parts = [];
+  if (d.seg1Years > 0) parts.push('2009년 이전 ' + fmt(d.seg1Years) + '년');
+  if (d.seg2Years > 0) parts.push('2010~2015년 ' + fmt(d.seg2Years) + '년');
+  if (d.seg3Years > 0) parts.push('2016년 이후 ' + fmt(d.seg3Years) + '년');
+  html += '<tr><th>연금 반영 재직기간</th><td>' + fmt(d.countedYears) + '년 (상한 ' + d.capYears + '년)' +
+    '<div class="table-formula">' + parts.join(' + ') + '</div>' +
+    (d.excessYears > 0.05 ? '<div class="table-formula">상한 초과 ' + fmt(d.excessYears) + '년은 연금에 반영되지 않습니다.</div>' : '') +
+    (d.capYears < 36 ? '<div class="table-formula">2016년 1월 1일 기준 재직 ' + fmt(d.yearsAt2016) + '년 → 상한 ' + d.capYears + '년(경과규정)</div>' : '') +
+    '</td></tr>';
+  html += '<tr><th>적용 지급률 합계</th><td>' + result.ratePercent.toFixed(1) + '%' +
+    (d.seg3Years > 0 ? '<div class="table-formula">2016년 이후 재직분은 소득재분배 적용비율 ' + (d.redistFactor * 100).toFixed(1) + '%(전체 공무원 평균 ' + Math.round(OCCUPATIONAL_REDIST_A_2026 / 10000) * 1 + '만원 기준 A값 반영) 적용</div>' : '') +
+    '</td></tr>';
+  return html;
 }
 
 function calcOccupationalPension(input) {
@@ -159,22 +235,14 @@ function calcOccupationalPension(input) {
 
   var avgAnnualRate;
   var cappedRatePercent;
+  var detail = null;
   if (isMilitary) {
     avgAnnualRate = 1.9;
     cappedRatePercent = Math.min(1.9 * serviceYearsFull, 62.7);
   } else {
-    var rateSumPercent = 0;
-    var yearCount = 0;
-    for (var y = startYear; y < input.retireYear; y++) {
-      rateSumPercent += occupationalAnnualRatePercent(y);
-      yearCount++;
-    }
-    if (yearCount === 0) {
-      rateSumPercent = occupationalAnnualRatePercent(input.retireYear) * serviceYearsFull;
-      yearCount = 1;
-    }
-    avgAnnualRate = rateSumPercent / yearCount;
-    cappedRatePercent = avgAnnualRate * Math.min(serviceYearsFull, 36);
+    detail = calcCivilSchoolPensionPercent(serviceYearsFull, input.retireYear, avgIncomeMonthly);
+    cappedRatePercent = detail.percent;
+    avgAnnualRate = detail.countedYears > 0 ? detail.percent / detail.countedYears : 0;
   }
 
   var monthly = avgIncomeMonthly * (cappedRatePercent / 100);
@@ -188,7 +256,8 @@ function calcOccupationalPension(input) {
     ratePercent: cappedRatePercent,
     avgAnnualRate: avgAnnualRate,
     startYear: startYear,
-    eligible: eligible
+    eligible: eligible,
+    detail: detail
   };
 }
 
@@ -408,7 +477,7 @@ function calcPublicPensionTax(annualPensionWon) {
 // 퇴직소득세 (근속연수공제 → 환산급여 → 환산급여공제 → 세율 적용, 지방소득세 포함)
 function calcRetirementIncomeTax(lumpSum, years) {
   lumpSum = clampNonNegative(lumpSum);
-  years = Math.max(1, Math.round(years));
+  years = Math.max(1, Math.ceil(years - 1e-9)); // 근속연수는 1년 미만 월수를 1년으로 올림
 
   var serviceDeduction;
   if (years <= 5) serviceDeduction = years * 1000000;
@@ -525,7 +594,7 @@ var UNEMPLOYMENT_DAILY_FLOOR_2026 = MINIMUM_WAGE_2026 * 8 * 0.8; // 구직급여
 var NATIONAL_PENSION_BASE_CEILING = 6590000;
 var NATIONAL_PENSION_BASE_FLOOR = 410000;
 // 건강보험 직장가입자 개인부담 보험료 월 상한액(2026) — 보수월액이 아니라 "계산된 보험료" 자체에 적용되는 상한
-var HEALTH_INSURANCE_PREMIUM_CEILING = 4590000;
+var HEALTH_INSURANCE_PREMIUM_CEILING = 4591740; // 전체 상한 9,183,480원의 절반 (건강보험공단 고시, 2026)
 
 /* 공적연금 종류별 개인부담 기여율. 공무원·사학·군인연금 가입자는 국민연금 대신
    각자의 직역연금에 가입하며, 국민연금에 가입할 수 없는 직역연금 가입자·별정우체국
@@ -584,17 +653,28 @@ function laborIncomeDeduction(annualGrossWon) {
 
 // 월 소득세·지방소득세: 국세청 근로소득 간이세액표(js/withholding-table.js)에서 월 급여(비과세 제외)와
 // 공제대상가족 수(본인 포함)로 조회합니다. 실제 급여명세서의 원천징수 방식과 같아, 4대보험료 소득공제·근로소득세액공제
-// 등이 이미 반영된 값입니다. 8세 이상 20세 이하 자녀 추가 공제와 경로우대·장애인 공제는 반영하지 않습니다.
-function calcMonthlyIncomeTax(monthlyGrossWon, familyCount) {
+// 등이 이미 반영된 값입니다. 8세 이상 20세 이하 자녀 공제는 options.childCount로 반영하고, 경로우대·장애인 공제는 반영하지 않습니다.
+// 8ì¸ ì´ì 20ì¸ ì´í ìë ê³µì (ê°ì´ì¸ì¡í ìë´): 1ëª 12,500ì, 2ëª 29,160ì, 3ëª ì´ìì 29,160ì + 2ëª ì´ê³¼ 1ì¸ë¹ 25,000ì (ì ì¸ì¡ìì ì°¨ê°)
+function withholdingChildDeduction(childCount) {
+  var n = Math.max(0, Math.round(childCount) || 0);
+  if (n === 0) return 0;
+  if (n === 1) return 12500;
+  return 29160 + (n - 2) * 25000;
+}
+
+function calcMonthlyIncomeTax(monthlyGrossWon, familyCount, childCount) {
   var fc = Math.min(Math.max(Math.round(familyCount) || 1, 1), 11);
   var monthly = clampNonNegative(monthlyGrossWon);
-  var incomeTax = lookupWithholdingTax(monthly, fc);
+  var childDeduct = withholdingChildDeduction(childCount);
+  var incomeTax = clampNonNegative(lookupWithholdingTax(monthly, fc) - childDeduct);
   var localTax = incomeTax * 0.1; // 지방소득세 = 소득세의 10% (법정 비율)
   return {
     incomeTax: incomeTax,
     localTax: localTax,
     taxableMonthly: monthly,
-    familyCount: fc
+    familyCount: fc,
+    childCount: Math.max(0, Math.round(childCount) || 0),
+    childDeduct: childDeduct
   };
 }
 
@@ -611,7 +691,7 @@ function calcTakeHomePay(monthlyGrossWon, pensionType, options) {
   if (m <= 0) return { error: "월 급여(세전)를 올바르게 입력해 주세요." };
   var taxableBase = clampNonNegative(m - nonTaxable);
   var insurance = calcInsuranceBreakdown(taxableBase, pensionType);
-  var baseTax = calcMonthlyIncomeTax(taxableBase, familyCount);
+  var baseTax = calcMonthlyIncomeTax(taxableBase, familyCount, options.childCount);
   var incomeTax = clampNonNegative(baseTax.incomeTax * withholdingRatio);
   var tax = {
     incomeTax: incomeTax,
@@ -619,7 +699,9 @@ function calcTakeHomePay(monthlyGrossWon, pensionType, options) {
     baseIncomeTax: baseTax.incomeTax,
     withholdingRatio: withholdingRatio,
     taxableMonthly: baseTax.taxableMonthly,
-    familyCount: baseTax.familyCount
+    familyCount: baseTax.familyCount,
+    childCount: baseTax.childCount,
+    childDeduct: baseTax.childDeduct
   };
   var totalDeduct = insurance.total + tax.incomeTax + tax.localTax;
   return {
@@ -752,7 +834,7 @@ function insuranceDeductDetailHtml(insurance, tax) {
   if (tax) {
     html += '<div class="d-group-label">세금</div>';
     var ratioNote = tax.withholdingRatio && tax.withholdingRatio !== 1 ? " × 원천징수비율 " + Math.round(tax.withholdingRatio * 100) + "%" : "";
-    var taxFormula = "국세청 간이세액표: 월 급여 " + formatWon(tax.taxableMonthly) + ", 공제대상가족 " + tax.familyCount + "명" + ratioNote;
+    var taxFormula = "국세청 간이세액표: 월 급여 " + formatWon(tax.taxableMonthly) + ", 공제대상가족 " + tax.familyCount + "명" + (tax.childDeduct > 0 ? ", 8~20세 자녀 " + tax.childCount + "명 공제 -" + formatWon(tax.childDeduct) : "") + ratioNote;
     html += dRow("소득세", taxFormula, formatWon(tax.incomeTax));
     html += dRow("지방소득세", formatWon(tax.incomeTax) + " × 10%", formatWon(tax.localTax));
   }
@@ -970,8 +1052,8 @@ function calcWorkInjuryLeaveBenefit(input) {
    값을 사용했습니다(신용카드 15%/30%/40%, 월세 17%/15%, 기부금 15%/30%/40%
    등). 다만 신용카드 추가한도의 항목별 세부 한도, 의료비 한도없는 대상과
    일반 대상의 배분 순서 등은 실제 국세청 계산 방식을 단순화했습니다.
-   자녀세액공제는 2026년 세법개정안(자녀당 10만원 인상)이 아직 국회 심의
-   중이라 현재 시행 중인 금액을 사용했습니다.
+   자녀세액공제는 국세청 안내 기준 1명 25만원, 2명 55만원, 3명 이상은
+   55만원에 2명 초과 1인당 40만원을 더한 금액입니다.
    ------------------------------------------------------------------------- */
 function laborIncomeTaxCredit(computedTax, totalGrossWon) {
   // 소득세법 제59조: 산출세액 130만원 이하 55%, 130만원 초과분은 71만5천원 + 초과분의 30%
@@ -980,7 +1062,8 @@ function laborIncomeTaxCredit(computedTax, totalGrossWon) {
   var cap;
   if (totalGrossWon <= 33000000) cap = 740000;
   else if (totalGrossWon <= 70000000) cap = Math.max(660000, 740000 - (totalGrossWon - 33000000) * 0.008);
-  else cap = Math.max(500000, 660000 - (totalGrossWon - 70000000) * 0.5);
+  else if (totalGrossWon <= 120000000) cap = Math.max(500000, 660000 - (totalGrossWon - 70000000) * 0.5);
+  else cap = Math.max(200000, 500000 - (totalGrossWon - 120000000) * 0.5);
 
   return Math.min(credit, cap);
 }
@@ -991,12 +1074,12 @@ function pensionAccountTaxCredit(contributionWon, totalGrossWon) {
   return capped * rate;
 }
 
-// 자녀세액공제 (기본공제대상 8세 이상 자녀 수 기준, 2026년 현재 시행 중인 금액)
+// 자녀세액공제 (기본공제대상 8세 이상 자녀 수 기준, 국세청 안내 금액)
 function childTaxCredit(childCount) {
   if (!(childCount > 0)) return 0;
-  if (childCount === 1) return 150000;
-  if (childCount === 2) return 350000;
-  return 350000 + (childCount - 2) * 300000;
+  if (childCount === 1) return 250000;
+  if (childCount === 2) return 550000;
+  return 550000 + (childCount - 2) * 400000;
 }
 
 // 신용카드 등 사용액 소득공제
@@ -1015,20 +1098,25 @@ function creditCardDeduction(input, totalGrossWon) {
 
   var remainingThreshold = threshold;
   var baseAmount = 0; // 신용카드·체크카드 등(기본한도 대상)
-  var specialAmount = 0; // 전통시장·대중교통·도서공연(추가한도 대상)
+  var special = { books: 0, market: 0, transit: 0 }; // 항목별 추가한도 대상
+  var lowIncome = totalGrossWon <= 70000000; // 도서·공연 추가공제는 총급여 7천만원 이하만 해당
 
   categories.forEach(function (cat, idx) {
     var eligible = Math.max(0, cat.amount - remainingThreshold);
     remainingThreshold = Math.max(0, remainingThreshold - cat.amount);
-    var isSpecial = idx >= 2; // 도서공연/전통시장/대중교통
     var value = eligible * cat.rate;
-    if (isSpecial) specialAmount += value; else baseAmount += value;
+    if (idx === 2) { if (lowIncome) special.books += value; else baseAmount += value; }
+    else if (idx === 3) special.market += value;
+    else if (idx === 4) special.transit += value;
+    else baseAmount += value;
   });
 
   var baseCap = totalGrossWon <= 70000000 ? 3000000 : (totalGrossWon <= 120000000 ? 2500000 : 2000000);
-  var specialCap = 3000000; // 전통시장+대중교통+도서공연 합산 추가한도(단순화)
+  // 추가한도: 전통시장·대중교통 각 100만원, 도서·공연 100만원(총급여 7천만원 이하). 기본한도를 넘는 부분에 한해 적용됩니다.
+  var specialAll = special.books + special.market + special.transit;
+  var specialCap = Math.min(special.books, 1000000) + Math.min(special.market, 1000000) + Math.min(special.transit, 1000000);
 
-  var deduction = Math.min(baseAmount, baseCap) + Math.min(specialAmount, specialCap);
+  var deduction = Math.min(baseAmount + specialAll, baseCap + specialCap);
   return { deduction: deduction, totalUsage: totalUsage };
 }
 
@@ -1053,11 +1141,11 @@ function educationExpenseCredit(totalEducationWon) {
   return (totalEducationWon || 0) * 0.15;
 }
 
-// 월세 세액공제: 총급여 5,500만원 이하 17%, 5,500만~8,000만원 15%, 8,000만원 초과는 대상 아님. 한도 750만원.
+// 월세 세액공제: 총급여 5,500만원 이하 17%, 5,500만~8,000만원 15%, 8,000만원 초과는 대상 아님. 한도 1,000만원.
 function monthlyRentCredit(rentWon, totalGrossWon) {
   if (!(rentWon > 0) || totalGrossWon > 80000000) return 0;
   var rate = totalGrossWon <= 55000000 ? 0.17 : 0.15;
-  return Math.min(rentWon, 7500000) * rate;
+  return Math.min(rentWon, 10000000) * rate;
 }
 
 // 기부금 세액공제: 1천만원 이하 15%, 1천만~3천만원 30%, 3천만원 초과 40%
@@ -1137,9 +1225,9 @@ function calcYearEndTax(input) {
 
   var childCredit = childTaxCredit(childCount);
   f.childCredit = childCount <= 0 ? "대상 자녀 없음"
-    : childCount === 1 ? "1명 × 15만원"
-    : childCount === 2 ? "2명 35만원(15만원+20만원)"
-    : "2명 35만원 + (" + (childCount - 2) + "명 × 30만원)";
+    : childCount === 1 ? "1명 25만원"
+    : childCount === 2 ? "2명 55만원"
+    : "2명 55만원 + (" + (childCount - 2) + "명 × 40만원)";
 
   var pensionCredit = pensionAccountTaxCredit(pensionContribution, totalGross);
   var pensionRate = totalGross <= 55000000 ? 16.5 : 13.2;
@@ -1165,7 +1253,7 @@ function calcYearEndTax(input) {
   var rentCredit = monthlyRentCredit(rentTotal, totalGross);
   f.rentCredit = !(rentTotal > 0) ? "월세 입력 없음"
     : totalGross > 80000000 ? "총급여 8,000만원 초과로 대상 아님"
-    : "월세(750만원 한도) " + formatWon(Math.min(rentTotal, 7500000)) + " × " + (totalGross <= 55000000 ? 17 : 15) + "%";
+    : "월세(1,000만원 한도) " + formatWon(Math.min(rentTotal, 10000000)) + " × " + (totalGross <= 55000000 ? 17 : 15) + "%";
 
   var donationTotal = (input.donationManwon || 0) * 10000;
   var donationCreditAmount = donationCredit(donationTotal);
