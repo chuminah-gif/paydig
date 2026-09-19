@@ -685,9 +685,6 @@ function insuranceDeductDetailHtml(insurance, tax) {
   var html = '<div class="deduct-detail">';
   html += '<div class="d-group-label">4대보험</div>';
 
-  var pensionFormula = (insurance.pensionBaseCapped ? "상한액 " : "") + formatWon(insurance.pensionBase) + " × " + fmtPct(insurance.pensionRatePercent) + "%";
-  html += dRow(pensionLabel, pensionFormula, formatWon(insurance.nationalPension));
-
   var healthFormula = insurance.healthCapped
     ? "월 459만원 상한 적용"
     : formatWon(insurance.healthBase) + " × " + fmtPct(insurance.healthRatePercent) + "%";
@@ -695,6 +692,9 @@ function insuranceDeductDetailHtml(insurance, tax) {
 
   var ltcFormula = "건강보험료 " + formatWon(insurance.healthInsurance) + " × " + fmtPct(insurance.ltcRatePercent) + "%";
   html += dRow("장기요양보험", ltcFormula, formatWon(insurance.longTermCare));
+
+  var pensionFormula = (insurance.pensionBaseCapped ? "상한액 " : "") + formatWon(insurance.pensionBase) + " × " + fmtPct(insurance.pensionRatePercent) + "%";
+  html += dRow(pensionLabel, pensionFormula, formatWon(insurance.nationalPension));
 
   if (insurance.employmentInsuranceApplicable === false) {
     html += dRow("고용보험", "직역연금 가입자는 대상 제외", "해당없음");
