@@ -327,7 +327,7 @@
     <div class="card prose">
       <h2>통합 시뮬레이션 계산 방식 안내</h2>
       <ul>
-        <li><strong>국민연금·직역연금</strong>은 평생 매월 지급되는 연금이라, 각 계산기와 동일한 방식으로 월 수급액을 그대로 합산합니다.</li>
+        <li><strong>국민연금·직역연금</strong>은 평생 매월 지급되는 연금이라, 각 계산기와 동일한 방식으로 월 수급액을 그대로 합산합니다. 다만 국민연금 가입기간이 10년 미만이면 노령연금 자체가 없으므로(원칙적으로 반환일시금 지급) 월 수령액 합계에 넣지 않고 별도로 안내합니다.</li>
         <li><strong>퇴직연금·연금저축·개인연금</strong>은 목돈(일시금)으로 쌓이는 구조이므로, 위에서 설정한 "수령 희망 기간" 동안 각 항목의 예상 수익률로 계속 운용하면서 매월 정액으로 나눠 받는다고 가정해 월 수령액으로 환산합니다.</li>
         <li>따라서 "총 예상 월 수령액"은 공적연금(평생) + 퇴직연금·개인연금(설정하신 수령 기간 동안)을 단순 합산한 값이며, 수령 기간이 지나면 퇴직연금·개인연금 부분은 종료된다는 점에 유의하세요.</li>
       </ul>
@@ -347,6 +347,7 @@
         <h3>⚠ 연계 신청 전에 알아둘 부분</h3>
         <ul>
           <li><strong>이미 퇴직일시금을 받았는데 연계할 수 있나요?</strong> 가능합니다. 다만 국민연금 가입자가 되면서 연계를 신청할 때, 이미 받은 퇴직일시금을 이자를 가산해 반납해야 그 기간이 연계 대상에 포함됩니다.</li>
+          <li><strong>회사에서 퇴직금을 받았는데 연계가 안 되나요?</strong> 회사 퇴직금(근로기준법상 퇴직금)은 연금 가입기간과 별개라 연계 요건에 영향을 주지 않습니다. 연계 여부를 가르는 건 <strong>연금 쪽 일시금</strong>, 즉 국민연금 반환일시금이나 직역연금 퇴직일시금을 이미 받았는지입니다. 이미 받았다면 이자를 더해 반납해야 해당 기간을 다시 연계 대상에 넣을 수 있습니다.</li>
           <li><strong>연계 신청은 어디서 하나요?</strong> 연계 대상 경력이 있는 연금관리기관(<a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>, <a href="https://www.geps.or.kr" target="_blank" rel="noopener">공무원연금공단</a>, <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>, <a href="https://www.mps.mil.kr" target="_blank" rel="noopener">군인연금 정보포털</a> 등) 중 <strong>한 곳에만</strong> 신청서를 제출하면 됩니다.</li>
           <li><strong>신청하고 나서 취소할 수 있나요?</strong> 연계가 승인되면 이후에는 철회할 수 없으므로, 신청 전에 각 연금별 예상 수급액을 미리 비교해 보고 신중하게 결정하는 것이 좋습니다.</li>
         </ul>
@@ -435,13 +436,27 @@ function runSimulation() {
       avgIncomeManwon: getNumberValue("nat-income")
     });
     if (r.error) { errors.push("국민연금: " + r.error); }
-    else {
-      if (!r.eligible) {
-        var occChecked = document.getElementById("chk-occ").checked;
-        warnings.push(occChecked
-          ? "국민연금 가입기간이 10년(120개월) 미만입니다. 직역연금과 합산 10년 이상이면(군인연금은 20년) 공적연금 연계제도로 두 기간을 합쳐 연금으로 받을 수 있습니다. 아래 \"국민연금·직역연금 연계제도\" 설명을 참고하세요."
-          : "국민연금 가입기간이 10년(120개월) 미만이면 원칙적으로 연금이 아닌 반환일시금으로 지급됩니다. 직역연금(공무원·군인·사학) 가입 이력이 있다면 공적연금 연계제도를 통해 연금으로 받을 수 있는지 확인해 보세요.");
+    else if (!r.eligible) {
+      // 10년 미만이면 노령연금이 없으므로 월 수령액·합계에 넣지 않고, 연계 가능 여부에 따라 안내만 표시합니다.
+      var occChecked = document.getElementById("chk-occ").checked;
+      var linkOccType = document.getElementById("occ-type").value;
+      var linkOccMonths = getNumberValue("occ-years") * 12 + getNumberValue("occ-months");
+      var linkMinMonths = linkOccType === "military" ? 240 : 120;
+      var natPeriodText = Math.floor(r.totalMonths / 12) + "년 " + (r.totalMonths % 12) + "개월";
+      var linkageOk = occChecked && linkOccMonths > 0 && linkOccMonths < linkMinMonths && (r.totalMonths + linkOccMonths) >= linkMinMonths;
+      if (linkageOk) {
+        warnings.push("국민연금 가입기간(" + natPeriodText + ")은 10년 미만이라 단독으로는 연금을 받을 수 없지만, 직역연금 기간과 합산하면 연계 요건(" + (linkMinMonths / 12) + "년)을 충족합니다. 연계를 신청하면 국민연금 몫도 연금으로 받을 수 있으나, 실제 연계연금은 각 기관이 가입기간에 따라 따로 산정하므로 이 시뮬레이션의 합계에는 국민연금 몫을 넣지 않았습니다. 아래 \"공적연금 연계제도\" 설명을 참고하세요.");
+        rows.push({ name: "국민연금", type: "연계 신청 시 연금 수급 가능", displayText: "금액 별도 산정 (합계 미포함)" });
+      } else {
+        warnings.push("국민연금 가입기간(" + natPeriodText + ")이 10년(120개월) 미만이라 노령연금은 받을 수 없고, 원칙적으로 낸 보험료에 이자를 더한 반환일시금으로 지급됩니다. 그래서 월 수령액 합계에 넣지 않았습니다." + (occChecked
+          ? (linkOccMonths >= linkMinMonths
+            ? " 직역연금 재직기간은 단독으로 수급 요건을 채우므로, 국민연금 가입기간의 처리(반환일시금 또는 연계 가능 여부)는 공단에 확인해 보세요."
+            : " 직역연금과 합산해도 연계 요건(" + (linkMinMonths / 12) + "년)에는 못 미칩니다.")
+          : " 공무원·군인·사학연금 가입 이력이 있다면 직역연금 항목도 함께 체크해 공적연금 연계제도로 연금을 받을 수 있는지 확인해 보세요."));
+        rows.push({ name: "국민연금", type: "반환일시금(원칙)", displayText: "월 연금 없음 · 반환일시금 약 " + formatWon(r.refundEstimate) + " + 이자 (개략 추정)" });
       }
+    }
+    else {
       var natTax = calcPublicPensionTax(r.monthly * 12);
       var natAfter = clampNonNegative(r.monthly - natTax.monthlyTax);
       totalMonthlyPreTax += r.monthly;
@@ -462,15 +477,24 @@ function runSimulation() {
     if (r2.error) { errors.push(occTypeLabel + ": " + r2.error); }
     else {
       var occMinMonths = occType === "military" ? 240 : 120;
-      if (r2.totalMonths < occMinMonths) {
-        var natChecked = document.getElementById("chk-national").checked;
-        warnings.push(occTypeLabel + "은 최소 재직(복무)기간 " + (occMinMonths / 12) + "년(" + occMinMonths + "개월)을 채워야 연금으로 받을 수 있습니다. 입력하신 기간은 이에 미달해 실제로는 일시금으로 지급될 수 있으나, 참고용으로 월 환산액을 계속 표시합니다." + (natChecked ? " 국민연금과 합산 10년 이상이면(군인연금은 20년) 공적연금 연계제도로 연금 수급이 가능할 수 있으니 아래 설명을 참고하세요." : ""));
+      var natChecked = document.getElementById("chk-national").checked;
+      var occNatMonths = natChecked ? getNumberValue("nat-years") * 12 + getNumberValue("nat-months") : 0;
+      var occShort = r2.totalMonths < occMinMonths;
+      var occLinkOk = occShort && occNatMonths > 0 && (r2.totalMonths + occNatMonths) >= occMinMonths;
+      if (occShort && !occLinkOk) {
+        // 최소 재직기간 미달 + 연계로도 못 채우면 연금이 아니라 일시금 지급이므로 합계에 넣지 않습니다.
+        warnings.push(occTypeLabel + "은 최소 재직(복무)기간 " + (occMinMonths / 12) + "년(" + occMinMonths + "개월)을 채워야 연금으로 받을 수 있습니다. 입력하신 기간은 이에 미달해 원칙적으로 퇴직일시금으로 지급되므로 월 수령액 합계에 넣지 않았습니다." + (natChecked ? " 국민연금과 합산해도 연계 요건(" + (occMinMonths / 12) + "년)에는 못 미칩니다." : " 국민연금 가입 이력이 있다면 국민연금 항목도 함께 체크해 공적연금 연계제도로 연금을 받을 수 있는지 확인해 보세요."));
+        rows.push({ name: occTypeLabel, type: "퇴직일시금(원칙)", displayText: "월 연금 없음 · 일시금으로 지급" });
+      } else {
+        if (occLinkOk) {
+          warnings.push(occTypeLabel + " 재직기간 단독으로는 최소 " + (occMinMonths / 12) + "년에 미달하지만 국민연금과 합산하면 연계 요건을 충족하므로, 연계 신청을 전제로 " + occTypeLabel + " 몫의 월 수급액을 합계에 넣었습니다. 실제 연계연금은 각 기관이 따로 산정하므로 금액은 달라질 수 있습니다.");
+        }
+        var occTax = calcPublicPensionTax(r2.monthly * 12);
+        var occAfter = clampNonNegative(r2.monthly - occTax.monthlyTax);
+        totalMonthlyPreTax += r2.monthly;
+        totalMonthlyAfterTax += occAfter;
+        rows.push({ name: occTypeLabel, type: occLinkOk ? "연계 신청 시 평생 매월" : "평생 매월", amount: r2.monthly, afterTax: occAfter, taxNote: occTax.formula });
       }
-      var occTax = calcPublicPensionTax(r2.monthly * 12);
-      var occAfter = clampNonNegative(r2.monthly - occTax.monthlyTax);
-      totalMonthlyPreTax += r2.monthly;
-      totalMonthlyAfterTax += occAfter;
-      rows.push({ name: occTypeLabel, type: "평생 매월", amount: r2.monthly, afterTax: occAfter, taxNote: occTax.formula });
     }
   }
 
@@ -580,6 +604,10 @@ function runSimulation() {
 
   html += '<div class="table-scroll-wrap"><table class="breakdown-table"><tr><th>항목</th><th>수령 방식</th><th>월 수령액</th></tr>';
   rows.forEach(function (row) {
+    if (row.displayText) {
+      html += '<tr><td>' + row.name + '</td><td>' + row.type + '</td><td class="amount-cell"><div class="amount-pre">' + row.displayText + '</div></td></tr>';
+      return;
+    }
     html += '<tr><td>' + row.name + '</td><td>' + row.type + '</td><td class="amount-cell">' +
       '<div class="amount-pre"><span class="amount-tag">세전</span>' + formatWon(row.amount) + '</div>' +
       '<div class="amount-after" title="' + (row.taxNote || '').replace(/"/g, '&quot;') + '"><span class="amount-tag">세후 ⓘ</span>' + formatWon(row.afterTax) + '</div>' +

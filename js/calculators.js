@@ -54,17 +54,30 @@ function calcNationalPension(input) {
     return { error: "가입기간과 평균 소득월액을 올바르게 입력해 주세요." };
   }
 
+  var eligible = totalMonths >= 120; // 최소 가입기간 10년
+
+  // 10년 미만이면 노령연금 자체가 없어(반환일시금으로 지급) 월 수급액을 계산하지 않습니다.
+  // 앵커(10·20년) 사이를 잇는 근사식은 10년 미만 구간에서는 성립하지 않으므로 외삽하지 않습니다.
+  if (!eligible) {
+    return {
+      monthly: 0,
+      yearly: 0,
+      totalMonths: totalMonths,
+      eligible: false,
+      // 사업장가입자 기준 보험료율 9%(본인 4.5% + 사업주 4.5%)로 낸 총액의 개략치(이자·과거 요율 미반영)
+      refundEstimate: avgIncomeMonthly * 0.09 * totalMonths
+    };
+  }
+
   var years = totalMonths / 12;
   var coef = nationalPensionCoefficients(years);
   var monthly = clampNonNegative(coef.a + coef.b * avgIncomeMonthly);
-
-  var eligible = totalMonths >= 120; // 최소 가입기간 10년
 
   return {
     monthly: monthly,
     yearly: monthly * 12,
     totalMonths: totalMonths,
-    eligible: eligible
+    eligible: true
   };
 }
 
