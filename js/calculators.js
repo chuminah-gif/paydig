@@ -46,6 +46,16 @@ function nationalPensionCoefficients(years) {
   };
 }
 
+/* 공적연금 연계 시 국민연금 가입기간이 10년 미만인 경우의 연계노령연금액
+   연계노령연금액 = 기본연금액 × (국민연금 가입기간 ÷ 20)   (찾기쉬운 생활법령정보, 1년 미만 월수는 1/12년)
+   기본연금액은 가입기간 20년 미만이면 가입기간과 무관한 1.29(A+B)/12 이고, 10~20년 구간의 지급률(50%+5%/년)이
+   곧 가입기간÷20이므로, 10년 앵커값(= 기본연금액 × 50%, 2026년 A값 3,193,511원 기준)에 (가입월수÷120)을 곱하면 같은 값입니다.
+   가입 시점별 계수(1.5~1.245)와 미래 A값은 반영하지 않은 개략 추정입니다. */
+function calcNationalLinkedPension(totalMonths, avgIncomeMonthly) {
+  var a10 = 171650, b10 = 0.05375;
+  return clampNonNegative((a10 + b10 * avgIncomeMonthly) * (totalMonths / 120));
+}
+
 function calcNationalPension(input) {
   var totalMonths = input.years * 12 + input.months;
   var avgIncomeMonthly = input.avgIncomeManwon * 10000; // 만원 -> 원
@@ -65,7 +75,9 @@ function calcNationalPension(input) {
       totalMonths: totalMonths,
       eligible: false,
       // 사업장가입자 기준 보험료율 9%(본인 4.5% + 사업주 4.5%)로 낸 총액의 개략치(이자·과거 요율 미반영)
-      refundEstimate: avgIncomeMonthly * 0.09 * totalMonths
+      refundEstimate: avgIncomeMonthly * 0.09 * totalMonths,
+      // 공적연금 연계 시 국민연금 몫(연계노령연금) 개략 추정
+      linkedMonthly: calcNationalLinkedPension(totalMonths, avgIncomeMonthly)
     };
   }
 

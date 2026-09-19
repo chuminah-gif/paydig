@@ -353,7 +353,7 @@
         </ul>
       </div>
       <div class="info-callout">
-        연금액 산정은 기관별로 따로 이뤄집니다. 국민연금 가입기간이 10년 미만이면 연계노령연금액은 <strong>기본연금액 × 국민연금 가입기간 ÷ 20</strong>으로 계산되는데, 기본연금액은 공단이 가입 이력으로 직접 산정하므로 이 시뮬레이션은 그 금액을 계산하지 않고 "공단 산정"으로 표시합니다. 직역연금 몫은 이 시뮬레이션의 계산식으로 추정해 별도로 보여드리며, 실제 연계연금과 정확히 일치하지 않을 수 있습니다. 정확한 연계 가능 여부와 예상 수급액은 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>(국번없이 1355) 또는 가입했던 직역연금 관리기관에 문의하세요.
+        연금액은 기관별로 따로 산정되어 각 기관이 자기 가입기간 몫만 지급합니다. 국민연금 가입기간이 10년 미만이면 연계노령연금액은 <strong>기본연금액 × 국민연금 가입기간 ÷ 20</strong>으로 계산되며, 함께 연계하는 직역연금이 공무원·사학·군인연금 중 무엇이든 국민연금 몫의 식은 같습니다. 이 시뮬레이션은 기본연금액을 2026년 A값(3,193,511원) 기준으로 가정하고 가입 시점별 계수 차이는 반영하지 않은 개략 추정치를 보여드리며, 직역연금 몫도 이 시뮬레이션의 계산식으로 추정하므로 실제 연계연금과 정확히 일치하지 않을 수 있습니다. 정확한 연계 가능 여부와 예상 수급액은 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>(국번없이 1355) 또는 가입했던 직역연금 관리기관에 문의하세요.
       </div>
     </div>
   </div>
@@ -438,7 +438,6 @@ function runSimulation() {
   var linkPossible = natOn && occOn && natMonthsIn > 0 && occMonthsIn > 0 &&
     (natMonthsIn < 120 || occMonthsIn < occMinIn) && (natMonthsIn + occMonthsIn) >= occMinIn;
   var linkExtraPre = 0;
-  var linkNatUnknown = false;
 
   if (natOn) {
     var r = calcNationalPension({
@@ -452,9 +451,9 @@ function runSimulation() {
       var natPeriodText = Math.floor(r.totalMonths / 12) + "년 " + (r.totalMonths % 12) + "개월";
       var refundText = "반환일시금 약 " + formatWon(r.refundEstimate) + " + 이자(개략 추정)";
       if (linkPossible) {
-        warnings.push("국민연금 가입기간(" + natPeriodText + ")은 10년 미만이라 단독으로는 노령연금을 받을 수 없습니다. 다만 직역연금 기간과 합산하면 연계 요건(" + (occMinIn / 12) + "년)을 채우므로 ① 연계하지 않고 반환일시금을 받거나 ② 연계를 신청해 연금으로 받는 두 가지 선택지가 있습니다. 연계 시 국민연금 몫은 \"기본연금액 × 국민연금 가입기간 ÷ 20\"으로 산정되는데, 기본연금액은 공단이 직접 산정하므로 이 시뮬레이션에서는 금액을 계산하지 않았습니다. 실제 연계 가능 여부와 유불리는 국민연금공단에 확인하세요.");
-        rows.push({ name: "국민연금", type: "일시금 vs 연계", displayText: "① 연계 안 하면 " + refundText + " · ② 연계하면 연금(금액은 공단 산정)" });
-        linkNatUnknown = true;
+        warnings.push("국민연금 가입기간(" + natPeriodText + ")은 10년 미만이라 단독으로는 노령연금을 받을 수 없습니다. 다만 직역연금 기간과 합산하면 연계 요건(" + (occMinIn / 12) + "년)을 채우므로 ① 연계하지 않고 반환일시금을 받거나 ② 연계를 신청해 연금으로 받는 두 가지 선택지가 있습니다. 연계 시 국민연금 몫은 \"기본연금액 × 국민연금 가입기간 ÷ 20\"으로 산정되며(함께 연계하는 직역연금이 무엇이든 같은 식), 이 시뮬레이션은 기본연금액을 2026년 A값 기준으로 가정한 개략 추정치를 보여드립니다. 실제 금액과 연계 가능 여부·유불리는 국민연금공단에 확인하세요.");
+        rows.push({ name: "국민연금", type: "일시금 vs 연계", displayText: "① 연계 안 하면 " + refundText + " · ② 연계하면 월 세전 약 " + formatWon(r.linkedMonthly) + "(추정)" });
+        linkExtraPre += r.linkedMonthly;
       } else {
         warnings.push("국민연금 가입기간(" + natPeriodText + ")이 10년(120개월) 미만이라 노령연금은 받을 수 없고, 원칙적으로 낸 보험료에 이자를 더한 반환일시금으로 지급됩니다. 그래서 월 수령액 합계에 넣지 않았습니다." + (occOn
           ? (occMonthsIn >= occMinIn
@@ -623,9 +622,9 @@ function runSimulation() {
   html += '</div>';
   html += '<p style="font-size:0.85rem; color:var(--color-text-faint); margin:-8px 0 18px;">퇴직연금·개인연금 일시금 합계(세전): ' + formatWon(totalLumpSum) + '</p>';
 
-  if (linkExtraPre > 0 || linkNatUnknown) {
+  if (linkExtraPre > 0) {
     var linkTotalPre = totalMonthlyPreTax + linkExtraPre;
-    html += '<div class="info-callout" style="margin:0 0 18px;"><strong>공적연금 연계를 신청한다면</strong> 총 예상 월 수령액(세전)은 약 ' + formatWon(linkTotalPre) + (linkNatUnknown ? ' + 국민연금 몫(공단 산정)' : '') + '입니다. 위 합계는 연계 없이 받을 수 있는 금액만 넣은 값입니다. 연계는 승인 후 철회할 수 없으니, 신청 전에 일시금과 연금을 비교해 보세요.</div>';
+    html += '<div class="info-callout" style="margin:0 0 18px;"><strong>공적연금 연계를 신청한다면</strong> 총 예상 월 수령액(세전)은 약 ' + formatWon(linkTotalPre) + '입니다. 위 합계는 연계 없이 받을 수 있는 금액만 넣은 값입니다. 연계는 승인 후 철회할 수 없으니, 신청 전에 일시금과 연금을 비교해 보세요.</div>';
   }
 
   html += '<div class="table-scroll-wrap"><table class="breakdown-table"><tr><th>항목</th><th>수령 방식</th><th>월 수령액</th></tr>';
