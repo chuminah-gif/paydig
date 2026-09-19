@@ -353,7 +353,7 @@
         </ul>
       </div>
       <div class="info-callout">
-        이 시뮬레이션은 국민연금과 직역연금을 <strong>각자의 계산식으로 따로 구해 단순 합산</strong>하는 방식입니다. 실제 연계연금은 두 기관이 가입기간 비율에 따라 각자 산정해 지급하는 별도의 계산 구조라, 이 시뮬레이션 결과와 정확히 일치하지 않을 수 있습니다. 정확한 연계 가능 여부와 예상 수급액은 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>(국번없이 1355) 또는 가입했던 직역연금 관리기관에 문의하세요.
+        연금액 산정은 기관별로 따로 이뤄집니다. 국민연금 가입기간이 10년 미만이면 연계노령연금액은 <strong>기본연금액 × 국민연금 가입기간 ÷ 20</strong>으로 계산되는데, 기본연금액은 공단이 가입 이력으로 직접 산정하므로 이 시뮬레이션은 그 금액을 계산하지 않고 "공단 산정"으로 표시합니다. 직역연금 몫은 이 시뮬레이션의 계산식으로 추정해 별도로 보여드리며, 실제 연계연금과 정확히 일치하지 않을 수 있습니다. 정확한 연계 가능 여부와 예상 수급액은 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>(국번없이 1355) 또는 가입했던 직역연금 관리기관에 문의하세요.
       </div>
     </div>
   </div>
@@ -429,7 +429,18 @@ function runSimulation() {
   var errors = [];
   var warnings = [];
 
-  if (document.getElementById("chk-national").checked) {
+  var natOn = document.getElementById("chk-national").checked;
+  var occOn = document.getElementById("chk-occ").checked;
+  var natMonthsIn = natOn ? getNumberValue("nat-years") * 12 + getNumberValue("nat-months") : 0;
+  var occMonthsIn = occOn ? getNumberValue("occ-years") * 12 + getNumberValue("occ-months") : 0;
+  var occMinIn = document.getElementById("occ-type").value === "military" ? 240 : 120;
+  // 어느 한쪽이라도 단독 수급 요건(국민연금 10년 / 직역연금 최소기간)에 못 미치고, 합산하면 연계 요건을 채우는 경우
+  var linkPossible = natOn && occOn && natMonthsIn > 0 && occMonthsIn > 0 &&
+    (natMonthsIn < 120 || occMonthsIn < occMinIn) && (natMonthsIn + occMonthsIn) >= occMinIn;
+  var linkExtraPre = 0;
+  var linkNatUnknown = false;
+
+  if (natOn) {
     var r = calcNationalPension({
       years: getNumberValue("nat-years"),
       months: getNumberValue("nat-months"),
@@ -437,23 +448,20 @@ function runSimulation() {
     });
     if (r.error) { errors.push("국민연금: " + r.error); }
     else if (!r.eligible) {
-      // 10년 미만이면 노령연금이 없으므로 월 수령액·합계에 넣지 않고, 연계 가능 여부에 따라 안내만 표시합니다.
-      var occChecked = document.getElementById("chk-occ").checked;
-      var linkOccType = document.getElementById("occ-type").value;
-      var linkOccMonths = getNumberValue("occ-years") * 12 + getNumberValue("occ-months");
-      var linkMinMonths = linkOccType === "military" ? 240 : 120;
+      // 10년 미만이면 노령연금이 없으므로 월 수령액·합계에 넣지 않습니다. 연계가 가능하면 일시금과 연계 두 선택지를 함께 보여줍니다.
       var natPeriodText = Math.floor(r.totalMonths / 12) + "년 " + (r.totalMonths % 12) + "개월";
-      var linkageOk = occChecked && linkOccMonths > 0 && linkOccMonths < linkMinMonths && (r.totalMonths + linkOccMonths) >= linkMinMonths;
-      if (linkageOk) {
-        warnings.push("국민연금 가입기간(" + natPeriodText + ")은 10년 미만이라 단독으로는 연금을 받을 수 없지만, 직역연금 기간과 합산하면 연계 요건(" + (linkMinMonths / 12) + "년)을 충족합니다. 연계를 신청하면 국민연금 몫도 연금으로 받을 수 있으나, 실제 연계연금은 각 기관이 가입기간에 따라 따로 산정하므로 이 시뮬레이션의 합계에는 국민연금 몫을 넣지 않았습니다. 아래 \"공적연금 연계제도\" 설명을 참고하세요.");
-        rows.push({ name: "국민연금", type: "연계 신청 시 연금 수급 가능", displayText: "금액 별도 산정 (합계 미포함)" });
+      var refundText = "반환일시금 약 " + formatWon(r.refundEstimate) + " + 이자(개략 추정)";
+      if (linkPossible) {
+        warnings.push("국민연금 가입기간(" + natPeriodText + ")은 10년 미만이라 단독으로는 노령연금을 받을 수 없습니다. 다만 직역연금 기간과 합산하면 연계 요건(" + (occMinIn / 12) + "년)을 채우므로 ① 연계하지 않고 반환일시금을 받거나 ② 연계를 신청해 연금으로 받는 두 가지 선택지가 있습니다. 연계 시 국민연금 몫은 \"기본연금액 × 국민연금 가입기간 ÷ 20\"으로 산정되는데, 기본연금액은 공단이 직접 산정하므로 이 시뮬레이션에서는 금액을 계산하지 않았습니다. 실제 연계 가능 여부와 유불리는 국민연금공단에 확인하세요.");
+        rows.push({ name: "국민연금", type: "일시금 vs 연계", displayText: "① 연계 안 하면 " + refundText + " · ② 연계하면 연금(금액은 공단 산정)" });
+        linkNatUnknown = true;
       } else {
-        warnings.push("국민연금 가입기간(" + natPeriodText + ")이 10년(120개월) 미만이라 노령연금은 받을 수 없고, 원칙적으로 낸 보험료에 이자를 더한 반환일시금으로 지급됩니다. 그래서 월 수령액 합계에 넣지 않았습니다." + (occChecked
-          ? (linkOccMonths >= linkMinMonths
+        warnings.push("국민연금 가입기간(" + natPeriodText + ")이 10년(120개월) 미만이라 노령연금은 받을 수 없고, 원칙적으로 낸 보험료에 이자를 더한 반환일시금으로 지급됩니다. 그래서 월 수령액 합계에 넣지 않았습니다." + (occOn
+          ? (occMonthsIn >= occMinIn
             ? " 직역연금 재직기간은 단독으로 수급 요건을 채우므로, 국민연금 가입기간의 처리(반환일시금 또는 연계 가능 여부)는 공단에 확인해 보세요."
-            : " 직역연금과 합산해도 연계 요건(" + (linkMinMonths / 12) + "년)에는 못 미칩니다.")
+            : " 직역연금과 합산해도 연계 요건(" + (occMinIn / 12) + "년)에는 못 미칩니다.")
           : " 공무원·군인·사학연금 가입 이력이 있다면 직역연금 항목도 함께 체크해 공적연금 연계제도로 연금을 받을 수 있는지 확인해 보세요."));
-        rows.push({ name: "국민연금", type: "반환일시금(원칙)", displayText: "월 연금 없음 · 반환일시금 약 " + formatWon(r.refundEstimate) + " + 이자 (개략 추정)" });
+        rows.push({ name: "국민연금", type: "반환일시금(원칙)", displayText: "월 연금 없음 · " + refundText });
       }
     }
     else {
@@ -465,7 +473,7 @@ function runSimulation() {
     }
   }
 
-  if (document.getElementById("chk-occ").checked) {
+  if (occOn) {
     var occType = document.getElementById("occ-type").value;
     var occTypeLabel = occType === "military" ? "군인연금" : occType === "privateSchool" ? "사학연금" : "공무원연금";
     var r2 = calcOccupationalPension({
@@ -475,26 +483,24 @@ function runSimulation() {
       retireYear: getNumberValue("occ-retireYear")
     });
     if (r2.error) { errors.push(occTypeLabel + ": " + r2.error); }
-    else {
-      var occMinMonths = occType === "military" ? 240 : 120;
-      var natChecked = document.getElementById("chk-national").checked;
-      var occNatMonths = natChecked ? getNumberValue("nat-years") * 12 + getNumberValue("nat-months") : 0;
-      var occShort = r2.totalMonths < occMinMonths;
-      var occLinkOk = occShort && occNatMonths > 0 && (r2.totalMonths + occNatMonths) >= occMinMonths;
-      if (occShort && !occLinkOk) {
-        // 최소 재직기간 미달 + 연계로도 못 채우면 연금이 아니라 일시금 지급이므로 합계에 넣지 않습니다.
-        warnings.push(occTypeLabel + "은 최소 재직(복무)기간 " + (occMinMonths / 12) + "년(" + occMinMonths + "개월)을 채워야 연금으로 받을 수 있습니다. 입력하신 기간은 이에 미달해 원칙적으로 퇴직일시금으로 지급되므로 월 수령액 합계에 넣지 않았습니다." + (natChecked ? " 국민연금과 합산해도 연계 요건(" + (occMinMonths / 12) + "년)에는 못 미칩니다." : " 국민연금 가입 이력이 있다면 국민연금 항목도 함께 체크해 공적연금 연계제도로 연금을 받을 수 있는지 확인해 보세요."));
-        rows.push({ name: occTypeLabel, type: "퇴직일시금(원칙)", displayText: "월 연금 없음 · 일시금으로 지급" });
+    else if (r2.totalMonths < occMinIn) {
+      // 최소 재직기간 미달이면 연금이 아니라 퇴직일시금이 원칙이라 합계에 넣지 않습니다. 연계가 가능하면 연계 시 월 수급액을 따로 보여줍니다.
+      if (linkPossible) {
+        var occLinkTax = calcPublicPensionTax(r2.monthly * 12);
+        warnings.push(occTypeLabel + " 재직기간은 최소 " + (occMinIn / 12) + "년(" + occMinIn + "개월)에 미달해 단독으로는 퇴직일시금으로 지급됩니다. 다만 국민연금과 합산하면 연계 요건을 채우므로 ① 연계하지 않고 일시금을 받거나 ② 연계를 신청해 연금으로 받는 두 가지 선택지가 있습니다. 연계 시 " + occTypeLabel + " 몫의 월 수급액은 이 시뮬레이션의 계산식으로 추정한 값이며, 실제 연계연금은 각 기관이 따로 산정하므로 달라질 수 있습니다. 실제 연계 가능 여부와 유불리는 연금관리기관에 확인하세요.");
+        rows.push({ name: occTypeLabel, type: "일시금 vs 연계", displayText: "① 연계 안 하면 퇴직일시금(월 연금 없음) · ② 연계하면 월 세전 약 " + formatWon(r2.monthly) + "(추정)" });
+        linkExtraPre += r2.monthly;
       } else {
-        if (occLinkOk) {
-          warnings.push(occTypeLabel + " 재직기간 단독으로는 최소 " + (occMinMonths / 12) + "년에 미달하지만 국민연금과 합산하면 연계 요건을 충족하므로, 연계 신청을 전제로 " + occTypeLabel + " 몫의 월 수급액을 합계에 넣었습니다. 실제 연계연금은 각 기관이 따로 산정하므로 금액은 달라질 수 있습니다.");
-        }
-        var occTax = calcPublicPensionTax(r2.monthly * 12);
-        var occAfter = clampNonNegative(r2.monthly - occTax.monthlyTax);
-        totalMonthlyPreTax += r2.monthly;
-        totalMonthlyAfterTax += occAfter;
-        rows.push({ name: occTypeLabel, type: occLinkOk ? "연계 신청 시 평생 매월" : "평생 매월", amount: r2.monthly, afterTax: occAfter, taxNote: occTax.formula });
+        warnings.push(occTypeLabel + "은 최소 재직(복무)기간 " + (occMinIn / 12) + "년(" + occMinIn + "개월)을 채워야 연금으로 받을 수 있습니다. 입력하신 기간은 이에 미달해 원칙적으로 퇴직일시금으로 지급되므로 월 수령액 합계에 넣지 않았습니다." + (natOn ? " 국민연금과 합산해도 연계 요건(" + (occMinIn / 12) + "년)에는 못 미칩니다." : " 국민연금 가입 이력이 있다면 국민연금 항목도 함께 체크해 공적연금 연계제도로 연금을 받을 수 있는지 확인해 보세요."));
+        rows.push({ name: occTypeLabel, type: "퇴직일시금(원칙)", displayText: "월 연금 없음 · 일시금으로 지급" });
       }
+    }
+    else {
+      var occTax = calcPublicPensionTax(r2.monthly * 12);
+      var occAfter = clampNonNegative(r2.monthly - occTax.monthlyTax);
+      totalMonthlyPreTax += r2.monthly;
+      totalMonthlyAfterTax += occAfter;
+      rows.push({ name: occTypeLabel, type: "평생 매월", amount: r2.monthly, afterTax: occAfter, taxNote: occTax.formula });
     }
   }
 
@@ -602,10 +608,15 @@ function runSimulation() {
   html += '</div>';
   html += '<p style="font-size:0.85rem; color:var(--color-text-faint); margin:-8px 0 18px;">퇴직연금·개인연금 일시금 합계(세전): ' + formatWon(totalLumpSum) + '</p>';
 
+  if (linkExtraPre > 0 || linkNatUnknown) {
+    var linkTotalPre = totalMonthlyPreTax + linkExtraPre;
+    html += '<div class="info-callout" style="margin:0 0 18px;"><strong>공적연금 연계를 신청한다면</strong> 총 예상 월 수령액(세전)은 약 ' + formatWon(linkTotalPre) + (linkNatUnknown ? ' + 국민연금 몫(공단 산정)' : '') + '입니다. 위 합계는 연계 없이 받을 수 있는 금액만 넣은 값입니다. 연계는 승인 후 철회할 수 없으니, 신청 전에 일시금과 연금을 비교해 보세요.</div>';
+  }
+
   html += '<div class="table-scroll-wrap"><table class="breakdown-table"><tr><th>항목</th><th>수령 방식</th><th>월 수령액</th></tr>';
   rows.forEach(function (row) {
     if (row.displayText) {
-      html += '<tr><td>' + row.name + '</td><td>' + row.type + '</td><td class="amount-cell"><div class="amount-pre">' + row.displayText + '</div></td></tr>';
+      html += '<tr><td>' + row.name + '</td><td>' + row.type + '</td><td class="amount-cell"><div class="amount-pre" style="white-space:normal; line-height:1.55; min-width:150px;">' + row.displayText.split(" · ").join("<br>") + '</div></td></tr>';
       return;
     }
     html += '<tr><td>' + row.name + '</td><td>' + row.type + '</td><td class="amount-cell">' +
