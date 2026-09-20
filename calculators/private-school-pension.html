@@ -168,7 +168,7 @@
         <li><strong>세금</strong>: 2002년 이후 재직기간에 해당하는 연금만 과세되며, 임용연도를 역산해 반영합니다.</li>
       </ul>
       <div class="info-callout">
-        이 계산기는 재직기간 전체에 같은 평균기준소득월액을 적용하는 추정치입니다. 실제 연금액은 재직기간 중 매년의 기준소득월액, 재평가율, 퇴직 시점의 A값, 사립학교 교직원 유형(교원/사무직원)별 세부 규정 등에 따라 달라지므로 <strong>참고용으로만 활용</strong>하시고, 정확한 금액은 <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>을 통해 확인하세요.
+        <strong>2026년 9월 기준</strong>으로 공개된 법령·공단 자료를 반영했으며, 전체 공무원 평균소득(A값)·기준소득월액 상하한·지급률 등은 매년 고시·개정으로 바뀔 수 있습니다. 이 계산기는 재직기간 전체에 같은 평균기준소득월액을 적용하는 추정치입니다. 실제 연금액은 재직기간 중 매년의 기준소득월액, 재평가율, 퇴직 시점의 A값, 사립학교 교직원 유형(교원/사무직원)별 세부 규정 등에 따라 달라지므로 <strong>참고용으로만 활용</strong>하시고, 정확한 금액은 <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>을 통해 확인하세요.
       </div>
 
       <h2>예시로 확인하기</h2>
@@ -260,7 +260,7 @@ function runCalc() {
     html += '<tr><th>연금 수급에 필요한 기간</th><td>최소 10년(120개월) — ' + Math.ceil(shortMonths / 12 * 10) / 10 + '년 부족</td></tr>';
     if (allowance !== null) { html += '<tr><th>별도 지급: 퇴직수당</th><td>약 ' + formatWon(allowance) + ' (연금 수급 여부와 무관)</td></tr>'; }
     html += '</table>';
-    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>사학연금 퇴직연금은 최소 재직기간 10년(120개월)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않고 퇴직일시금이 지급되는 것이 원칙입니다. 퇴직수당은 퇴직일시금·퇴직연금과 별개로 재직 1년 이상이면 지급되는 급여라 연금 수급 여부와 무관하게 위 표에 따로 표시했습니다. 퇴직일시금은 사립학교교직원연금공단이 공개한 산식(<strong>기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산</strong>), 퇴직수당은 공단이 공개한 재직기간별 지급비율(2010년 이후 재직 기간 기준)을 입력하신 평균기준소득월액에 적용한 개략 추정입니다. 국민연금 가입 이력이 있다면 <a href="../simulation.html">공적연금 연계제도</a>로 두 기간을 합쳐 연금을 받을 수 있는지 확인해 보세요.</span></div>';
+    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>사학연금 퇴직연금은 최소 재직기간 10년(120개월)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않고 퇴직일시금이 지급되는 것이 원칙입니다. 퇴직수당은 퇴직일시금·퇴직연금과 별개로 재직 1년 이상이면 지급되는 급여라 연금 수급 여부와 무관하게 위 표에 따로 표시했습니다. 퇴직일시금은 사립학교교직원연금공단이 공개한 산식(<strong>기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산</strong>), 퇴직수당은 공단이 공개한 재직기간별 지급비율(2010년 이후 재직 기간 기준이며, 2009년 이전 재직분은 지급률과 기준 보수가 달라 실제와 차이가 날 수 있음)을 입력하신 평균기준소득월액에 적용한 개략 추정입니다. 국민연금 가입 이력이 있다면 <a href="../simulation.html">공적연금 연계제도</a>로 두 기간을 합쳐 연금을 받을 수 있는지 확인해 보세요.</span></div>';
     html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>정확한 금액은 <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>에서 확인하세요.</span></div>';
     document.getElementById("resultCard").innerHTML = html;
     return;
