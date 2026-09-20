@@ -246,16 +246,18 @@ function runCalc() {
   html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
 
   if (!militaryEligible) {
+    var mLump = calcMilitaryLumpSum(result.totalMonths, retireYear, avgIncome * 10000);
     html += '<div class="result-headline">';
     html += '<div class="label">퇴역연금 수급 요건 미충족</div>';
     html += '<div class="amount">월 연금 없음</div>';
-    html += '<div class="amount-yearly">원칙적으로 퇴직(전역)일시금으로 지급</div>';
+    html += '<div class="amount-yearly">' + (mLump === null ? '원칙적으로 퇴직(전역)일시금으로 지급 (복무 5년 미만은 금액 산식 미확인)' : '원칙적으로 퇴직일시금 약 ' + formatWon(mLump)) + '</div>';
     html += '</div>';
     html += '<table class="result-table">';
     html += '<tr><th>총 복무기간</th><td>' + Math.floor(result.totalMonths / 12) + '년 ' + (result.totalMonths % 12) + '개월</td></tr>';
     html += '<tr><th>연금 수급에 필요한 기간</th><td>최소 20년(240개월) — ' + Math.ceil((240 - result.totalMonths) / 12 * 10) / 10 + '년 부족</td></tr>';
+    if (mLump !== null) { html += '<tr><th>퇴직일시금(추정)</th><td>약 ' + formatWon(mLump) + '<div class="table-formula">2013년 7월 이전 복무분은 최종보수월액 × 복무연수 × (1.5 + (총복무연수 − 5) × 0.01), 이후 복무분은 최종기준소득월액 × 복무연수 × (0.975 + (총복무연수 − 5) × 0.0065)로 계산합니다. 최종보수월액·기준소득월액은 입력하신 평균 기준소득월액으로 대신한 추정입니다</div></td></tr>'; }
     html += '</table>';
-    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>군인연금 퇴역연금은 최소 복무기간 20년(240개월)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않고 일시금이 지급되는 것이 원칙입니다. 일시금 금액은 산식이 달라 이 계산기에서는 계산하지 않으니 연금관리기관에서 확인하세요. 국민연금 가입 이력이 있다면 합산 20년 이상일 때 <a href="../simulation.html">공적연금 연계제도</a>로 연금을 받을 수 있는지 확인해 보세요.</span></div>';
+    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>군인연금 퇴역연금은 최소 복무기간 20년(240개월)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않고 일시금이 지급되는 것이 원칙입니다. 일시금은 복무 5년 이상이면 위 표의 추정 금액을, 5년 미만이면 금액 산식을 확인하지 못해 계산하지 않으니 군인연금 정보포털에서 확인하세요. 국민연금 가입 이력이 있다면 <a href="../simulation.html">공적연금 연계제도</a>로 연금을 받을 수 있는지 확인해 보세요.</span></div>';
     html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>정확한 금액은 <a href="https://www.mps.mil.kr" target="_blank" rel="noopener">군인연금 정보포털</a>에서 확인하세요.</span></div>';
     document.getElementById("resultCard").innerHTML = html;
     return;

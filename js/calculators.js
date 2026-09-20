@@ -154,6 +154,7 @@ function calcSeveranceLumpSum(totalMonths, avgIncomeMonthly) {
 function calcRetirementAllowance(totalMonths, avgIncomeMonthly) {
   var years = totalMonths / 12;
   if (years < 1 || avgIncomeMonthly <= 0) return null;
+  years = Math.min(years, 33); // 퇴직수당 산정 시 재직기간은 33년 초과 불가 (공무원연금법 시행령 제58조제2항)
   var rate = years < 5 ? 0.065 : years < 10 ? 0.2275 : years < 15 ? 0.2925 : years < 20 ? 0.325 : 0.39;
   return avgIncomeMonthly * years * rate;
 }
@@ -273,8 +274,14 @@ function occupationalTaxableRatio(totalYears, retireYear) {
 /* 공무원·사학연금 퇴직연금 지급개시연령 (공무원연금공단 안내: 1996년 이후 임용자는 퇴직연도별로 단계적 상향)
    2016~2021년 퇴직 60세, 2022~2023년 61세, 2024~2026년 62세, 2027~2029년 63세, 2030~2032년 64세, 2033년 이후 65세.
    1996년 이전 임용자는 재직기간 요건에 따른 별도 특례(퇴직 즉시 지급 등)가 있어 null을 돌려줍니다. */
-function occupationalPensionStartAge(retireYear, startYear) {
-  if (startYear < 1996) return null;
+function occupationalPensionStartAge(retireYear, startYear, isCivil) {
+  if (startYear < 1996) {
+    // 1995년 12월 31일 이전 임용 공무원: 2001년 1월 1일 재직기간 20년 이상이면 퇴직 즉시, 아니면 퇴직연도별 50세(2001~02년)에서
+    // 2년마다 1세씩 올라 60세(2021년 이후)까지 (공무원연금법 2000년 개정 부칙). 사학연금은 규정이 달라 계산하지 않습니다.
+    if (!isCivil) return null;
+    if (2001 - startYear >= 20) return 0;
+    return Math.min(60, 50 + Math.max(0, Math.floor((retireYear - 2001) / 2)));
+  }
   if (retireYear <= 2021) return 60;
   if (retireYear <= 2023) return 61;
   if (retireYear <= 2026) return 62;
@@ -294,11 +301,15 @@ function occupationalStartAgeRowsHtml(result, retireYear, birthYear, isMilitary)
   if (isMilitary) {
     return '<tr><th>연금 지급 시기</th><td>전역(퇴직) 다음 달부터<div class="table-formula">복무 20년 이상이면 지급개시연령 제한 없이 전역 후 바로 퇴역연금을 받습니다</div></td></tr>';
   }
-  var startAge = occupationalPensionStartAge(retireYear, result.startYear);
+  var startAge = occupationalPensionStartAge(retireYear, result.startYear, result.isCivil);
   if (startAge === null) {
-    return '<tr><th>연금 지급 시기</th><td>임용 시기 특례 대상<div class="table-formula">1996년 이전 임용자는 재직기간 요건에 따라 퇴직 즉시 지급되는 등 별도 규정이 있어 공단에서 확인이 필요합니다</div></td></tr>';
+    return '<tr><th>연금 지급 시기</th><td>임용 시기 특례 대상<div class="table-formula">1996년 이전 임용자는 재직기간 요건에 따라 별도 규정이 있어 이 계산기는 지급 시기를 계산하지 않습니다. 소속 기관 연금공단에서 확인하세요</div></td></tr>';
   }
-  var html = '<tr><th>연금 지급개시연령</th><td>만 ' + startAge + '세<div class="table-formula">' + retireYear + '년 퇴직 기준(1996년 이후 임용자, 퇴직연도별 단계 상향)</div></td></tr>';
+  if (startAge === 0) {
+    return '<tr><th>연금 지급 시기</th><td>퇴직 다음 달부터<div class="table-formula">1995년 이전 임용자 중 2001년 1월 1일 재직기간이 20년 이상(임용연도 역산 추정)이면 지급개시연령 제한 없이 퇴직 즉시 지급됩니다</div></td></tr>';
+  }
+  var isOld = result.startYear < 1996;
+  var html = '<tr><th>연금 지급개시연령</th><td>만 ' + startAge + '세<div class="table-formula">' + retireYear + '년 퇴직 기준(' + (isOld ? '1995년 이전 임용자, 퇴직연도별 50~60세' : '1996년 이후 임용자, 퇴직연도별 단계 상향') + ')</div></td></tr>';
   if (birthYear > 0) {
     var retireAge = retireYear - birthYear;
     if (retireAge >= startAge) {
@@ -351,6 +362,19 @@ function occupationalDetailRowsHtml(result) {
    두 기간을 각각 산정해 합산합니다. 복무기간은 33년까지만 반영합니다.
    ※ 2013년 이전 구간의 기준은 실제로는 당시 보수(현재가치 환산)이지만 여기서는 입력한 평균 기준소득월액을 씁니다. */
 var MILITARY_REFORM_YEAR = 2013.5;
+
+/* 군인 퇴직일시금 (복무 5년 이상 20년 미만, 군인연금법 제21조·부칙)
+   = 최종보수월액 × 총복무연수 × (1.5 + (총복무연수−5)×0.01) × (2013.7.1 이전 복무기간 ÷ 총복무기간)
+   + 최종기준소득월액 × 총복무연수 × (0.975 + (총복무연수−5)×0.0065) × (2013.7.1 이후 복무기간 ÷ 총복무기간)
+   복무 5년 미만은 산식을 확인하지 못해 계산하지 않습니다(null). 최종보수월액·최종기준소득월액은 입력한 평균 기준소득월액으로 대신합니다. */
+function calcMilitaryLumpSum(totalMonths, retireYear, avgIncomeMonthly) {
+  var T = totalMonths / 12;
+  if (T < 5 || avgIncomeMonthly <= 0 || !retireYear) return null;
+  var start = retireYear - T;
+  var T1 = Math.max(0, Math.min(MILITARY_REFORM_YEAR, retireYear) - start);
+  var T2 = T - T1;
+  return avgIncomeMonthly * T1 * (1.5 + (T - 5) * 0.01) + avgIncomeMonthly * T2 * (0.975 + (T - 5) * 0.0065);
+}
 
 function calcMilitaryPensionPercent(totalYears, retireYear) {
   var start = retireYear - totalYears;
@@ -428,6 +452,7 @@ function calcOccupationalPension(input) {
     startYear: startYear,
     eligible: eligible,
     detail: detail,
+    isCivil: input.type === "civil" || input.type === "civilServant",
     incomeCapped: incomeCapped,
     incomeCapWon: incomeCapWon,
     militaryRoundedUp: militaryRoundedUp,
@@ -1196,13 +1221,18 @@ function calcParentalLeavePay(input) {
    - 요양급여(치료비)는 실비 지급이 원칙이라 사전에 금액을 계산할 수 있는 항목이
      아니므로 이 계산기에는 포함하지 않았습니다. 아래 안내문 참고.
    ------------------------------------------------------------------------- */
-var INDUSTRIAL_ACCIDENT_RATES = {
-  office: { label: "금융 및 보험업", rate: 0.005 },
-  retail: { label: "도소매·음식·숙박업", rate: 0.008 },
-  manufacturing: { label: "제조업(기계기구·금속·비금속광물제품)", rate: 0.013 },
-  transport: { label: "운수업(육상 및 수상운수업)", rate: 0.018 },
-  construction: { label: "건설업", rate: 0.035 }
-};
+// 2026년도 사업종류별 산재보험료율 28개 사업종류 (고용노동부고시 제2025-91호, 천분율 ‰). 출퇴근재해 요율 0.6‰은 별도로 더합니다.
+var INDUSTRIAL_ACCIDENT_LIST = [
+  ["석탄광업 및 채석업", 185], ["석회석·금속·비금속광업 및 기타광업", 57], ["식료품제조업", 16], ["섬유 및 섬유제품 제조업", 11],
+  ["목재 및 종이제품 제조업", 20], ["출판·인쇄·제본업", 9], ["화학 및 고무제품 제조업", 13], ["의약품·화장품·연탄·석유제품 제조업", 7],
+  ["기계기구·금속·비금속광물제품 제조업", 13], ["금속제련업", 10], ["전기기계기구·정밀기구·전자제품제조업", 6], ["선박건조 및 수리업", 24],
+  ["수제품 및 기타제품 제조업", 12], ["전기·가스·증기 및 수도사업", 7], ["건설업", 35], ["철도·항공·창고·운수관련 서비스업", 8],
+  ["육상 및 수상운수업", 18], ["통신업", 9], ["임업", 58], ["어업 및 양식어업·어업관련 서비스업", 27], ["농업", 20],
+  ["시설관리 및 사업지원 서비스업", 8], ["기타의 각종사업", 8], ["전문·보건·교육·여가관련 서비스업", 6], ["도소매·음식·숙박업", 8],
+  ["부동산업 및 임대업", 7], ["국가 및 지방자치단체의 사업", 9], ["금융 및 보험업", 5]
+];
+var INDUSTRIAL_ACCIDENT_RATES = {};
+INDUSTRIAL_ACCIDENT_LIST.forEach(function (it, i) { INDUSTRIAL_ACCIDENT_RATES["i" + i] = { label: it[0], rate: it[1] / 1000 }; });
 
 // 2026년도 사업종류별 산재보험료율(고용노동부고시 제2025-91호)의 대표 업종 요율. 모든 업종에 출퇴근재해 요율 0.06%가 함께 부과됩니다.
 var COMMUTE_ACCIDENT_RATE_2026 = 0.0006;

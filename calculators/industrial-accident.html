@@ -109,14 +109,8 @@
       <div id="premiumFields">
         <div class="field">
           <label for="industry">업종</label>
-          <select id="industry">
-            <option value="office">금융 및 보험업 — 0.5%</option>
-            <option value="retail">도소매·음식·숙박업 — 0.8%</option>
-            <option value="manufacturing">제조업(기계기구·금속·비금속광물제품) — 1.3%</option>
-            <option value="transport">운수업(육상 및 수상운수업) — 1.8%</option>
-            <option value="construction">건설업 — 3.5%</option>
-          </select>
-          <div class="hint">2026년 고시 요율 중 대표 업종 예시이며, 모든 업종에 출퇴근재해 요율 0.06%가 더해져 계산됩니다. 정확한 업종별 요율은 <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>에서 사업종류 코드로 확인하세요.</div>
+          <select id="industry"></select>
+          <div class="hint">2026년도 고시 28개 사업종류 전체 요율입니다. 모든 업종에 출퇴근재해 요율 0.06%가 더해져 계산되며, 같은 사업종류 안에서도 사업장별 개별실적요율이 적용될 수 있습니다. 정확한 요율은 <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>에서 사업종류 코드로 확인하세요.</div>
         </div>
         <div class="field">
           <label for="customRate">내 사업장 산재보험료율 직접 입력 (‰, 선택)</label>
@@ -236,6 +230,17 @@
 <script src="../js/calculators.js"></script>
 <script src="../js/main.js"></script>
 <script>
+(function fillIndustryOptions() {
+  var sel = document.getElementById("industry");
+  INDUSTRIAL_ACCIDENT_LIST.forEach(function (it, i) {
+    var o = document.createElement("option");
+    o.value = "i" + i;
+    o.textContent = it[0] + " — " + (it[1] / 10) + "%";
+    if (it[0] === "도소매·음식·숙박업") o.selected = true;
+    sel.appendChild(o);
+  });
+})();
+
 document.getElementById("tabPremium").addEventListener("click", function () {
   this.classList.add("active");
   document.getElementById("tabLeave").classList.remove("active");
@@ -268,7 +273,7 @@ function runPremiumCalc() {
   html += '<div class="amount">' + formatWon(result.premium) + '</div>';
   html += '<div class="amount-yearly">' + result.industryLabel + ' · 요율 ' + (result.rate * 100).toFixed(2) + '%</div>';
   html += '</div>';
-  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>' + (result.custom ? '직접 입력하신 요율을 적용한 추정치입니다.' : '대표 업종 예시 요율을 적용한 참고용 추정치입니다.') + ' 실제 사업종류 코드별 요율은 <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>에서 확인하세요.</span></div>';
+  html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>' + (result.custom ? '직접 입력하신 요율을 적용한 추정치입니다.' : '선택하신 사업종류의 2026년도 고시 요율을 적용한 참고용 추정치입니다.') + ' 사업장별 개별실적요율과 사업종류 코드는 <a href="https://www.kcomwel.or.kr" target="_blank" rel="noopener">근로복지공단</a>에서 확인하세요.</span></div>';
   document.getElementById("resultCard").innerHTML = html;
 }
 

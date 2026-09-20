@@ -524,7 +524,8 @@ function runSimulation() {
       var occLumpText;
       var occAllowanceText = "";
       if (occType === "military") {
-        occLumpText = "퇴직(전역)일시금(금액은 연금관리기관 확인)";
+        var occMilLump = calcMilitaryLumpSum(r2.totalMonths, getNumberValue("occ-retireYear"), getNumberValue("occ-income") * 10000);
+        occLumpText = occMilLump === null ? "퇴직(전역)일시금(복무 5년 미만은 금액 산식 미확인, 연금관리기관 확인)" : "퇴직일시금 약 " + formatWon(occMilLump);
       } else {
         var occLump = calcSeveranceLumpSum(r2.totalMonths, getNumberValue("occ-income") * 10000);
         var occAllowance = calcRetirementAllowance(r2.totalMonths, getNumberValue("occ-income") * 10000);
