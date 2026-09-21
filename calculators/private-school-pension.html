@@ -164,7 +164,7 @@
         <li><strong>재직기간 상한</strong>: 신규 임용자는 최대 36년까지 반영합니다. 다만 2016년 1월 1일 당시 재직기간이 21년 이상이던 분은 33년, 17년 이상 21년 미만은 34년, 15년 이상 17년 미만은 35년이 상한입니다. 임용연도를 역산해 이 상한을 자동으로 적용합니다.</li>
         <li><strong>소득재분배</strong>: 2016년 이후 재직분은 재직 30년까지 지급률 중 1%p에 소득재분배가 적용됩니다. 비교 기준(A값)은 전체 공무원 기준소득월액 평균액(2026년 5월~2027년 4월 시행 595만원)으로 두었습니다.</li>
         <li>2009년 이전 재직분은 실제로는 2007~2009년 보수를 현재가치로 환산한 평균보수월액이 기준이며, 이 값은 평균기준소득월액보다 낮은 경우가 많습니다. 위 입력란에 "2009년 12월 이전 재직분 평균보수월액"을 넣으면 그 값으로 계산하고, 비우면 평균기준소득월액을 그대로 써서 실제보다 높게 나올 수 있습니다(공단 공개 사례에서 최대 약 29% 차이).</li>
-        <li><strong>지급개시연령</strong>: 1996년 이후 임용자는 퇴직 연도에 따라 60세(2016~2021년 퇴직)에서 65세(2033년 이후 퇴직)까지 단계적으로 늦춰지며, 출생연도를 입력하면 개시 전 퇴직 시 조기퇴직연금(1년당 5%, 최대 25% 감액) 금액도 보여드립니다. 1996년 이전 임용자는 별도 특례가 있어 이 계산기는 지급 시기를 계산하지 않으니 공단에서 확인하세요. 퇴직수당은 재직기간 33년까지만 반영합니다.</li>
+        <li><strong>지급개시연령</strong>: 1996년 이후 임용자는 퇴직 연도에 따라 60세(2016~2021년 퇴직)에서 65세(2033년 이후 퇴직)까지 단계적으로 늦춰지며, 출생연도를 입력하면 개시 전 퇴직 시 조기퇴직연금(1년당 5%, 최대 25% 감액) 금액도 보여드립니다. 1995년 이전 임용자는 2001년 1월 1일 재직기간이 20년 이상이면 퇴직 즉시, 그 외에는 퇴직연도별 55~60세(2011년 이후 퇴직)가 개시연령이라는 공단 안내를 공무원 규정에 준해 추정했습니다(2010년 이전 퇴직은 계산하지 않음). 정확한 시기는 공단에서 확인하세요. 퇴직수당은 재직기간 33년까지만 반영합니다.</li>
         <li><strong>세금</strong>: 2002년 이후 재직기간에 해당하는 연금만 과세되며, 임용연도를 역산해 반영합니다.</li>
       </ul>
       <div class="info-callout">
@@ -247,8 +247,8 @@ function runCalc() {
   html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
 
   if (!result.eligible) {
-    var lump = calcSeveranceLumpSum(result.totalMonths, avgIncome * 10000);
-    var allowance = calcRetirementAllowance(result.totalMonths, avgIncome * 10000);
+    var lump = calcSeveranceLumpSum(result.totalMonths, avgIncome * 10000, retireYear);
+    var allowance = calcRetirementAllowance(result.totalMonths, avgIncome * 10000, retireYear);
     var shortMonths = 120 - result.totalMonths;
     html += '<div class="result-headline">';
     html += '<div class="label">퇴직연금 수급 요건 미충족</div>';
@@ -260,7 +260,7 @@ function runCalc() {
     html += '<tr><th>연금 수급에 필요한 기간</th><td>최소 10년(120개월) — ' + Math.ceil(shortMonths / 12 * 10) / 10 + '년 부족</td></tr>';
     if (allowance !== null) { html += '<tr><th>별도 지급: 퇴직수당</th><td>약 ' + formatWon(allowance) + ' (연금 수급 여부와 무관)</td></tr>'; }
     html += '</table>';
-    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>사학연금 퇴직연금은 최소 재직기간 10년(120개월)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않고 퇴직일시금이 지급되는 것이 원칙입니다. 퇴직수당은 퇴직일시금·퇴직연금과 별개로 재직 1년 이상이면 지급되는 급여라 연금 수급 여부와 무관하게 위 표에 따로 표시했습니다. 퇴직일시금은 사립학교교직원연금공단이 공개한 산식(<strong>기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산</strong>), 퇴직수당은 공단이 공개한 재직기간별 지급비율(2010년 이후 재직 기간 기준이며, 2009년 이전 재직분은 지급률과 기준 보수가 달라 실제와 차이가 날 수 있음)을 입력하신 평균기준소득월액에 적용한 개략 추정입니다. 국민연금 가입 이력이 있다면 <a href="../simulation.html">공적연금 연계제도</a>로 두 기간을 합쳐 연금을 받을 수 있는지 확인해 보세요.</span></div>';
+    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>사학연금 퇴직연금은 최소 재직기간 10년(120개월)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않고 퇴직일시금이 지급되는 것이 원칙입니다. 퇴직수당은 퇴직일시금·퇴직연금과 별개로 재직 1년 이상이면 지급되는 급여라 연금 수급 여부와 무관하게 위 표에 따로 표시했습니다. 퇴직일시금은 사립학교교직원연금공단이 공개한 산식(<strong>기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산</strong>, 2009년 이전 재직분은 최종보수월액 × 재직연수 × 1.5 + 5년 초과분 가산을 재직기간 비율만큼 적용), 퇴직수당은 공단이 공개한 재직기간별 지급비율(2009년 이전 재직분은 종전 지급률, 2010년 이후는 현행 지급률로 나눠 계산)을 입력하신 평균기준소득월액에 적용한 개략 추정입니다. 국민연금 가입 이력이 있다면 <a href="../simulation.html">공적연금 연계제도</a>로 두 기간을 합쳐 연금을 받을 수 있는지 확인해 보세요.</span></div>';
     html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>정확한 금액은 <a href="https://www.tp.or.kr" target="_blank" rel="noopener">사립학교교직원연금공단</a>에서 확인하세요.</span></div>';
     document.getElementById("resultCard").innerHTML = html;
     return;
@@ -276,8 +276,8 @@ function runCalc() {
   html += '<tr><th>총 재직기간</th><td>' + Math.floor(result.totalMonths / 12) + '년 ' + (result.totalMonths % 12) + '개월</td></tr>';
   html += occupationalDetailRowsHtml(result);
   html += occupationalStartAgeRowsHtml(result, retireYear, birthYear, false);
-  var allowanceOk = calcRetirementAllowance(result.totalMonths, avgIncome * 10000);
-  if (allowanceOk !== null) { html += '<tr><th>별도 지급: 퇴직수당(일시금)</th><td>약 ' + formatWon(allowanceOk) + '<div class="table-formula">2010년 이후 재직분 지급률 기준 추정입니다. 2009년 이전 재직분은 지급률·기준(최종 보수월액)이 달라 실제와 차이가 날 수 있습니다</div></td></tr>'; }
+  var allowanceOk = calcRetirementAllowance(result.totalMonths, avgIncome * 10000, retireYear);
+  if (allowanceOk !== null) { html += '<tr><th>별도 지급: 퇴직수당(일시금)</th><td>약 ' + formatWon(allowanceOk) + '<div class="table-formula">2009년 이전 재직분은 종전 지급률(10~60%)과 최종보수월액, 2010년 이후 재직분은 현행 지급률(6.5~39%)과 최종기준소득월액으로 나눠 계산했고, 재직기간은 33년까지만 반영합니다. 최종 보수는 입력하신 평균 기준소득월액으로 대신한 추정입니다</div></td></tr>'; }
   html += publicPensionTaxRowsHtml(result.monthly, occupationalTaxableRatio(result.totalMonths / 12, retireYear));
   html += '</table>';
 

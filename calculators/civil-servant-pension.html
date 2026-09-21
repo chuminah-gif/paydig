@@ -270,8 +270,8 @@ function runCalc() {
   html += '<h2 style="margin-bottom:18px;">계산 결과</h2>';
 
   if (!result.eligible) {
-    var lump = calcSeveranceLumpSum(result.totalMonths, result.effectiveIncomeMonthly);
-    var allowance = calcRetirementAllowance(result.totalMonths, result.effectiveIncomeMonthly);
+    var lump = calcSeveranceLumpSum(result.totalMonths, result.effectiveIncomeMonthly, retireYear);
+    var allowance = calcRetirementAllowance(result.totalMonths, result.effectiveIncomeMonthly, retireYear);
     var shortMonths = 120 - result.totalMonths;
     html += '<div class="result-headline">';
     html += '<div class="label">퇴직연금 수급 요건 미충족</div>';
@@ -283,7 +283,7 @@ function runCalc() {
     html += '<tr><th>연금 수급에 필요한 기간</th><td>최소 10년(120개월) — ' + Math.ceil(shortMonths / 12 * 10) / 10 + '년 부족</td></tr>';
     if (allowance !== null) { html += '<tr><th>별도 지급: 퇴직수당</th><td>약 ' + formatWon(allowance) + ' (연금 수급 여부와 무관)</td></tr>'; }
     html += '</table>';
-    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>공무원연금 퇴직연금은 최소 재직기간 10년(120개월, 2016년 이후 임용 기준)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않고 퇴직일시금이 지급되는 것이 원칙입니다. 퇴직수당은 퇴직일시금·퇴직연금과 별개로 재직 1년 이상이면 지급되는 급여라 연금 수급 여부와 무관하게 위 표에 따로 표시했습니다. 퇴직일시금은 공무원연금법 제51조가 준용하는 제43조제5항의 산식(<strong>기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산</strong>), 퇴직수당은 공단이 공개한 재직기간별 지급비율(2010년 이후 재직 기간 기준이며, 2009년 이전 재직분은 지급률과 기준 보수가 달라 실제와 차이가 날 수 있음)을 입력하신 평균기준소득월액에 적용한 개략 추정입니다. 국민연금 가입 이력이 있다면 <a href="../simulation.html">공적연금 연계제도</a>로 두 기간을 합쳐 연금을 받을 수 있는지 확인해 보세요.</span></div>';
+    html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>공무원연금 퇴직연금은 최소 재직기간 10년(120개월, 2016년 이후 임용 기준)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않고 퇴직일시금이 지급되는 것이 원칙입니다. 퇴직수당은 퇴직일시금·퇴직연금과 별개로 재직 1년 이상이면 지급되는 급여라 연금 수급 여부와 무관하게 위 표에 따로 표시했습니다. 퇴직일시금은 공무원연금법 제51조가 준용하는 제43조제5항의 산식(<strong>기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산</strong>, 2009년 이전 재직분은 최종보수월액 × 재직연수 × 1.5 + 5년 초과분 가산을 재직기간 비율만큼 적용), 퇴직수당은 공단이 공개한 재직기간별 지급비율(2009년 이전 재직분은 종전 지급률, 2010년 이후는 현행 지급률로 나눠 계산)을 입력하신 평균기준소득월액에 적용한 개략 추정입니다. 국민연금 가입 이력이 있다면 <a href="../simulation.html">공적연금 연계제도</a>로 두 기간을 합쳐 연금을 받을 수 있는지 확인해 보세요.</span></div>';
     html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>정확한 금액은 <a href="https://www.geps.or.kr" target="_blank" rel="noopener">공무원연금공단</a>에서 확인할 수 있습니다.</span></div>';
     document.getElementById("resultCard").innerHTML = html;
     return;
@@ -300,8 +300,8 @@ function runCalc() {
   html += occupationalDetailRowsHtml(result);
   html += occupationalStartAgeRowsHtml(result, retireYear, birthYear, false);
   if (result.incomeCapped) { html += '<tr><th>기준소득월액 상한 적용</th><td>' + formatWon(result.incomeCapWon) + '<div class="table-formula">입력한 금액이 전체 공무원 평균의 160% 상한을 넘어 상한으로 계산했습니다</div></td></tr>'; }
-  var allowanceOk = calcRetirementAllowance(result.totalMonths, result.effectiveIncomeMonthly);
-  if (allowanceOk !== null) { html += '<tr><th>별도 지급: 퇴직수당(일시금)</th><td>약 ' + formatWon(allowanceOk) + '<div class="table-formula">2010년 이후 재직분 지급률 기준 추정입니다. 2009년 이전 재직분은 지급률·기준(최종 보수월액)이 달라 실제와 차이가 날 수 있습니다</div></td></tr>'; }
+  var allowanceOk = calcRetirementAllowance(result.totalMonths, result.effectiveIncomeMonthly, retireYear);
+  if (allowanceOk !== null) { html += '<tr><th>별도 지급: 퇴직수당(일시금)</th><td>약 ' + formatWon(allowanceOk) + '<div class="table-formula">2009년 이전 재직분은 종전 지급률(10~60%)과 최종보수월액, 2010년 이후 재직분은 현행 지급률(6.5~39%)과 최종기준소득월액으로 나눠 계산했고, 재직기간은 33년까지만 반영합니다. 최종 보수는 입력하신 평균 기준소득월액으로 대신한 추정입니다</div></td></tr>'; }
   html += publicPensionTaxRowsHtml(result.monthly, occupationalTaxableRatio(result.totalMonths / 12, retireYear));
   html += '</table>';
 

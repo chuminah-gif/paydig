@@ -135,28 +135,47 @@ function calcNationalPension(input) {
 }
 
 /* -------------------------------------------------------------------------
-   공무원·사학연금 퇴직일시금 (재직기간 10년 미만 퇴직 시)
-   퇴직일시금 = 기준소득월액 × 재직연수 × 0.975
-              + 기준소득월액 × 재직연수 × (5년 초과 재직연수 × 0.0065)   (5년 미만이면 첫 항만)
-   - 사학연금: 사립학교교직원연금공단 공개 산식(재직월수 기준 표기와 동일한 식)
-   - 공무원연금: 공무원연금법 제51조가 제43조제5항의 산식(0.975, 5년 초과분 0.0065)을 그대로 적용
+   공무원·사학연금 퇴직일시금 (재직기간 10년 미만 퇴직 시) — 공무원연금공단 '퇴직(연금)일시금 산정방식'
+   2009년 12월 31일 이전 재직분: 최종보수월액 × 재직연수 × (1.5 + 5년 초과 재직연수 × 0.01) × (2009년 이전 재직기간 ÷ 총 재직기간)
+   2010년 1월 1일 이후 재직분: 최종기준소득월액 × 재직연수 × (0.975 + 5년 초과 재직연수 × 0.0065) × (2010년 이후 재직기간 ÷ 총 재직기간)
+   (5년 미만이면 각각 첫 항만.) retireYear를 주지 않으면 전 기간을 2010년 이후로 봅니다.
+   ※ 최종보수월액·최종기준소득월액은 입력한 평균 기준소득월액으로 대신하는 추정입니다. 사학연금은 같은 산식을 준용한다고 보았습니다.
    재직 1년 미만은 퇴직일시금이 아니라 기여금 반환 대상이라 null
    ------------------------------------------------------------------------- */
-function calcSeveranceLumpSum(totalMonths, avgIncomeMonthly) {
-  var years = totalMonths / 12;
-  if (years < 1 || avgIncomeMonthly <= 0) return null;
-  var factor = 0.975 + 0.0065 * Math.max(0, years - 5);
-  return avgIncomeMonthly * years * factor;
+function occupationalPre2010Years(years, retireYear) {
+  if (!(retireYear > 0)) return 0;
+  var start = retireYear - years;
+  return Math.max(0, Math.min(2010, retireYear) - start);
 }
 
-/* 퇴직수당: 재직 1년 이상이면 퇴직일시금과 별도로 지급 (공무원연금공단·사학연금공단 공개 표, 2010년 이후 기간 기준)
-   퇴직수당 = 기준소득월액 × 재직연수 × 지급비율 (1~5년 6.5%, 5~10년 22.75%, 10~15년 29.25%, 15~20년 32.5%, 20년 이상 39%) */
-function calcRetirementAllowance(totalMonths, avgIncomeMonthly) {
+function calcSeveranceLumpSum(totalMonths, avgIncomeMonthly, retireYear) {
   var years = totalMonths / 12;
   if (years < 1 || avgIncomeMonthly <= 0) return null;
-  years = Math.min(years, 33); // 퇴직수당 산정 시 재직기간은 33년 초과 불가 (공무원연금법 시행령 제58조제2항)
-  var rate = years < 5 ? 0.065 : years < 10 ? 0.2275 : years < 15 ? 0.2925 : years < 20 ? 0.325 : 0.39;
-  return avgIncomeMonthly * years * rate;
+  var over5 = Math.max(0, years - 5);
+  var t1 = Math.min(years, occupationalPre2010Years(years, retireYear));
+  var t2 = years - t1;
+  return avgIncomeMonthly * (t1 * (1.5 + 0.01 * over5) + t2 * (0.975 + 0.0065 * over5));
+}
+
+/* 퇴직수당: 재직 1년 이상이면 퇴직일시금과 별도로 지급 (공무원연금공단 표, 재직기간은 33년 초과 불가 — 시행령 제58조제2항)
+   지급비율은 총 재직기간 구간으로 정하고, 2009년 이전 재직분은 최종보수월액 × 재직연수 × 종전 비율,
+   2010년 이후 재직분은 최종기준소득월액 × 재직연수 × 현행 비율로 각각 계산해 합칩니다.
+     총 재직기간  1~5년   5~10년  10~15년  15~20년  20년 이상
+     2009년 이전  10%     35%     45%      50%      60%
+     2010년 이후  6.5%    22.75%  29.25%   32.5%    39%
+   ※ 최종보수월액·최종기준소득월액은 입력한 평균 기준소득월액으로 대신하는 추정입니다. retireYear가 없으면 전 기간을 2010년 이후로 봅니다. */
+function calcRetirementAllowance(totalMonths, avgIncomeMonthly, retireYear) {
+  var years = totalMonths / 12;
+  if (years < 1 || avgIncomeMonthly <= 0) return null;
+  var idx = years < 5 ? 0 : years < 10 ? 1 : years < 15 ? 2 : years < 20 ? 3 : 4;
+  var oldRate = [0.10, 0.35, 0.45, 0.50, 0.60][idx];
+  var newRate = [0.065, 0.2275, 0.2925, 0.325, 0.39][idx];
+  var t1 = Math.min(years, occupationalPre2010Years(years, retireYear));
+  var t2 = years - t1;
+  var excess = Math.max(0, years - 33); // 33년 초과분은 늦은 기간부터 제외
+  var cut2 = Math.min(t2, excess); t2 -= cut2; excess -= cut2;
+  t1 -= Math.min(t1, excess);
+  return avgIncomeMonthly * (t1 * oldRate + t2 * newRate);
 }
 
 /* -------------------------------------------------------------------------
@@ -276,9 +295,10 @@ function occupationalTaxableRatio(totalYears, retireYear) {
    1996년 이전 임용자는 재직기간 요건에 따른 별도 특례(퇴직 즉시 지급 등)가 있어 null을 돌려줍니다. */
 function occupationalPensionStartAge(retireYear, startYear, isCivil) {
   if (startYear < 1996) {
-    // 1995년 12월 31일 이전 임용 공무원: 2001년 1월 1일 재직기간 20년 이상이면 퇴직 즉시, 아니면 퇴직연도별 50세(2001~02년)에서
-    // 2년마다 1세씩 올라 60세(2021년 이후)까지 (공무원연금법 2000년 개정 부칙). 사학연금은 규정이 달라 계산하지 않습니다.
-    if (!isCivil) return null;
+    // 1995년 12월 31일 이전 임용자: 2001년 1월 1일 재직기간 20년 이상이면 퇴직 즉시, 아니면 퇴직연도별 50세(2001~02년)에서
+    // 2년마다 1세씩 올라 60세(2021년 이후)까지 (공무원연금법 2000년 개정 부칙).
+    // 사학연금은 공단 안내(퇴직연도별 55~60세, 2011년 이후)가 공무원 표와 같은 구조라 같은 표를 쓰되, 2011년 이전 퇴직은 계산하지 않습니다.
+    if (!isCivil && retireYear < 2011) return null;
     if (2001 - startYear >= 20) return 0;
     return Math.min(60, 50 + Math.max(0, Math.floor((retireYear - 2001) / 2)));
   }
@@ -306,10 +326,10 @@ function occupationalStartAgeRowsHtml(result, retireYear, birthYear, isMilitary)
     return '<tr><th>연금 지급 시기</th><td>임용 시기 특례 대상<div class="table-formula">1996년 이전 임용자는 재직기간 요건에 따라 별도 규정이 있어 이 계산기는 지급 시기를 계산하지 않습니다. 소속 기관 연금공단에서 확인하세요</div></td></tr>';
   }
   if (startAge === 0) {
-    return '<tr><th>연금 지급 시기</th><td>퇴직 다음 달부터<div class="table-formula">1995년 이전 임용자 중 2001년 1월 1일 재직기간이 20년 이상(임용연도 역산 추정)이면 지급개시연령 제한 없이 퇴직 즉시 지급됩니다</div></td></tr>';
+    return '<tr><th>연금 지급 시기</th><td>퇴직 다음 달부터<div class="table-formula">1995년 이전 임용자 중 2001년 1월 1일 재직기간이 20년 이상(임용연도 역산 추정)이면 지급개시연령 제한 없이 퇴직 즉시 지급됩니다' + (result.isCivil ? '' : ' (사학연금은 공단 안내와 공무원 규정에 준한 추정)') + '</div></td></tr>';
   }
   var isOld = result.startYear < 1996;
-  var html = '<tr><th>연금 지급개시연령</th><td>만 ' + startAge + '세<div class="table-formula">' + retireYear + '년 퇴직 기준(' + (isOld ? '1995년 이전 임용자, 퇴직연도별 50~60세' : '1996년 이후 임용자, 퇴직연도별 단계 상향') + ')</div></td></tr>';
+  var html = '<tr><th>연금 지급개시연령</th><td>만 ' + startAge + '세<div class="table-formula">' + retireYear + '년 퇴직 기준(' + (isOld ? '1995년 이전 임용자, 퇴직연도별 ' + (result.isCivil ? '50~60세' : '55~60세, 공무원 규정에 준한 추정') : '1996년 이후 임용자, 퇴직연도별 단계 상향') + ')</div></td></tr>';
   if (birthYear > 0) {
     var retireAge = retireYear - birthYear;
     if (retireAge >= startAge) {
@@ -366,14 +386,15 @@ var MILITARY_REFORM_YEAR = 2013.5;
 /* 군인 퇴직일시금 (복무 5년 이상 20년 미만, 군인연금법 제21조·부칙)
    = 최종보수월액 × 총복무연수 × (1.5 + (총복무연수−5)×0.01) × (2013.7.1 이전 복무기간 ÷ 총복무기간)
    + 최종기준소득월액 × 총복무연수 × (0.975 + (총복무연수−5)×0.0065) × (2013.7.1 이후 복무기간 ÷ 총복무기간)
-   복무 5년 미만은 산식을 확인하지 못해 계산하지 않습니다(null). 최종보수월액·최종기준소득월액은 입력한 평균 기준소득월액으로 대신합니다. */
+   복무 5년 미만은 산식 원문을 확인하지 못해 5년 이상과 같은 구조(5년 초과분 가산 없음)를 준용한 추정입니다. 1개월 미만은 null. 최종보수월액·최종기준소득월액은 입력한 평균 기준소득월액으로 대신합니다. */
 function calcMilitaryLumpSum(totalMonths, retireYear, avgIncomeMonthly) {
   var T = totalMonths / 12;
-  if (T < 5 || avgIncomeMonthly <= 0 || !retireYear) return null;
+  if (T < 1 / 12 || avgIncomeMonthly <= 0 || !retireYear) return null;
   var start = retireYear - T;
   var T1 = Math.max(0, Math.min(MILITARY_REFORM_YEAR, retireYear) - start);
   var T2 = T - T1;
-  return avgIncomeMonthly * T1 * (1.5 + (T - 5) * 0.01) + avgIncomeMonthly * T2 * (0.975 + (T - 5) * 0.0065);
+  var over5 = Math.max(0, T - 5);
+  return avgIncomeMonthly * T1 * (1.5 + over5 * 0.01) + avgIncomeMonthly * T2 * (0.975 + over5 * 0.0065);
 }
 
 function calcMilitaryPensionPercent(totalYears, retireYear) {

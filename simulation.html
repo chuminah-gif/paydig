@@ -525,16 +525,16 @@ function runSimulation() {
       var occAllowanceText = "";
       if (occType === "military") {
         var occMilLump = calcMilitaryLumpSum(r2.totalMonths, getNumberValue("occ-retireYear"), getNumberValue("occ-income") * 10000);
-        occLumpText = occMilLump === null ? "퇴직(전역)일시금(복무 5년 미만은 금액 산식 미확인, 연금관리기관 확인)" : "퇴직일시금 약 " + formatWon(occMilLump);
+        occLumpText = occMilLump === null ? "퇴직(전역)일시금(복무 1개월 미만은 연금관리기관 확인)" : "퇴직일시금 약 " + formatWon(occMilLump);
       } else {
-        var occLump = calcSeveranceLumpSum(r2.totalMonths, getNumberValue("occ-income") * 10000);
-        var occAllowance = calcRetirementAllowance(r2.totalMonths, getNumberValue("occ-income") * 10000);
+        var occLump = calcSeveranceLumpSum(r2.totalMonths, getNumberValue("occ-income") * 10000, getNumberValue("occ-retireYear"));
+        var occAllowance = calcRetirementAllowance(r2.totalMonths, getNumberValue("occ-income") * 10000, getNumberValue("occ-retireYear"));
         occLumpText = occLump === null
           ? "재직 1년 미만은 기여금 반환 대상(금액은 공단 확인)"
           : "퇴직일시금 약 " + formatWon(occLump);
         if (occLump !== null) {
           occAllowanceText = "별도 지급: 퇴직수당 약 " + formatWon(occAllowance) + "(연금·연계 선택과 무관)";
-          warnings.push("퇴직수당은 퇴직일시금·퇴직연금 같은 연금 급여와는 별개로 재직 1년 이상이면 지급되는 급여라, 일시금이든 연계든 어느 쪽을 선택해도 받게 되어 위 선택지 밖에 따로 표시했습니다. 퇴직일시금은 " + (occType === "privateSchool" ? "사립학교교직원연금공단이 공개한" : "공무원연금법 제51조가 준용하는 제43조제5항의") + " 산식(기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산), 퇴직수당은 공단이 공개한 재직기간별 지급비율(2010년 이후 재직 기간 기준이며, 2009년 이전 재직분은 지급률과 기준 보수가 달라 실제와 차이가 날 수 있음)을 입력하신 평균 기준소득월액에 적용한 개략 추정입니다.");
+          warnings.push("퇴직수당은 퇴직일시금·퇴직연금 같은 연금 급여와는 별개로 재직 1년 이상이면 지급되는 급여라, 일시금이든 연계든 어느 쪽을 선택해도 받게 되어 위 선택지 밖에 따로 표시했습니다. 퇴직일시금은 " + (occType === "privateSchool" ? "사립학교교직원연금공단이 공개한" : "공무원연금법 제51조가 준용하는 제43조제5항의") + " 산식(2010년 이후 재직분은 기준소득월액 × 재직연수 × 0.975 + 5년 초과분 가산, 2009년 이전 재직분은 최종보수월액 × 재직연수 × 1.5 + 5년 초과분 가산), 퇴직수당은 공단이 공개한 재직기간별 지급비율(2009년 이전 재직분은 종전 지급률, 2010년 이후는 현행 지급률로 나눠 계산)을 입력하신 평균 기준소득월액에 적용한 개략 추정입니다.");
         }
       }
       if (linkPossible) {
