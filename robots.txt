@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://pension-lab-phi.vercel.app/sitemap.xml
+Sitemap: https://www.paydig.co.kr/sitemap.xml
