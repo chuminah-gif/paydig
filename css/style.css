@@ -1134,3 +1134,11 @@ h1, h2, h3, h4 {
   color: var(--color-accent-dark);
   font-variant-numeric: tabular-nums;
 }
+
+/* 로고 옆 서비스 설명 (넓은 화면에서만 표시) */
+.logo .logo-text { display: flex; flex-direction: column; line-height: 1.15; }
+.logo .logo-tag { font-size: 0.62rem; font-weight: 600; color: var(--color-text-muted); letter-spacing: -0.01em; }
+@media (max-width: 1140px) { .logo .logo-tag { display: none; } }
+
+/* 한글 제목이 단어 중간에서 끊기지 않도록 */
+h1, h2, h3 { word-break: keep-all; overflow-wrap: break-word; }
