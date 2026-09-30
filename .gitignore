@@ -1,0 +1,5 @@
+# 로컬 개발용 파일 — Cloudflare Pages가 저장소 전체를 공개 배포하므로 추적하지 않음
+.claude/
+.rebrand/
+serve.ps1
+supabase/
