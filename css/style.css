@@ -771,9 +771,13 @@ h1, h2, h3, h4 {
   padding-left: 22px;
 }
 
+/* 열 너비는 브라우저가 내용 길이에 맞춰 나눔(auto). 예전의 fixed + 첫 열 32%는
+   첫 열이 짧아도 넓게 잡히고 나머지 열이 균등하게 좁아지는 불균형을 만들었다.
+   keep-all + break-word는 단어 중간을 끊지 않으므로 열이 한 글자 폭까지
+   줄어드는 세로 쌓임도 생기지 않는다(overflow-wrap:anywhere 금지). */
 .prose table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: collapse;
   margin: 18px 0;
   font-size: 0.9rem;
@@ -788,14 +792,105 @@ h1, h2, h3, h4 {
   overflow-wrap: break-word;
 }
 
-.prose table th:first-child, .prose table td:first-child {
-  width: 32%;
-}
-
 .prose table th {
   background: var(--color-bg);
 }
 
+/* 행 제목 열이 옆 열의 긴 문장에 밀려 두세 글자 폭으로 쪼그라들지 않게 */
+.prose table th:first-child, .prose table td:first-child {
+  min-width: 4.8em;
+}
+
+/* 숫자만 있는 셀(금액·요율·일수)은 "228만 7천 / 원"처럼 끊기지 않게 */
+.prose table .num {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .prose table {
+    font-size: 0.84rem;
+  }
+
+  .prose table th, .prose table td {
+    padding: 8px 7px;
+  }
+
+  /* 3열 이상 표는 폰 폭(특히 320~360px)에서 금액이 서너 줄로 쪼개지므로 행마다
+     카드로 풀어서 보여 줌(가로 스크롤 없이, 각 값 앞에 열 제목 — data-label은 HTML에 있음).
+     2열 표는 폰에서도 표 그대로 둔다. */
+  .prose table.stack-sm,
+  .prose table.stack-sm tbody,
+  .prose table.stack-sm tr,
+  .prose table.stack-sm th,
+  .prose table.stack-sm td {
+    display: block;
+    width: auto;
+  }
+
+  .prose table.stack-sm tr:first-child {
+    display: none;
+  }
+
+  .prose table.stack-sm tr {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 2px 12px;
+    margin-bottom: 10px;
+  }
+
+  .prose table.stack-sm th,
+  .prose table.stack-sm td {
+    display: flow-root;
+    border: 0;
+    border-bottom: 1px solid var(--color-border);
+    padding: 8px 0;
+    text-align: right;
+    background: none;
+  }
+
+  .prose table.stack-sm tr > :last-child {
+    border-bottom: 0;
+  }
+
+  .prose table.stack-sm th::before,
+  .prose table.stack-sm td::before {
+    content: attr(data-label);
+    float: left;
+    margin-right: 12px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .prose table.stack-sm tr > :first-child {
+    font-weight: 700;
+    color: var(--color-primary-dark);
+    min-width: 0;
+  }
+
+  /* 문장형 비교표(구분 | A | B): 첫 칸은 카드 제목, 나머지는 제목 아래에 본문 */
+  .prose table.stack-text th,
+  .prose table.stack-text td {
+    text-align: left;
+  }
+
+  .prose table.stack-text th::before,
+  .prose table.stack-text td::before {
+    float: none;
+    display: block;
+    margin: 0 0 2px;
+    font-size: 0.82em;
+  }
+
+  .prose table.stack-text tr > :first-child::before {
+    display: none;
+  }
+
+  /* 카드 안에서는 값이 라벨 옆 공간을 넘치면 아래로 내려가야 하므로 줄바꿈 허용 */
+  .prose table.stack-sm .num {
+    white-space: normal;
+  }
+}
 .info-callout {
   background: #eef4fb;
   border-left: 4px solid var(--color-primary-light);
