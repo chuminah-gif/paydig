@@ -629,6 +629,9 @@ h1, h2, h3, h4 {
   text-align: right;
   font-weight: 700;
   color: var(--color-text);
+  /* 금액이 "178,125 / 원"으로 끊기지 않게(320px 폰에서 1~3px 모자랐음).
+     아래 계산식(.table-formula)은 자체적으로 white-space:normal이라 줄바꿈됨. */
+  white-space: nowrap;
 }
 
 .result-table .table-formula {
@@ -801,6 +804,14 @@ h1, h2, h3, h4 {
   min-width: 4.8em;
 }
 
+/* PC·태블릿: 16자 이하 행 제목(class="nw")은 한 줄 유지 — 옆 열의 긴 문장 때문에
+   "2009년 12월 31일 / 이전"처럼 첫 열만 좁게 꺾이던 불균형 방지. 폰에서는 적용 안 함. */
+@media (min-width: 601px) {
+  .prose table .nw {
+    white-space: nowrap;
+  }
+}
+
 /* 숫자만 있는 셀(금액·요율·일수)은 "228만 7천 / 원"처럼 끊기지 않게 */
 .prose table .num {
   white-space: nowrap;
@@ -838,9 +849,16 @@ h1, h2, h3, h4 {
     margin-bottom: 10px;
   }
 
+  /* 라벨(왼쪽)과 값(오른쪽)을 한 줄에 두되, 값이 옆에 다 안 들어가면 값 전체를
+     다음 줄 오른쪽으로 내림 — "약 1,031만 원 / 많음"처럼 끝 글자만 떨어지지 않게.
+     (카드 셀은 모두 태그 없는 텍스트라 텍스트가 하나의 flex 항목이 됨) */
   .prose table.stack-sm th,
   .prose table.stack-sm td {
-    display: flow-root;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: baseline;
+    column-gap: 12px;
     border: 0;
     border-bottom: 1px solid var(--color-border);
     padding: 8px 0;
@@ -855,8 +873,7 @@ h1, h2, h3, h4 {
   .prose table.stack-sm th::before,
   .prose table.stack-sm td::before {
     content: attr(data-label);
-    float: left;
-    margin-right: 12px;
+    margin-right: auto;
     color: var(--color-text-muted);
     font-weight: 600;
     text-align: left;
@@ -871,12 +888,12 @@ h1, h2, h3, h4 {
   /* 문장형 비교표(구분 | A | B): 첫 칸은 카드 제목, 나머지는 제목 아래에 본문 */
   .prose table.stack-text th,
   .prose table.stack-text td {
+    display: block;
     text-align: left;
   }
 
   .prose table.stack-text th::before,
   .prose table.stack-text td::before {
-    float: none;
     display: block;
     margin: 0 0 2px;
     font-size: 0.82em;
@@ -884,6 +901,18 @@ h1, h2, h3, h4 {
 
   .prose table.stack-text tr > :first-child::before {
     display: none;
+  }
+
+  /* 숫자표 카드 안의 긴 문장형 값(21자 이상, class="long")은 오른쪽 정렬로
+     여러 줄이 되면 읽기 어려우므로 라벨 아래 왼쪽 정렬로 */
+  .prose table.stack-sm .long {
+    display: block;
+    text-align: left;
+  }
+
+  .prose table.stack-sm .long::before {
+    display: block;
+    margin: 0 0 2px;
   }
 
   /* 카드 안에서는 값이 라벨 옆 공간을 넘치면 아래로 내려가야 하므로 줄바꿈 허용 */
@@ -951,10 +980,18 @@ h1, h2, h3, h4 {
 
 .case-card .case-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  column-gap: 10px;
   font-size: 0.88rem;
   padding: 5px 0;
   border-bottom: 1px dashed var(--color-border);
+}
+
+/* 금액("2,445,133원")은 쪼개지지 않게, 자리가 모자라면 통째로 다음 줄 오른쪽으로 */
+.case-card .case-row > span:last-child {
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 .case-card .case-row:last-child {
@@ -1191,6 +1228,10 @@ h1, h2, h3, h4 {
   text-align: right;
 }
 
+.deduct-detail .d-row .d-amount {
+  white-space: nowrap;
+}
+
 .deduct-detail .d-row .d-formula {
   font-size: 0.72rem;
   font-weight: 400;
@@ -1214,25 +1255,32 @@ h1, h2, h3, h4 {
 
 .net-highlight {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
+  column-gap: 12px;
   padding: 16px 18px;
   background: var(--color-accent-soft);
   border-radius: var(--radius-md);
   margin-bottom: 18px;
 }
 
+/* 320px 폰에서 "월 실수령 / 액", "3,213,382 / 원"으로 쪼개지던 것 방지 —
+   둘 다 한 덩어리로 두고, 한 줄에 안 들어가면 금액이 통째로 다음 줄로 */
 .net-highlight .k {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--color-text-muted);
+  white-space: nowrap;
 }
 
 .net-highlight .v {
-  font-size: 1.5rem;
+  margin-left: auto;
+  font-size: clamp(1.3rem, 6.5vw, 1.5rem);
   font-weight: 800;
   color: var(--color-accent-dark);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* 로고 옆 서비스 설명 (넓은 화면에서만 표시) */
