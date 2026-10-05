@@ -1010,6 +1010,52 @@ h1, h2, h3, h4 {
   gap: 18px;
 }
 
+/* 가이드 목록 상단 분류 바로가기 */
+.guide-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 36px;
+}
+
+.guide-cats a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.guide-cats a:hover {
+  border-color: var(--color-accent);
+  text-decoration: none;
+}
+
+.guide-cats .count {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+/* 분류 묶음: 고정 헤더에 제목이 가려지지 않게 앵커 위치 보정 */
+.guide-group {
+  scroll-margin-top: 84px;
+}
+
+.guide-group + .guide-group {
+  margin-top: 48px;
+}
+
+.guide-group .section-desc {
+  margin-bottom: 18px;
+}
+
 .guide-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
