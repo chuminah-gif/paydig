@@ -101,7 +101,7 @@
     <p class="breadcrumb"><a href="../">홈</a> / 연말정산 예상세액 계산기</p>
     <h1>연말정산 예상세액 계산기</h1>
     <p>신용카드 사용액, 의료비, 보험료, 교육비, 월세, 기부금, 자녀·연금계좌 세액공제까지 반영해 연말정산 예상 결정세액과 환급·추가납부액을 계산합니다.</p>
-    <p class="page-updated">2026년 적용 기준 · 최종 확인 2026년 9월</p>
+    <p class="page-updated">2026년 적용 기준 · 최종 확인 2026년 10월</p>
   </div>
 </section>
 
@@ -228,7 +228,7 @@
       <div class="card" style="margin-bottom:16px;">
         <h2 style="margin-bottom:4px;">주택자금·월세 (연간, 만원)</h2>
         <div class="field">
-          <label for="housingSavings">주택청약종합저축 등 납입액 (무주택세대주, 한도 300만원)</label>
+          <label for="housingSavings">주택청약종합저축 등 납입액 (무주택세대주, 총급여 7천만원 이하, 한도 300만원)</label>
           <input type="number" id="housingSavings" placeholder="예: 0" min="0" value="0" />
         </div>
         <div class="field">
@@ -310,7 +310,7 @@
         <tr><td class="nw">보험료 세액공제</td><td>일반보장성 100만원 한도 12%, 장애인전용 100만원 한도 15%</td></tr>
         <tr><td class="nw">의료비 세액공제</td><td>총급여 3% 초과분 15% (본인·65세이상·장애인·6세이하는 한도 없음, 그 외 700만원 한도)</td></tr>
         <tr><td class="nw">교육비 세액공제</td><td>인당 한도 적용 후 합계 × 15%</td></tr>
-        <tr><td class="nw">주택자금 소득공제</td><td>주택청약종합저축 등 300만원 한도 40%, 장기주택저당차입금 이자상환액(단순화하여 2000만원 한도)</td></tr>
+        <tr><td class="nw">주택자금 소득공제</td><td>주택청약종합저축 등 300만원 한도 40%(총급여 7천만원 이하 무주택 세대주), 장기주택저당차입금 이자상환액(단순화하여 2000만원 한도)</td></tr>
         <tr><td class="nw">월세 세액공제</td><td>총급여 5,500만원 이하 17%, 5,500만~8,000만원 15%, 한도 1,000만원</td></tr>
         <tr><td class="nw">기부금 세액공제</td><td>1천만원 이하 15%, 초과분 30% (고향사랑기부금의 10만원 이하 전액·10만~20만원 40% 특례는 반영하지 않음)</td></tr>
         <tr><td class="nw">자녀세액공제</td><td>1명 25만원, 2명 55만원, 3명 이상 55만원+2명 초과 1인당 40만원</td></tr>
@@ -324,7 +324,7 @@
       <h3>Q. 신용카드 소득공제는 왜 이렇게 복잡한가요?</h3>
       <p><a href="https://www.nts.go.kr" target="_blank" rel="noopener">국세청</a>은 공제율이 낮은 항목(신용카드 15%)부터 총급여 25% 기준선을 채우고, 그 이후 남는 사용액에 각 항목의 공제율을 적용합니다. 이 계산기도 같은 순서(신용카드 → 체크카드·현금영수증 → 도서공연 → 전통시장 → 대중교통)로 계산합니다.</p>
       <h3>Q. 그래도 실제 결과와 차이가 날 수 있나요?</h3>
-      <p>네. 경로우대·장애인 추가 인적공제, 정치자금·우리사주조합 기부금의 세부 구분, 중소기업 취업자 감면 등 개인별로 크게 달라지는 특수 항목은 반영되어 있지 않습니다. 정확한 금액은 <a href="https://hometax.go.kr" target="_blank" rel="noopener">국세청 홈택스</a> 연말정산 미리보기 서비스를 통해 확인하세요.</p>
+      <p>네. 정치자금·우리사주조합 기부금의 세부 구분, 고향사랑기부금의 특례 공제율(10만원 이하 전액, 10만~20만원 40%), 중소기업 취업자 감면, 주택저당차입금 이자의 상환기간별 한도 등 개인별로 크게 달라지는 항목은 단순화했거나 반영하지 않았습니다. 신용카드 한도 가산에 인정되는 자녀 범위도 국세청 안내로 확인하세요. 정확한 금액은 <a href="https://hometax.go.kr" target="_blank" rel="noopener">국세청 홈택스</a> 연말정산 미리보기 서비스를 통해 확인하세요.</p>
       <h3>Q. 연금저축과 IRP를 같이 넣으면 공제가 두 배인가요?</h3>
       <p>아니요. 연금저축과 IRP는 합산해서 연간 900만원까지만 세액공제 대상입니다(연금저축 단독으로는 600만원 한도). 두 계좌에 나눠 넣어도 합산 한도는 동일합니다.</p>
 
@@ -374,9 +374,9 @@
   </div>
 </footer>
 
-<script src="../js/supabase-client.js"></script>
-<script src="../js/calculators.js"></script>
-<script src="../js/main.js"></script>
+<script src="../js/supabase-client.js?v=20261005"></script>
+<script src="../js/calculators.js?v=20261005"></script>
+<script src="../js/main.js?v=20261005"></script>
 <script>
 function runYearEndTaxCalc() {
   var result = calcYearEndTax({

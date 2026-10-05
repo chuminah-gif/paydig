@@ -1418,7 +1418,9 @@ function donationCredit(donationWon) {
 // 주택자금: 청약저축 등 소득공제(무주택세대주, 총급여 7천만원 이하, 300만원 한도 40%)
 //           + 장기주택저당차입금 이자상환액 소득공제(단순화하여 한도 2000만원 전액)
 function housingFundDeduction(input) {
-  var savings = Math.min(input.housingSavingsWon || 0, 3000000) * 0.4;
+  // 청약저축 등 소득공제는 총급여 7천만원 이하 무주택 세대주만 해당합니다.
+  var savingsEligible = !(input.totalGrossWon > 70000000);
+  var savings = savingsEligible ? Math.min(input.housingSavingsWon || 0, 3000000) * 0.4 : 0;
   var mortgageInterest = Math.min(input.mortgageInterestWon || 0, 20000000);
   return savings + mortgageInterest;
 }
@@ -1478,8 +1480,11 @@ function calcYearEndTax(input) {
 
   var housingSavings = (input.housingSavingsManwon || 0) * 10000;
   var mortgageInterest = (input.mortgageInterestManwon || 0) * 10000;
-  var housingDeduction = housingFundDeduction({ housingSavingsWon: housingSavings, mortgageInterestWon: mortgageInterest });
-  f.housingDeduction = "청약저축 등 " + formatWon(Math.min(housingSavings, 3000000)) + " × 40% + 주택저당이자상환액 " + formatWon(Math.min(mortgageInterest, 20000000));
+  var housingDeduction = housingFundDeduction({ housingSavingsWon: housingSavings, mortgageInterestWon: mortgageInterest, totalGrossWon: totalGross });
+  f.housingDeduction = (totalGross > 70000000 && housingSavings > 0
+      ? "청약저축 등은 총급여 7천만원 초과로 미적용"
+      : "청약저축 등 " + formatWon(Math.min(housingSavings, 3000000)) + " × 40%")
+    + " + 주택저당이자상환액 " + formatWon(Math.min(mortgageInterest, 20000000));
 
   var totalIncomeDeduction = personalDeduction + insuranceAnnual + cardResult.deduction + housingDeduction;
   var taxBase = clampNonNegative(laborIncome - totalIncomeDeduction);
