@@ -1326,7 +1326,8 @@ function pensionAccountTaxCredit(contributionWon, totalGrossWon) {
   return capped * rate;
 }
 
-// 자녀세액공제 (기본공제대상 8세 이상 자녀 수 기준, 국세청 안내 금액)
+// 자녀세액공제 (기본공제대상 자녀 수 기준, 국세청 안내 금액). 대상 나이는 2026년 귀속 9세 이상
+// (소득세법 개정: 2027년 10세 … 2030년 13세 이상으로 단계 상향).
 function childTaxCredit(childCount) {
   if (!(childCount > 0)) return 0;
   if (childCount === 1) return 250000;
@@ -1337,39 +1338,45 @@ function childTaxCredit(childCount) {
 // 신용카드 등 사용액 소득공제
 // 낮은 공제율 항목부터 총급여의 25% 초과 기준선을 소진시키는 국세청 계산 순서를 반영합니다.
 function creditCardDeduction(input, totalGrossWon) {
+  var lowIncome = totalGrossWon <= 70000000; // 문화체육 사용분 30%·추가한도는 총급여 7천만원 이하만 해당
+  // 총급여 7천만원 초과자의 도서·공연·체육시설 사용분은 별도 공제율이 없어 신용카드 사용분(15%)으로 봅니다.
+  var cultureWon = input.booksCultureWon || 0;
   var categories = [
-    { amount: input.creditCardWon || 0, rate: 0.15 },
+    { amount: (input.creditCardWon || 0) + (lowIncome ? 0 : cultureWon), rate: 0.15 },
     { amount: input.debitCardWon || 0, rate: 0.30 },
-    { amount: input.booksCultureWon || 0, rate: 0.30 },
+    { amount: lowIncome ? cultureWon : 0, rate: 0.30 },
     { amount: input.traditionalMarketWon || 0, rate: 0.40 },
     { amount: input.publicTransportWon || 0, rate: 0.40 }
   ];
   var totalUsage = categories.reduce(function (sum, c) { return sum + c.amount; }, 0);
   var threshold = totalGrossWon * 0.25;
-  if (totalUsage <= threshold || totalUsage <= 0) return { deduction: 0, totalUsage: totalUsage };
+  // 조세특례제한법 제126조의2(2026년 사용분부터): 기본한도 총급여 7천만원 이하 300만원, 초과 250만원.
+  // 자녀(손자녀 등) 1명당 50만원(7천만원 초과 25만원)씩 최대 2명분 가산.
+  var kids = Math.min(2, Math.max(0, Math.round(input.cardChildCount || 0)));
+  var baseCap = lowIncome ? 3000000 + kids * 500000 : 2500000 + kids * 250000;
+  // 추가한도: 기본한도를 넘는 금액 중 전통시장·대중교통 합계 200만원 이내
+  // (7천만원 이하는 도서·공연·체육시설까지 합쳐 300만원 이내).
+  var specialCap = lowIncome ? 3000000 : 2000000;
+  if (totalUsage <= threshold || totalUsage <= 0) return { deduction: 0, totalUsage: totalUsage, baseCap: baseCap, specialCap: specialCap };
 
   var remainingThreshold = threshold;
   var baseAmount = 0; // 신용카드·체크카드 등(기본한도 대상)
-  var special = { books: 0, market: 0, transit: 0 }; // 항목별 추가한도 대상
-  var lowIncome = totalGrossWon <= 70000000; // 도서·공연 추가공제는 총급여 7천만원 이하만 해당
+  var special = { books: 0, market: 0, transit: 0 }; // 추가한도 대상
 
   categories.forEach(function (cat, idx) {
     var eligible = Math.max(0, cat.amount - remainingThreshold);
     remainingThreshold = Math.max(0, remainingThreshold - cat.amount);
     var value = eligible * cat.rate;
-    if (idx === 2) { if (lowIncome) special.books += value; else baseAmount += value; }
+    if (idx === 2) special.books += value;
     else if (idx === 3) special.market += value;
     else if (idx === 4) special.transit += value;
     else baseAmount += value;
   });
 
-  var baseCap = totalGrossWon <= 70000000 ? 3000000 : (totalGrossWon <= 120000000 ? 2500000 : 2000000);
-  // 추가한도: 전통시장·대중교통 각 100만원, 도서·공연 100만원(총급여 7천만원 이하). 기본한도를 넘는 부분에 한해 적용됩니다.
   var specialAll = special.books + special.market + special.transit;
-  var specialCap = Math.min(special.books, 1000000) + Math.min(special.market, 1000000) + Math.min(special.transit, 1000000);
-
-  var deduction = Math.min(baseAmount + specialAll, baseCap + specialCap);
-  return { deduction: deduction, totalUsage: totalUsage };
+  var total = baseAmount + specialAll;
+  var deduction = Math.min(total, baseCap) + Math.min(Math.max(0, total - baseCap), specialAll, specialCap);
+  return { deduction: deduction, totalUsage: totalUsage, baseCap: baseCap, specialCap: specialCap };
 }
 
 // 의료비 세액공제: 총급여 3% 초과분에 15% (한도없는 대상 우선 적용 후 일반 대상 700만원 한도)
@@ -1400,13 +1407,12 @@ function monthlyRentCredit(rentWon, totalGrossWon) {
   return Math.min(rentWon, 10000000) * rate;
 }
 
-// 기부금 세액공제: 1천만원 이하 15%, 1천만~3천만원 30%, 3천만원 초과 40%
+// 기부금 세액공제: 1천만원 이하 15%, 초과분 30% (3천만원 초과 40%는 2024년 기부분 한시 적용 후 종료)
 function donationCredit(donationWon) {
   var d = donationWon || 0;
   if (d <= 0) return 0;
   if (d <= 10000000) return d * 0.15;
-  if (d <= 30000000) return 10000000 * 0.15 + (d - 10000000) * 0.3;
-  return 10000000 * 0.15 + 20000000 * 0.3 + (d - 30000000) * 0.4;
+  return 10000000 * 0.15 + (d - 10000000) * 0.3;
 }
 
 // 주택자금: 청약저축 등 소득공제(무주택세대주, 총급여 7천만원 이하, 300만원 한도 40%)
@@ -1462,11 +1468,12 @@ function calcYearEndTax(input) {
     debitCardWon: (input.debitCardManwon || 0) * 10000,
     booksCultureWon: (input.booksCultureManwon || 0) * 10000,
     traditionalMarketWon: (input.traditionalMarketManwon || 0) * 10000,
-    publicTransportWon: (input.publicTransportManwon || 0) * 10000
+    publicTransportWon: (input.publicTransportManwon || 0) * 10000,
+    cardChildCount: input.cardChildCount || 0
   };
   var cardResult = creditCardDeduction(cardInput, totalGross);
   f.cardDeduction = cardResult.totalUsage > 0
-    ? "총사용액 " + formatWon(cardResult.totalUsage) + " 중 총급여 25%(" + formatWon(totalGross * 0.25) + ") 초과분에 항목별 공제율 적용"
+    ? "총사용액 " + formatWon(cardResult.totalUsage) + " 중 총급여 25%(" + formatWon(totalGross * 0.25) + ") 초과분에 항목별 공제율 적용 (기본한도 " + formatWon(cardResult.baseCap) + ", 추가한도 최대 " + formatWon(cardResult.specialCap) + ")"
     : "사용액 없음";
 
   var housingSavings = (input.housingSavingsManwon || 0) * 10000;
