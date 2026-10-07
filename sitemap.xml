@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://www.paydig.co.kr/</loc><lastmod>2026-10-05</lastmod><priority>1.0</priority></url>
+  <url><loc>https://www.paydig.co.kr/</loc><lastmod>2026-10-07</lastmod><priority>1.0</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/salary-net</loc><lastmod>2026-09-30</lastmod><priority>0.95</priority></url>
-  <url><loc>https://www.paydig.co.kr/calculators/minimum-wage</loc><lastmod>2026-09-30</lastmod><priority>0.95</priority></url>
+  <url><loc>https://www.paydig.co.kr/calculators/minimum-wage</loc><lastmod>2026-10-07</lastmod><priority>0.95</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/four-insurance</loc><lastmod>2026-09-30</lastmod><priority>0.9</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/health-insurance</loc><lastmod>2026-10-02</lastmod><priority>0.9</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/employment-insurance</loc><lastmod>2026-09-30</lastmod><priority>0.9</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/severance-pay</loc><lastmod>2026-09-30</lastmod><priority>0.95</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/freelancer-tax</loc><lastmod>2026-09-30</lastmod><priority>0.9</priority></url>
-  <url><loc>https://www.paydig.co.kr/calculators/weekly-holiday-pay</loc><lastmod>2026-09-30</lastmod><priority>0.85</priority></url>
+  <url><loc>https://www.paydig.co.kr/calculators/weekly-holiday-pay</loc><lastmod>2026-10-07</lastmod><priority>0.85</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/annual-leave</loc><lastmod>2026-09-30</lastmod><priority>0.85</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/parental-leave</loc><lastmod>2026-09-30</lastmod><priority>0.85</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/industrial-accident</loc><lastmod>2026-09-30</lastmod><priority>0.85</priority></url>
@@ -24,7 +24,7 @@
   <url><loc>https://www.paydig.co.kr/calculators/personal-pension</loc><lastmod>2026-09-30</lastmod><priority>0.9</priority></url>
   <url><loc>https://www.paydig.co.kr/simulation</loc><lastmod>2026-09-30</lastmod><priority>0.9</priority></url>
   <url><loc>https://www.paydig.co.kr/calculators/retirement-dashboard</loc><lastmod>2026-09-30</lastmod><priority>0.85</priority></url>
-  <url><loc>https://www.paydig.co.kr/guide/</loc><lastmod>2026-10-05</lastmod><priority>0.8</priority></url>
+  <url><loc>https://www.paydig.co.kr/guide/</loc><lastmod>2026-10-07</lastmod><priority>0.8</priority></url>
   <url><loc>https://www.paydig.co.kr/guide/national-pension-guide</loc><lastmod>2026-09-30</lastmod><priority>0.7</priority></url>
   <url><loc>https://www.paydig.co.kr/guide/civil-servant-pension-guide</loc><lastmod>2026-09-30</lastmod><priority>0.7</priority></url>
   <url><loc>https://www.paydig.co.kr/guide/military-pension-guide</loc><lastmod>2026-09-30</lastmod><priority>0.7</priority></url>
@@ -41,15 +41,16 @@
   <url><loc>https://www.paydig.co.kr/guide/health-insurance-dependent-guide</loc><lastmod>2026-10-02</lastmod><priority>0.7</priority></url>
   <url><loc>https://www.paydig.co.kr/guide/employment-insurance-guide</loc><lastmod>2026-09-30</lastmod><priority>0.7</priority></url>
   <url><loc>https://www.paydig.co.kr/guide/salary-net-table-guide</loc><lastmod>2026-09-30</lastmod><priority>0.85</priority></url>
-  <url><loc>https://www.paydig.co.kr/guide/payslip-guide</loc><lastmod>2026-09-30</lastmod><priority>0.8</priority></url>
-  <url><loc>https://www.paydig.co.kr/guide/ordinary-vs-average-wage-guide</loc><lastmod>2026-09-30</lastmod><priority>0.8</priority></url>
+  <url><loc>https://www.paydig.co.kr/guide/payslip-guide</loc><lastmod>2026-10-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://www.paydig.co.kr/guide/ordinary-vs-average-wage-guide</loc><lastmod>2026-10-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://www.paydig.co.kr/guide/overtime-pay-guide</loc><lastmod>2026-10-07</lastmod><priority>0.8</priority></url>
   <url><loc>https://www.paydig.co.kr/guide/resignation-checklist-guide</loc><lastmod>2026-10-02</lastmod><priority>0.8</priority></url>
   <url><loc>https://www.paydig.co.kr/guide/freelancer-income-tax-guide</loc><lastmod>2026-09-30</lastmod><priority>0.8</priority></url>
   <url><loc>https://www.paydig.co.kr/news/</loc><lastmod>2026-09-26</lastmod><priority>0.7</priority></url>
   <url><loc>https://www.paydig.co.kr/news/2026-minimum-wage</loc><lastmod>2026-09-30</lastmod><priority>0.6</priority></url>
   <url><loc>https://www.paydig.co.kr/news/2026-four-insurance-rates</loc><lastmod>2026-09-30</lastmod><priority>0.6</priority></url>
   <url><loc>https://www.paydig.co.kr/news/2026-parental-leave-reform</loc><lastmod>2026-09-30</lastmod><priority>0.6</priority></url>
-  <url><loc>https://www.paydig.co.kr/news/2026-comprehensive-wage-guideline</loc><lastmod>2026-09-26</lastmod><priority>0.6</priority></url>
+  <url><loc>https://www.paydig.co.kr/news/2026-comprehensive-wage-guideline</loc><lastmod>2026-10-07</lastmod><priority>0.6</priority></url>
   <url><loc>https://www.paydig.co.kr/news/2027-minimum-wage</loc><lastmod>2026-09-30</lastmod><priority>0.7</priority></url>
   <url><loc>https://www.paydig.co.kr/news/2026-tax-reform-proposal</loc><lastmod>2026-09-26</lastmod><priority>0.7</priority></url>
   <url><loc>https://www.paydig.co.kr/news/2027-health-insurance-rate</loc><lastmod>2026-09-30</lastmod><priority>0.7</priority></url>
