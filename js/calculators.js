@@ -747,8 +747,10 @@ function calcRetirementIncomeTax(lumpSum, years) {
 }
 
 // 퇴직연금을 "연금" 형태로 수령할 때의 퇴직소득세 감면 (수령 1~10년차 30%, 11년차 이후 40% 감면)
+// 매년 같은 금액을 받는다고 보고 전체 수령기간의 평균 감면율을 돌려줍니다 (예: 20년 수령 → 35%).
 function retirementPensionTaxDiscountRate(payoutYears) {
-  return payoutYears <= 10 ? 0.3 : 0.4;
+  if (!(payoutYears > 10)) return 0.3;
+  return (10 * 0.3 + (payoutYears - 10) * 0.4) / payoutYears;
 }
 
 // 사적연금소득세 (연금저축·IRP를 "연금" 형태로 수령 시, 연 1,500만원 이하 분리과세 가정)
@@ -854,12 +856,13 @@ function calcInsuranceBreakdown(monthlyGrossWon, pensionType) {
     // 국민연금은 기준소득월액에 상한·하한이 있어, 이 구간을 벗어난 소득에는 보험료가 더 붙지 않습니다.
     pensionBase = Math.min(Math.max(m, NATIONAL_PENSION_BASE_FLOOR), NATIONAL_PENSION_BASE_CEILING);
   }
-  var np = pensionBase * plan.rate;
+  // 항목별로 원 단위 반올림해, 화면에 보이는 항목 금액의 합과 공제 합계가 정확히 일치하도록 합니다.
+  var np = Math.round(pensionBase * plan.rate);
 
   var healthRaw = m * RATE_HEALTH_INSURANCE;
-  var hi = Math.min(healthRaw, HEALTH_INSURANCE_PREMIUM_CEILING);
-  var ltc = hi * RATE_LONG_TERM_CARE_OF_PREMIUM; // 급여가 아니라 건강보험료(본인부담분)에 곱함
-  var ei = plan.employmentInsurance ? m * RATE_EMPLOYMENT_INSURANCE : 0;
+  var hi = Math.round(Math.min(healthRaw, HEALTH_INSURANCE_PREMIUM_CEILING));
+  var ltc = Math.round(hi * RATE_LONG_TERM_CARE_OF_PREMIUM); // 급여가 아니라 건강보험료(본인부담분)에 곱함
+  var ei = plan.employmentInsurance ? Math.round(m * RATE_EMPLOYMENT_INSURANCE) : 0;
   return {
     pensionType: pensionType,
     pensionLabel: plan.label,
@@ -893,7 +896,7 @@ function laborIncomeDeduction(annualGrossWon) {
 // 월 소득세·지방소득세: 국세청 근로소득 간이세액표(js/withholding-table.js)에서 월 급여(비과세 제외)와
 // 공제대상가족 수(본인 포함)로 조회합니다. 실제 급여명세서의 원천징수 방식과 같아, 4대보험료 소득공제·근로소득세액공제
 // 등이 이미 반영된 값입니다. 8세 이상 20세 이하 자녀 공제는 options.childCount로 반영하고, 경로우대·장애인 공제는 반영하지 않습니다.
-// 8ì¸ ì´ì 20ì¸ ì´í ìë ê³µì (ê°ì´ì¸ì¡í ìë´): 1ëª 12,500ì, 2ëª 29,160ì, 3ëª ì´ìì 29,160ì + 2ëª ì´ê³¼ 1ì¸ë¹ 25,000ì (ì ì¸ì¡ìì ì°¨ê°)
+// 8세 이상 20세 이하 자녀 공제(간이세액표 안내): 1명 12,500원, 2명 29,160원, 3명 이상은 29,160원 + 2명 초과 1인당 25,000원 (산출세액에서 차감)
 function withholdingChildDeduction(childCount) {
   var n = Math.max(0, Math.round(childCount) || 0);
   if (n === 0) return 0;
@@ -906,7 +909,7 @@ function calcMonthlyIncomeTax(monthlyGrossWon, familyCount, childCount) {
   var monthly = clampNonNegative(monthlyGrossWon);
   var childDeduct = withholdingChildDeduction(childCount);
   var incomeTax = clampNonNegative(lookupWithholdingTax(monthly, fc) - childDeduct);
-  var localTax = incomeTax * 0.1; // 지방소득세 = 소득세의 10% (법정 비율)
+  var localTax = Math.round(incomeTax * 0.1); // 지방소득세 = 소득세의 10% (법정 비율)
   return {
     incomeTax: incomeTax,
     localTax: localTax,
@@ -931,10 +934,10 @@ function calcTakeHomePay(monthlyGrossWon, pensionType, options) {
   var taxableBase = clampNonNegative(m - nonTaxable);
   var insurance = calcInsuranceBreakdown(taxableBase, pensionType);
   var baseTax = calcMonthlyIncomeTax(taxableBase, familyCount, options.childCount);
-  var incomeTax = clampNonNegative(baseTax.incomeTax * withholdingRatio);
+  var incomeTax = Math.round(clampNonNegative(baseTax.incomeTax * withholdingRatio));
   var tax = {
     incomeTax: incomeTax,
-    localTax: incomeTax * 0.1,
+    localTax: Math.round(incomeTax * 0.1),
     baseIncomeTax: baseTax.incomeTax,
     withholdingRatio: withholdingRatio,
     taxableMonthly: baseTax.taxableMonthly,
@@ -1258,6 +1261,8 @@ INDUSTRIAL_ACCIDENT_LIST.forEach(function (it, i) { INDUSTRIAL_ACCIDENT_RATES["i
 // 2026년도 사업종류별 산재보험료율(고용노동부고시 제2025-91호)의 대표 업종 요율. 모든 업종에 출퇴근재해 요율 0.06%가 함께 부과됩니다.
 var COMMUTE_ACCIDENT_RATE_2026 = 0.0006;
 var MINIMUM_WAGE_DAILY_2026 = MINIMUM_WAGE_2026 * 8; // 82,560원
+// 최저 보상기준 금액: 전체 근로자 임금 평균액의 1/2이 최저임금액보다 적으면 최저임금액 (산재보험법 제36조제7항) → 2026년 최저임금액 82,560원
+var MINIMUM_COMPENSATION_BASE_DAILY_2026 = MINIMUM_WAGE_DAILY_2026;
 
 function calcIndustrialAccidentPremium(input) {
   var totalWageWon = input.totalWageManwon * 10000;
@@ -1278,16 +1283,32 @@ function calcWorkInjuryLeaveBenefit(input) {
     return { error: "최근 3개월 임금총액과 요양(휴업) 일수를 올바르게 입력해 주세요." };
   }
   var avgDailyWage = last3MonthsWage / 91;
+  // 산재보험법 제52조: 1일 평균임금의 70%. 제54조(저소득 근로자): 70%가 최저 보상기준 금액의 80% 이하이면 평균임금의 90%
+  // (90%가 최저 보상기준 금액의 80%보다 많으면 그 80%), 90%로 산정한 금액이 최저임금액보다 적으면 최저임금액.
+  var lowThreshold = MINIMUM_COMPENSATION_BASE_DAILY_2026 * 0.8;
   var basic = avgDailyWage * 0.7;
-  var guaranteed = Math.min(avgDailyWage * 0.9, MINIMUM_WAGE_DAILY_2026);
-  var dailyBenefit = Math.max(basic, guaranteed);
+  var dailyBenefit, dailyBenefitFormula;
+  if (basic > lowThreshold) {
+    dailyBenefit = basic;
+    dailyBenefitFormula = formatWon(avgDailyWage) + " × 70%";
+  } else if (avgDailyWage * 0.9 > lowThreshold) {
+    dailyBenefit = lowThreshold;
+    dailyBenefitFormula = "저소득 특례: 평균임금의 90%(" + formatWon(avgDailyWage * 0.9) + ")가 최저 보상기준 금액의 80%(" + formatWon(lowThreshold) + ")보다 많아 그 80% 적용 (산재보험법 제54조제1항 단서)";
+  } else {
+    dailyBenefit = Math.max(avgDailyWage * 0.9, MINIMUM_WAGE_DAILY_2026);
+    dailyBenefitFormula = dailyBenefit > avgDailyWage * 0.9
+      ? "저소득 특례: 평균임금의 90%(" + formatWon(avgDailyWage * 0.9) + ")가 최저임금 일급보다 적어 최저임금 일급 적용 (산재보험법 제54조제2항)"
+      : formatWon(avgDailyWage) + " × 90% (저소득 특례)";
+  }
+  var paid = leaveDays > 3; // 제52조 단서: 취업하지 못한 기간이 3일 이내이면 지급하지 않음
   return {
     avgDailyWage: avgDailyWage,
     avgDailyWageFormula: formatWon(last3MonthsWage) + " ÷ 91일",
     dailyBenefit: dailyBenefit,
-    dailyBenefitFormula: dailyBenefit === basic ? formatWon(avgDailyWage) + " × 70%" : "저소득 특례: min(" + formatWon(avgDailyWage) + " × 90%, 최저임금 일급)",
+    dailyBenefitFormula: dailyBenefitFormula,
     leaveDays: leaveDays,
-    total: dailyBenefit * leaveDays
+    paid: paid,
+    total: paid ? dailyBenefit * leaveDays : 0
   };
 }
 
@@ -1543,8 +1564,7 @@ function calcYearEndTax(input) {
   var donationCreditAmount = donationCredit(donationTotal);
   f.donationCredit = donationTotal <= 0 ? "기부금 없음"
     : donationTotal <= 10000000 ? formatWon(donationTotal) + " × 15%"
-    : donationTotal <= 30000000 ? "1천만원 × 15% + (" + formatWon(donationTotal - 10000000) + ") × 30%"
-    : "1천만원 × 15% + 2천만원 × 30% + (" + formatWon(donationTotal - 30000000) + ") × 40%";
+    : "1천만원 × 15% + (" + formatWon(donationTotal - 10000000) + ") × 30%";
 
   // 표준세액공제(13만원): 특별소득공제(주택자금)·특별세액공제(보험료·의료비·교육비·기부금)·월세 세액공제를 합쳐도
   // 13만원에 못 미치면, 그 공제들을 신청하지 않고 표준세액공제 13만원을 받는 편이 유리합니다.

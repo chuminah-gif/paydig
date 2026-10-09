@@ -18,7 +18,7 @@
 <meta name="twitter:title" content="산재보험료·휴업급여 계산기 | 업종별 보험료, 산재 휴업급여 - 페이딕" />
 <meta name="twitter:description" content="업종별 산재보험료율로 사업주 부담 보험료를 계산하고, 재해 근로자의 요양기간 중 휴업급여(평균임금의 70%)를 계산할 수 있는 무료 산재보험 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
-<link rel="stylesheet" href="../css/style.css?v=20261007" />
+<link rel="stylesheet" href="../css/style.css?v=20261009" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="/favicon.ico" sizes="48x48" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -182,14 +182,14 @@
         <ul>
           <li><strong>산재보험료도 급여에서 일부 공제된다?</strong> 아닙니다. 4대보험 중 산재보험만 유일하게 <strong>전액 사업주가 부담</strong>하며, 근로자의 급여명세서에서 공제되는 항목이 아닙니다.</li>
           <li><strong>업종이 달라도 요율은 비슷하다?</strong> 위 사례처럼 금융·보험업(0.56%)과 건설업(3.56%)은 같은 인건비 규모에서도 산재보험료가 6배 넘게 차이 납니다. 재해 위험도가 높은 업종일수록 요율이 크게 올라갑니다.</li>
-          <li><strong>산재로 일을 못 하면 그 기간은 월급이 아예 없다?</strong> 아닙니다. 요양 기간 중에는 평균임금의 70%(저소득 근로자는 최대 90%까지 상향)를 휴업급여로 받을 수 있어, 소득이 완전히 끊기지는 않습니다.</li>
+          <li><strong>산재로 일을 못 하면 그 기간은 월급이 아예 없다?</strong> 아닙니다. 요양 기간 중에는 평균임금의 70%(저소득 근로자는 90% 또는 최저임금 일급까지 상향)를 휴업급여로 받을 수 있어, 소득이 완전히 끊기지는 않습니다.</li>
         </ul>
       </div>
 
       <h2>요양급여는 왜 계산기에 없나요?</h2>
       <p><strong>요양급여(치료비)</strong>는 산재로 인한 진료비·입원비 등을 실비로 산재보험에서 직접 부담하는 항목이라, 미리 정해진 요율이나 정액이 없어 계산기로 예측할 수 있는 성격의 금액이 아닙니다. 실제로 재해 근로자가 "얼마를 받는지" 궁금할 때 계산 가능한 항목은 요양(치료)으로 일하지 못한 기간 동안 <strong>휴업급여</strong>(평균임금의 70%)이므로, 이 계산기는 산재보험료와 휴업급여 두 가지를 제공합니다.</p>
       <div class="info-callout">
-        휴업급여는 평균임금의 70%가 원칙이지만, 평균임금이 낮은 근로자는 평균임금의 90%·2026년 최저임금 일급(82,560원) 한도까지 상향 보장하는 특례가 있습니다. 이 계산기는 그 취지를 반영한 단순화된 계산식을 사용합니다.
+        휴업급여는 평균임금의 70%가 원칙입니다. 다만 70%가 최저 보상기준 금액(2026년 최저임금 일급 82,560원)의 80%인 66,048원 이하인 저소득 근로자는 평균임금의 90%를 받고(90%가 66,048원보다 많으면 66,048원), 이렇게 90%로 정한 금액이 최저임금 일급보다 적으면 최저임금 일급을 받습니다(산재보험법 제52조·제54조). 요양 기간이 3일 이내이면 휴업급여는 지급되지 않습니다.
       </div>
       <h2>자주 묻는 질문</h2>
       <h3>Q. 산재보험료도 근로자가 일부 부담하나요?</h3>
@@ -243,7 +243,7 @@
 </footer>
 
 <script src="../js/supabase-client.js?v=20261005"></script>
-<script src="../js/calculators.js?v=20261005"></script>
+<script src="../js/calculators.js?v=20261009"></script>
 <script src="../js/main.js?v=20261005"></script>
 <script>
 (function fillIndustryOptions() {
@@ -315,7 +315,7 @@ function runLeaveCalc() {
   html += '<table class="result-table">';
   html += '<tr><th>1일 평균임금</th><td>' + formatWon(result.avgDailyWage) + '<div class="table-formula">' + result.avgDailyWageFormula + '</div></td></tr>';
   html += '<tr><th>1일 휴업급여</th><td>' + formatWon(result.dailyBenefit) + '<div class="table-formula">' + result.dailyBenefitFormula + '</div></td></tr>';
-  html += '<tr><th>예상 총액</th><td><strong>' + formatWon(result.total) + '</strong><div class="table-formula">' + formatWon(result.dailyBenefit) + ' × ' + result.leaveDays + '일</div></td></tr>';
+  html += '<tr><th>예상 총액</th><td><strong>' + formatWon(result.total) + '</strong><div class="table-formula">' + (result.paid ? formatWon(result.dailyBenefit) + ' × ' + result.leaveDays + '일' : '요양 기간이 3일 이내이면 휴업급여가 지급되지 않습니다(사업주가 근로기준법에 따라 평균임금의 60%를 휴업보상)') + '</div></td></tr>';
   html += '</table>';
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>평균임금은 3개월을 91일로 근사한 참고용 추정치입니다. 요양급여(치료비)는 실비 지급 항목이라 이 계산에는 포함되어 있지 않습니다.</span></div>';
   document.getElementById("resultCard").innerHTML = html;

@@ -590,6 +590,13 @@ h1, h2, h3, h4 {
 .result-headline .amount {
   font-size: clamp(1.6rem, 3vw, 2.1rem);
   font-weight: 800;
+  word-break: keep-all;
+}
+
+/* 320~400px 폰: "417,458,967원" 같은 9자리 이상 금액이 두 줄로 쪼개지지 않게 */
+@media (max-width: 400px) {
+  .result-headline { padding: 18px 16px; }
+  .result-headline .amount { font-size: clamp(1.3rem, 7vw, 1.6rem); }
 }
 
 .result-headline .amount .unit {
@@ -623,15 +630,18 @@ h1, h2, h3, h4 {
   color: var(--color-text-muted);
   font-weight: 600;
   width: 55%;
+  word-break: keep-all; /* "세후 예상 퇴직/금"처럼 단어 중간에서 끊기지 않게 */
 }
 
 .result-table td {
   text-align: right;
   font-weight: 700;
   color: var(--color-text);
-  /* 금액이 "178,125 / 원"으로 끊기지 않게(320px 폰에서 1~3px 모자랐음).
-     아래 계산식(.table-formula)은 자체적으로 white-space:normal이라 줄바꿈됨. */
-  white-space: nowrap;
+  /* 금액이 "178,125 / 원"으로 끊기지 않게 keep-all(숫자·한글 사이에서 줄바꿈 안 함).
+     nowrap으로 막으면 "월 약 166,451원 — 직역연금 기간과…"처럼 긴 문장이 든 칸이
+     한 줄로 고정돼 왼쪽 항목 칸(th)이 글자 하나 폭으로 찌그러졌음(PC·모바일 모두). */
+  white-space: normal;
+  word-break: keep-all;
 }
 
 .result-table .table-formula {
@@ -675,7 +685,8 @@ h1, h2, h3, h4 {
 .breakdown-table th:first-child,
 .breakdown-table td:first-child {
   overflow-wrap: anywhere;
-  min-width: 4.4em;
+  word-break: keep-all; /* 띄어쓰기 단위 우선("공무원연/금" 방지), 그래도 안 들어가면 anywhere로 끊김 */
+  min-width: 5.2em;
 }
 
 /* 수령 방식: "20년간 월지급 환산"처럼 띄어쓰기가 있는 문구라 단어 단위로

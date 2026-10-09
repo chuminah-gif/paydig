@@ -8,7 +8,7 @@
 <title>연금보험 계산기 | 비과세 요건·예상 수령액 확인 - 페이딕</title>
 <meta name="description" content="초기 자산과 연간 납입액, 예상 수익률을 입력하면 개인연금(연금보험 등 비세제혜택 상품)의 복리 적립금과 예상 수령액을 계산해주는 무료 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
-<link rel="stylesheet" href="../css/style.css?v=20261007" />
+<link rel="stylesheet" href="../css/style.css?v=20261009" />
 <link rel="canonical" href="https://www.paydig.co.kr/calculators/personal-pension" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="페이딕" />
@@ -242,7 +242,7 @@
   </div>
 </footer>
 
-<script src="../js/calculators.js?v=20261005"></script>
+<script src="../js/calculators.js?v=20261009"></script>
 <script src="../js/main.js?v=20261005"></script>
 <script>
 document.querySelectorAll('input[name="payoutType"]').forEach(function (radio) {
@@ -292,7 +292,7 @@ function runPersonalCalc() {
     html += '<table class="result-table">';
     html += '<tr><th>운용 기간</th><td>' + result.years + '년</td></tr>';
     html += '<tr><th>적용 수익률</th><td>연 ' + result.annualReturnPercent + '%</td></tr>';
-    html += '<tr><th>과세 여부</th><td>' + (taxFree ? "10년 이상 유지 — 보험차익 비과세(월 납입 150만원 이하·납입기간 5년 이상 등 요건 충족 시)" : "차익 " + formatWon(gain) + " × 이자소득세 15.4%") + '</td></tr>';
+    html += '<tr><th>과세 여부</th><td>' + (taxFree ? '비과세<div class="table-formula">10년 이상 유지 — 보험차익 비과세(월 납입 150만원 이하·납입기간 5년 이상 등 요건 충족 시)</div>' : '과세<div class="table-formula">차익 ' + formatWon(gain) + ' × 이자소득세 15.4%</div>') + '</td></tr>';
     html += '<tr><th>세후 월 지급액 (추정)</th><td><strong>' + formatWon(monthlyAfterTax) + '</strong></td></tr>';
     html += '</table>';
   } else {
@@ -304,7 +304,7 @@ function runPersonalCalc() {
     html += '<table class="result-table">';
     html += '<tr><th>운용 기간</th><td>' + result.years + '년</td></tr>';
     html += '<tr><th>적용 수익률</th><td>연 ' + result.annualReturnPercent + '%</td></tr>';
-    html += '<tr><th>과세 여부</th><td>' + (taxFree ? "10년 이상 유지 — 보험차익 비과세(월 납입 150만원 이하·납입기간 5년 이상 등 요건 충족 시)" : "차익 " + formatWon(gain) + " × 이자소득세 15.4%") + '</td></tr>';
+    html += '<tr><th>과세 여부</th><td>' + (taxFree ? '비과세<div class="table-formula">10년 이상 유지 — 보험차익 비과세(월 납입 150만원 이하·납입기간 5년 이상 등 요건 충족 시)</div>' : '과세<div class="table-formula">차익 ' + formatWon(gain) + ' × 이자소득세 15.4%</div>') + '</td></tr>';
     html += '<tr><th>세후 실수령액 (추정)</th><td><strong>' + formatWon(afterTaxLump) + '</strong></td></tr>';
     html += '</table>';
   }

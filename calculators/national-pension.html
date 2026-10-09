@@ -8,7 +8,7 @@
 <title>국민연금 계산기 | 예상 노령연금 수급액 확인 - 페이딕</title>
 <meta name="description" content="가입기간과 평균 소득월액을 입력하면 국민연금법 산정식을 기반으로 예상 노령연금 월 수급액을 계산해주는 무료 국민연금 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
-<link rel="stylesheet" href="../css/style.css?v=20261007" />
+<link rel="stylesheet" href="../css/style.css?v=20261009" />
 <link rel="canonical" href="https://www.paydig.co.kr/calculators/national-pension" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="페이딕" />
@@ -262,7 +262,7 @@
 </footer>
 
 <script src="../js/supabase-client.js?v=20261005"></script>
-<script src="../js/calculators.js?v=20261005"></script>
+<script src="../js/calculators.js?v=20261009"></script>
 <script src="../js/main.js?v=20261005"></script>
 <script>
 function runNationalCalc() {
@@ -297,7 +297,7 @@ function runNationalCalc() {
     html += '<table class="result-table">';
     html += '<tr><th>총 가입기간</th><td>' + Math.floor(result.totalMonths / 12) + '년 ' + (result.totalMonths % 12) + '개월</td></tr>';
     html += '<tr><th>연금 수급에 필요한 기간</th><td>최소 10년(120개월) — ' + Math.ceil((120 - result.totalMonths) / 12 * 10) / 10 + '년 부족</td></tr>';
-    html += '<tr><th>공적연금 연계 시 국민연금 몫(참고)</th><td>월 약 ' + formatWon(result.linkedMonthly) + ' — 직역연금 기간과 합산해 연계 요건(10년, 군인연금 20년)을 채울 때만 해당</td></tr>';
+    html += '<tr><th>공적연금 연계 시 국민연금 몫(참고)</th><td>월 약 ' + formatWon(result.linkedMonthly) + '<div class="table-formula">직역연금 기간과 합산해 연계 요건(10년, 군인연금 20년)을 채울 때만 해당</div></td></tr>';
     html += '</table>';
     html += '<div class="disclaimer-box" style="margin-bottom:14px;"><span class="mark">⚠</span><span>국민연금 노령연금은 최소 가입기간 10년(120개월)을 채워야 받을 수 있어, 그 미만이면 월 수급액이 계산되지 않습니다. 이 경우 낸 보험료에 이자를 더한 <strong>반환일시금</strong>을 지급받는 것이 원칙입니다. 위 금액은 사업장가입자(본인 4.5% + 사업주 4.5%)로 보험료율 9%(2025년까지 요율)를 냈다고 가정한 개략 추정이며, 과거 요율과 이자는 반영하지 않았습니다. 공무원·군인·사학연금 가입 이력이 있다면 <a href="../simulation">공적연금 연계제도</a>로 두 기간을 합쳐 연금을 받을 수 있는지 확인해 보세요. 연계 시 국민연금 몫은 기본연금액 × 가입기간 ÷ 20으로 산정되며, 표의 금액은 기본연금액을 2026년 A값 기준으로 가정한 개략 추정입니다.</span></div>';
     html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>정확한 반환일시금과 수급 가능 여부는 <a href="https://www.nps.or.kr" target="_blank" rel="noopener">국민연금공단</a>(국번없이 1355)에서 확인하세요.</span></div>';
