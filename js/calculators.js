@@ -1197,24 +1197,24 @@ function calcAnnualLeave(input) {
    육아휴직급여 계산기 (2026년 기준, 사후지급금 폐지 · 매월 전액 지급)
    1~3개월차: 통상임금 100%, 상한 250만원 / 4~6개월차: 100%, 상한 200만원
    7개월차 이후: 통상임금 80%, 상한 160만원
-   "6+6 부모육아휴직제"(부모 동시·순차 사용 시 첫 6개월 상한 대폭 상향)는
-   별도 특례로, 이 계산기에는 반영되어 있지 않습니다.
+   하한 70만원. 6+6 부모육아휴직제(시행령 제95조의3 제1항)와 한부모 특례(같은 조
+   제3항)는 mode로 선택합니다.
    ------------------------------------------------------------------------- */
-var PARENTAL_LEAVE_LOWER_BOUND = 700000; // 하한액(참고치)
+var PARENTAL_LEAVE_LOWER_BOUND = 700000; // 월 하한액(고용보험법 시행령 제95조)
 
 // 6+6 부모육아휴직제: 자녀 생후 18개월 이내 부모 모두 육아휴직 시 각자 첫 6개월 통상임금 100%, 월 상한 250·250·300·350·400·450만원 (고용노동부)
 var PARENTAL_LEAVE_SIX_PLUS_SIX_CAPS = [2500000, 2500000, 3000000, 3500000, 4000000, 4500000];
-// mode: "normal"(일반) | "sixsix"(6+6) | "single"(한부모: 1~6개월 100%·상한 300만원)
+// mode: "normal"(일반) | "sixsix"(6+6) | "single"(한부모: 1~3개월 상한 300만원, 4개월째부터는 일반과 같음 — 고용보험법 시행령 제95조의3 제3항)
 function parentalLeaveMonthlyPay(monthlyOrdinaryWageWon, monthIndex, mode) {
   var rate, cap;
   if (mode === "sixsix" && monthIndex <= 6) { rate = 1.0; cap = PARENTAL_LEAVE_SIX_PLUS_SIX_CAPS[monthIndex - 1]; }
-  else if (mode === "single" && monthIndex <= 6) { rate = 1.0; cap = 3000000; }
+  else if (mode === "single" && monthIndex <= 3) { rate = 1.0; cap = 3000000; }
   else if (monthIndex <= 3) { rate = 1.0; cap = 2500000; }
   else if (monthIndex <= 6) { rate = 1.0; cap = 2000000; }
   else { rate = 0.8; cap = 1600000; }
   var pay = monthlyOrdinaryWageWon * rate;
   pay = Math.min(pay, cap);
-  pay = Math.max(pay, Math.min(PARENTAL_LEAVE_LOWER_BOUND, monthlyOrdinaryWageWon));
+  pay = Math.max(pay, PARENTAL_LEAVE_LOWER_BOUND); // 시행령 제95조: 산정액이 70만원보다 적으면 70만원
   return pay;
 }
 
@@ -1228,7 +1228,7 @@ function calcParentalLeavePay(input) {
   var total = 0;
   for (var m = 1; m <= months; m++) {
     var pay = parentalLeaveMonthlyPay(monthlyWageWon, m, input.mode);
-    var special = (input.mode === "sixsix" || input.mode === "single") && m <= 6;
+    var special = (input.mode === "sixsix" && m <= 6) || (input.mode === "single" && m <= 3);
     var tier = special ? (input.mode === "sixsix" ? "6+6 특례: 통상임금 100%, 상한 " + (PARENTAL_LEAVE_SIX_PLUS_SIX_CAPS[m - 1] / 10000) + "만원" : "한부모 특례: 통상임금 100%, 상한 300만원") : m <= 3 ? "통상임금 100%, 상한 250만원" : m <= 6 ? "통상임금 100%, 상한 200만원" : "통상임금 80%, 상한 160만원";
     rows.push({ month: m, pay: pay, tier: tier });
     total += pay;

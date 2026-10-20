@@ -129,7 +129,7 @@
           <option value="sixsix">6+6 부모육아휴직제 (부모 모두 사용)</option>
           <option value="single">한부모 근로자</option>
         </select>
-        <div class="hint">6+6은 자녀가 생후 18개월 이내일 때 부모가 모두 육아휴직을 사용하는 경우 각자의 첫 6개월에 적용됩니다(월 상한 250·250·300·350·400·450만원). 한부모는 첫 6개월 통상임금 100%, 월 상한 300만원입니다. 7개월 이후는 모두 통상임금 80%(상한 160만원)로 같습니다.</div>
+        <div class="hint">6+6은 자녀가 생후 18개월 이내일 때 부모가 모두 육아휴직을 사용하는 경우 각자의 첫 6개월에 적용됩니다(월 상한 250·250·300·350·400·450만원). 한부모는 첫 3개월 월 상한이 300만원이고, 4~6개월은 일반과 같은 200만원입니다. 7개월 이후는 모두 통상임금 80%(상한 160만원)로 같습니다.</div>
       </div>
 
       <button class="btn btn-primary" onclick="runParentalLeaveCalc()">계산하기</button>
@@ -184,7 +184,7 @@
         <tr><td class="nw" data-label="기간">7개월차 이후</td><td data-label="지급률">통상임금 80%</td><td class="num" data-label="월 상한액">160만원</td></tr>
       </table>
       <div class="info-callout">
-        2025년부터 <strong>사후지급금 제도가 폐지</strong>되어, 육아휴직 기간 중 매달 급여 전액을 바로 지급받습니다(과거에는 일부를 복직 후 지급). 부모가 함께 육아휴직을 사용하면 첫 6개월 동안 상한액이 올라가는 <strong>"6+6 부모육아휴직제"</strong>(월 상한 250·250·300·350·400·450만원)와 한부모 특례(첫 6개월 상한 300만원)는 위 "육아휴직 유형"에서 선택할 수 있습니다. 요건 충족 여부는 <a href="https://www.work24.go.kr" target="_blank" rel="noopener">고용24(워크넷)</a>에서 확인하세요.
+        2025년부터 <strong>사후지급금 제도가 폐지</strong>되어, 육아휴직 기간 중 매달 급여 전액을 바로 지급받습니다(과거에는 일부를 복직 후 지급). 부모가 함께 육아휴직을 사용하면 첫 6개월 동안 상한액이 올라가는 <strong>"6+6 부모육아휴직제"</strong>(월 상한 250·250·300·350·400·450만원)와 한부모 특례(첫 3개월 상한 300만원)는 위 "육아휴직 유형"에서 선택할 수 있습니다. 요건 충족 여부는 <a href="https://www.work24.go.kr" target="_blank" rel="noopener">고용24(워크넷)</a>에서 확인하세요.
       </div>
       <h2>자주 묻는 질문</h2>
       <h3>Q. 6+6 부모육아휴직제는 무엇인가요?</h3>
@@ -194,7 +194,7 @@
 
     <h2>함께 보면 좋은 글</h2>
     <ul>
-      <li><a href="../news/2026-parental-leave-reform">2026년 육아휴직급여 개편 — 사후지급금 폐지, 6+6 부모육아휴직제</a></li>
+      <li><a href="../news/2026-parental-leave-reform">2026년 육아휴직급여 총정리 — 6+6 특례와 하반기 달라진 점</a></li>
       <li><a href="../guide/ordinary-vs-average-wage-guide">통상임금 vs 평균임금</a></li>
     </ul>
 
@@ -238,7 +238,7 @@
 </footer>
 
 <script src="../js/supabase-client.js?v=20261005"></script>
-<script src="../js/calculators.js?v=20261009"></script>
+<script src="../js/calculators.js?v=20261020"></script>
 <script src="../js/main.js?v=20261005"></script>
 <script>
 function runParentalLeaveCalc() {
