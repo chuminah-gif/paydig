@@ -1341,9 +1341,11 @@ function laborIncomeTaxCredit(computedTax, totalGrossWon) {
   return Math.min(credit, cap);
 }
 
+// 연금계좌세액공제(소득세법 제59조의3): 소득세에서 15%(총급여 5,500만원 이하) 또는 12%를 공제.
+// 흔히 말하는 16.5%·13.2%는 지방소득세까지 합친 절세율이라 여기서 쓰면 이중으로 계산됩니다.
 function pensionAccountTaxCredit(contributionWon, totalGrossWon) {
   var capped = Math.min(contributionWon, 9000000);
-  var rate = totalGrossWon <= 55000000 ? 0.165 : 0.132;
+  var rate = totalGrossWon <= 55000000 ? 0.15 : 0.12;
   return capped * rate;
 }
 
@@ -1535,8 +1537,8 @@ function calcYearEndTax(input) {
   f.marriageCredit = marriageCredit > 0 ? "혼인신고 50만원(생애 1회)" : "해당 없음";
 
   var pensionCredit = pensionAccountTaxCredit(pensionContribution, totalGross);
-  var pensionRate = totalGross <= 55000000 ? 16.5 : 13.2;
-  f.pensionCredit = "납입액(900만원 한도) " + formatWon(Math.min(pensionContribution, 9000000)) + " × " + pensionRate + "%";
+  var pensionRate = totalGross <= 55000000 ? 15 : 12;
+  f.pensionCredit = "납입액(900만원 한도) " + formatWon(Math.min(pensionContribution, 9000000)) + " × " + pensionRate + "% (지방소득세 포함 " + (totalGross <= 55000000 ? "16.5" : "13.2") + "%)";
 
   var medicalCredit = medicalExpenseCredit(
     (input.normalMedicalManwon || 0) * 10000,
