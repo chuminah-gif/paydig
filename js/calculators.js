@@ -1092,30 +1092,104 @@ function insuranceDeductDetailHtml(insurance, tax) {
    평균임금 = 퇴직 전 3개월간 임금총액 ÷ 그 기간의 총 일수
    기존 calcRetirementDB(월급×근속연수 단순화)보다 정확한 방식을 사용합니다.
    ------------------------------------------------------------------------- */
+/* 퇴직금 계산 (근로자퇴직급여 보장법 제8조, 근로기준법 제2조)
+   - 평균임금 = (퇴직 전 3개월 임금 + 연간 상여금 × 3/12 + 전년도 연차수당 × 3/12) ÷ 3개월 달력 일수(89~92일)
+     퇴직일(마지막 근무일 다음 날) 전 3개월을 실제 날짜로 셉니다. 날짜가 없으면 91일로 어림.
+   - 평균임금이 통상임금보다 적으면 통상임금을 평균임금으로 봅니다(근로기준법 제2조제2항).
+     1일 통상임금 = 월 통상임금 ÷ 209시간 × 8시간(주 40시간, 근로기준법 시행령 제6조).
+     고용노동부 행정해석(근로기준정책과-579, 2023.2.22)은 이 비교를 그대로 적용하지만,
+     대구고법 2024나318050(2025.8.21)처럼 평균임금이 비정상적으로 낮은 경우에만 적용한다는 판결도 있어 두 금액을 함께 보여 줍니다. */
+var ORDINARY_MONTHLY_HOURS = 209;
+var ORDINARY_DAILY_HOURS = 8;
+
+function parseYmd(s) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
+  if (!m) return null;
+  var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return d.getUTCMonth() === +m[2] - 1 ? d : null;
+}
+function addMonthsClamp(d, months) {
+  var y = d.getUTCFullYear(), mo = d.getUTCMonth() + months, day = d.getUTCDate();
+  var last = new Date(Date.UTC(y, mo + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, mo, Math.min(day, last)));
+}
+function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
+function fmtYmd(d) { return d.getUTCFullYear() + "." + (d.getUTCMonth() + 1) + "." + d.getUTCDate(); }
+
 function calcSeverancePay(input) {
-  var last3MonthsWage = input.last3MonthsWageManwon * 10000;
-  var serviceDays = input.serviceDays;
-  if (last3MonthsWage <= 0 || !(serviceDays > 0)) {
-    return { error: "최근 3개월 임금총액과 재직기간을 올바르게 입력해 주세요." };
+  var last3MonthsWage = (input.last3MonthsWageManwon || 0) * 10000;
+  var bonusAdd = Math.max(0, input.annualBonusManwon || 0) * 10000 * 3 / 12;
+  var leaveAdd = Math.max(0, input.annualLeavePayManwon || 0) * 10000 * 3 / 12;
+  var monthlyOrdinary = Math.max(0, input.monthlyOrdinaryWageManwon || 0) * 10000;
+  var serviceDays, periodDays, periodText, eligible, taxYears;
+
+  if (input.startDate || input.lastWorkDate) {
+    var start = parseYmd(input.startDate), lastWork = parseYmd(input.lastWorkDate);
+    if (!start || !lastWork || lastWork < start) {
+      return { error: "입사일과 마지막 근무일을 올바르게 입력해 주세요. 마지막 근무일은 입사일보다 뒤여야 합니다." };
+    }
+    if (last3MonthsWage <= 0) return { error: "퇴직 전 3개월 임금총액을 입력해 주세요." };
+    var retire = new Date(lastWork.getTime() + 86400000); // 퇴직일 = 마지막 근무일 다음 날
+    var periodStart = addMonthsClamp(retire, -3);
+    periodDays = daysBetween(periodStart, retire);
+    periodText = fmtYmd(periodStart) + "~" + fmtYmd(lastWork);
+    serviceDays = daysBetween(start, lastWork) + 1;
+    var fullYears = 0;
+    while (addMonthsClamp(start, (fullYears + 1) * 12) <= retire) fullYears++;
+    eligible = fullYears >= 1;
+    taxYears = fullYears + (addMonthsClamp(start, fullYears * 12) < retire ? 1 : 0);
+  } else {
+    serviceDays = input.serviceDays;
+    if (last3MonthsWage <= 0 || !(serviceDays > 0)) {
+      return { error: "입사일·마지막 근무일과 퇴직 전 3개월 임금총액을 입력해 주세요." };
+    }
+    periodDays = 91; // 날짜를 모를 때 3개월을 91일로 어림
+    periodText = "날짜를 넣지 않아 91일로 어림";
+    eligible = serviceDays >= 365;
+    taxYears = serviceDays / 365;
   }
-  if (serviceDays < 365) {
-    return { error: "퇴직금은 계속근로기간 1년(365일) 이상부터 지급 의무가 발생합니다.", eligible: false, serviceDays: serviceDays };
+  if (!eligible) {
+    return { error: "퇴직금은 계속근로기간 1년 이상부터 지급 의무가 생깁니다. (현재 " + serviceDays + "일)", eligible: false, serviceDays: serviceDays };
   }
-  var avgDailyWage = last3MonthsWage / 91; // 3개월을 평균 91일로 근사
-  var severance = avgDailyWage * 30 * (serviceDays / 365);
-  var years = serviceDays / 365;
-  var tax = calcRetirementIncomeTax(severance, years);
-  return {
+
+  var wageTotal = last3MonthsWage + bonusAdd + leaveAdd;
+  var avgDailyWage = wageTotal / periodDays;
+  var ratio = serviceDays / 365;
+  var severance = avgDailyWage * 30 * ratio;
+  var tax = calcRetirementIncomeTax(severance, taxYears);
+
+  var result = {
+    periodDays: periodDays,
+    periodText: periodText,
+    serviceDays: serviceDays,
+    years: serviceDays / 365,
+    wageTotal: wageTotal,
+    wageTotalFormula: formatWon(last3MonthsWage) + (bonusAdd > 0 ? " + 상여 " + formatWon(bonusAdd) : "") + (leaveAdd > 0 ? " + 연차수당 " + formatWon(leaveAdd) : ""),
     avgDailyWage: avgDailyWage,
-    avgDailyWageFormula: formatWon(last3MonthsWage) + " ÷ 91일",
+    avgDailyWageFormula: formatWon(wageTotal) + " ÷ " + periodDays + "일",
     severance: clampNonNegative(severance),
     severanceFormula: formatWon(avgDailyWage) + " × 30일 × (" + serviceDays + "일 ÷ 365일)",
-    years: years,
     tax: tax.tax,
     taxFormula: tax.formula,
     afterTax: clampNonNegative(severance - tax.tax),
     eligible: true
   };
+
+  if (monthlyOrdinary > 0) {
+    var ordinaryDaily = monthlyOrdinary / ORDINARY_MONTHLY_HOURS * ORDINARY_DAILY_HOURS;
+    result.ordinaryDailyWage = ordinaryDaily;
+    result.ordinaryDailyFormula = formatWon(monthlyOrdinary) + " ÷ 209시간 × 8시간";
+    result.floorApplies = ordinaryDaily > avgDailyWage;
+    if (result.floorApplies) {
+      var sevOrd = ordinaryDaily * 30 * ratio;
+      var taxOrd = calcRetirementIncomeTax(sevOrd, taxYears);
+      result.severanceOrdinary = sevOrd;
+      result.severanceOrdinaryFormula = formatWon(ordinaryDaily) + " × 30일 × (" + serviceDays + "일 ÷ 365일)";
+      result.taxOrdinary = taxOrd.tax;
+      result.afterTaxOrdinary = clampNonNegative(sevOrd - taxOrd.tax);
+    }
+  }
+  return result;
 }
 
 /* -------------------------------------------------------------------------
