@@ -1110,6 +1110,86 @@ h1, h2, h3, h4 {
   margin: 0;
 }
 
+/* 소식 카드: 상태 배지·핵심 날짜·작성일 */
+.status {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  margin: 0 0 10px 6px;
+  white-space: nowrap;
+}
+
+.status-live { color: #15803d; background: #f0fdf4; }
+.status-soon { color: #1d4ed8; background: #eff6ff; }
+.status-draft { color: #a16207; background: #fefce8; }
+
+.guide-card .key-date {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 8px;
+}
+
+.guide-card .card-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-faint);
+  margin-top: 12px;
+}
+
+.status-legend {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.status-legend .status { margin: 0 4px 0 0; }
+
+/* 가이드: 상황별 읽는 순서 */
+.reading-paths {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin: 0 0 40px;
+}
+
+@media (max-width: 640px) {
+  .reading-paths { grid-template-columns: 1fr; }
+}
+
+.reading-path {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+}
+
+.reading-path h3 {
+  font-size: 0.98rem;
+  margin: 0 0 4px;
+}
+
+.reading-path .path-why {
+  font-size: 0.84rem;
+  color: var(--color-text-muted);
+  margin: 0 0 10px;
+}
+
+.reading-path ol {
+  margin: 0;
+  padding-left: 1.3em;
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
 /* ---------- 공지/정책 페이지 ---------- */
 .policy-page .prose h2 {
   border-bottom: 1px solid var(--color-border);
