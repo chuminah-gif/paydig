@@ -746,11 +746,13 @@ function calcRetirementIncomeTax(lumpSum, years) {
   };
 }
 
-// 퇴직연금을 "연금" 형태로 수령할 때의 퇴직소득세 감면 (수령 1~10년차 30%, 11년차 이후 40% 감면)
-// 매년 같은 금액을 받는다고 보고 전체 수령기간의 평균 감면율을 돌려줍니다 (예: 20년 수령 → 35%).
+// 퇴직연금을 "연금" 형태로 수령할 때의 퇴직소득세 감면
+// (수령 1~10년차 30%, 11~20년차 40%, 21년차 이후 50% — 50% 구간은 2026.1.1 이후 연금수령분부터)
+// 매년 같은 금액을 받는다고 보고 전체 수령기간의 평균 감면율을 돌려줍니다 (예: 20년 수령 → 35%, 30년 수령 → 40%).
 function retirementPensionTaxDiscountRate(payoutYears) {
   if (!(payoutYears > 10)) return 0.3;
-  return (10 * 0.3 + (payoutYears - 10) * 0.4) / payoutYears;
+  if (!(payoutYears > 20)) return (10 * 0.3 + (payoutYears - 10) * 0.4) / payoutYears;
+  return (10 * 0.3 + 10 * 0.4 + (payoutYears - 20) * 0.5) / payoutYears;
 }
 
 // 사적연금소득세 (연금저축·IRP를 "연금" 형태로 수령 시, 연 1,500만원 이하 분리과세 가정)
@@ -896,12 +898,13 @@ function laborIncomeDeduction(annualGrossWon) {
 // 월 소득세·지방소득세: 국세청 근로소득 간이세액표(js/withholding-table.js)에서 월 급여(비과세 제외)와
 // 공제대상가족 수(본인 포함)로 조회합니다. 실제 급여명세서의 원천징수 방식과 같아, 4대보험료 소득공제·근로소득세액공제
 // 등이 이미 반영된 값입니다. 8세 이상 20세 이하 자녀 공제는 options.childCount로 반영하고, 경로우대·장애인 공제는 반영하지 않습니다.
-// 8세 이상 20세 이하 자녀 공제(간이세액표 안내): 1명 12,500원, 2명 29,160원, 3명 이상은 29,160원 + 2명 초과 1인당 25,000원 (산출세액에서 차감)
+// 8세 이상 20세 이하 자녀 공제(간이세액표 안내): 1명 20,830원, 2명 45,830원, 3명 이상은 45,830원 + 2명 초과 1인당 33,330원 (산출세액에서 차감)
 function withholdingChildDeduction(childCount) {
   var n = Math.max(0, Math.round(childCount) || 0);
   if (n === 0) return 0;
-  if (n === 1) return 12500;
-  return 29160 + (n - 2) * 25000;
+  // 2026.2.27 개정 간이세액표(2026.3.1 이후 지급분): 1명 20,830원, 2명 45,830원, 3명 이상은 2명 초과 1명당 33,330원 추가
+  if (n === 1) return 20830;
+  return 45830 + (n - 2) * 33330;
 }
 
 function calcMonthlyIncomeTax(monthlyGrossWon, familyCount, childCount) {

@@ -8,7 +8,7 @@
 <title>연금저축 계산기 | 세액공제·예상 수령액 확인 - 페이딕</title>
 <meta name="description" content="초기 자산과 연간 납입액, 예상 수익률을 입력하면 연금저축(신탁·펀드·보험)의 복리 적립금과 예상 수령액을 계산해주는 무료 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
-<link rel="stylesheet" href="../css/style.css?v=20261108" />
+<link rel="stylesheet" href="../css/style.css?v=20261115" />
 <link rel="canonical" href="https://www.paydig.co.kr/calculators/pension-savings" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="페이딕" />
@@ -102,7 +102,7 @@
     <p class="breadcrumb"><a href="../">홈</a> / 연금저축 계산기</p>
     <h1>연금저축 계산기</h1>
     <p>초기 자산과 연간 납입액, 예상 수익률을 입력하면 복리로 불어난 예상 적립금과 수령 방식별 금액을 계산해 드립니다.</p>
-    <p class="page-updated">2026년 적용 기준 · 최종 확인 2026년 9월</p>
+    <p class="page-updated">2026년 적용 기준 · 최종 확인 2026년 11월</p>
   </div>
 </section>
 
@@ -131,7 +131,7 @@
       <div class="field">
         <label for="returnRate">예상 연 수익률 (%)</label>
         <input type="number" id="returnRate" placeholder="예: 3" step="0.1" value="3" />
-        <div class="hint">신탁형은 낮고 안정적, 펀드형은 시장 상황에 따라 변동, 보험형은 공시이율을 따릅니다.</div>
+        <div class="hint">펀드형은 시장 상황에 따라 변동하고, 보험형은 공시이율을 따릅니다.</div>
       </div>
 
       <div class="field">
@@ -171,7 +171,7 @@
   <div class="container">
     <div class="card prose">
       <h2>연금저축 계산 방식 안내</h2>
-      <p>연금저축은 개인이 자율적으로 가입하는 절세형 노후 대비 상품으로, 신탁·펀드·보험 세 가지 형태가 있습니다.</p>
+      <p>연금저축은 개인이 자율적으로 가입하는 절세형 노후 대비 상품으로, 펀드·보험 형태로 가입합니다(신탁은 2018년부터 신규 가입 중단).</p>
       <p style="font-family: monospace; background:#f5f7fa; padding:10px 14px; border-radius:8px;">
         미래 적립금 = 초기 자산 × (1+수익률)^기간 + 연간 납입액 × [((1+수익률)^기간 − 1) ÷ 수익률]
       </p>
@@ -180,11 +180,11 @@
         <li>연금형(월 지급)을 선택하면, 적립이 끝난 시점의 잔액을 수령 기간 동안에도 동일한 수익률로 계속 굴리면서 매달 같은 금액으로 나눠 받는다고 가정해 계산합니다.</li>
       </ul>
       <div class="info-callout">
-        신탁형은 예금자보호 대상이지만 펀드형·일부 보험형은 원금 손실 가능성이 있습니다. 세액공제·연금소득세 등 세제 효과는 이 계산기에 반영되지 않았습니다.
+        보험형(과 기존 신탁형)은 예금자보호 대상이지만 펀드형은 원금 손실 가능성이 있습니다. 납입할 때 받는 세액공제 환급액은 결과에 넣지 않았고, 받을 때의 세금은 연금형이면 시작 나이의 연금소득세율, 일시금이면 기타소득세 16.5%를 적용한 어림값입니다.
       </div>
 
       <h2>헷갈리기 쉬운 부분</h2>
-      <p>연금저축을 신탁형만 있는 상품으로 오해하는 경우가 있지만, 실제로는 신탁·펀드·보험 세 가지 형태로 가입할 수 있습니다. 이 중 예금자보호가 되는 것은 신탁형뿐이며, 펀드형은 실적배당형이라 원금 손실이 발생할 수 있습니다. 원금 보장을 원한다면 상품 유형을 반드시 확인해야 합니다.</p>
+      <p>연금저축은 은행 상품이라 원금이 보장된다고 생각하기 쉽지만 유형마다 다릅니다. 은행에서 팔던 연금저축신탁은 2018년부터 새로 가입할 수 없고, 지금 가입할 수 있는 것은 증권사의 연금저축펀드와 보험사의 연금저축보험입니다. 예금자보호가 되는 것은 보험과 기존 신탁이고, 펀드는 실적배당형이라 원금 손실이 날 수 있습니다.</p>
 
       <h2>자주 묻는 질문</h2>
       <h3>Q. 연금저축의 세액공제 한도는 얼마인가요?</h3>
@@ -250,7 +250,7 @@
   </div>
 </footer>
 
-<script src="../js/calculators.js?v=20261105"></script>
+<script src="../js/calculators.js?v=20261115"></script>
 <script src="../js/main.js?v=20261005"></script>
 <script>
 document.querySelectorAll('input[name="payoutType"]').forEach(function (radio) {

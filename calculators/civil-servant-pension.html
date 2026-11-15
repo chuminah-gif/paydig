@@ -8,7 +8,7 @@
 <title>공무원연금 계산기 | 재직기간별 예상 연금액 확인 - 페이딕</title>
 <meta name="description" content="재직기간과 평균기준소득월액을 입력하면 공무원연금법 산정식을 기반으로 예상 퇴직연금 월 수급액을 계산해주는 무료 공무원연금 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
-<link rel="stylesheet" href="../css/style.css?v=20261108" />
+<link rel="stylesheet" href="../css/style.css?v=20261115" />
 <link rel="canonical" href="https://www.paydig.co.kr/calculators/civil-servant-pension" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="페이딕" />
@@ -102,7 +102,7 @@
     <p class="breadcrumb"><a href="../">홈</a> / 공무원연금 계산기</p>
     <h1>공무원연금 계산기</h1>
     <p>재직기간과 평균기준소득월액을 입력하면 공무원연금법상 퇴직연금 산정 구조를 바탕으로 예상 월 수급액을 계산해 드립니다.</p>
-    <p class="page-updated">2026년 적용 기준 · 최종 확인 2026년 9월</p>
+    <p class="page-updated">2026년 적용 기준 · 최종 확인 2026년 11월</p>
   </div>
 </section>
 
@@ -167,7 +167,7 @@
         <tr><th class="nw">재직 구간</th><th>연금 지급률(재직 1년당, 평균기준소득월액 대비)</th></tr>
         <tr><td class="nw">2009년 12월 31일 이전</td><td>2.5% (20년 초과분은 2%)</td></tr>
         <tr><td>2010년 1월 1일 ~ 2015년 12월 31일</td><td class="num">1.9%</td></tr>
-        <tr><td class="nw">2016년 1월 1일 이후</td><td>연도별 지급률 — 2016년 1.878%에서 2020년 1.79%까지 매년 0.022%p, 2021~2025년 1.78%→1.74%(매년 0.01%p), 2026~2035년 1.736%→1.7%(매년 0.004%p), 2035년 이후 1.7%</td></tr>
+        <tr><td class="nw">2016년 1월 1일 이후</td><td>연도별 지급률 — 2016년 1.878%에서 2020년 1.79%까지 매년 0.022%p, 2021~2025년 1.78%→1.74%(매년 0.01%p), 2026~2035년 1.736%→1.7%(매년 0.004%p), 2036년부터 1.7%</td></tr>
       </table>
       <ul>
         <li><strong>재직기간 상한</strong>: 신규 임용자는 최대 36년까지 반영합니다. 다만 2016년 1월 1일 당시 재직기간이 21년 이상이던 분은 33년, 17년 이상 21년 미만은 34년, 15년 이상 17년 미만은 35년이 상한입니다(부칙 경과규정). 계산기는 임용연도를 역산해 이 상한을 자동으로 적용합니다.</li>
@@ -197,7 +197,7 @@
         <tr><th class="nw">연금 반영 재직기간</th><td>30년 (상한 36년, 전 기간이 2016년 이후)</td></tr>
         <tr><th class="nw">적용 지급률 합계</th><td>약 58.0% (소득재분배 적용비율 121.4% 반영)</td></tr>
         <tr><th class="nw">예상 월 수급액 (세전)</th><td>약 261만원 (2,609,936원)</td></tr>
-        <tr><th>연금소득세 적용 후 (세후, 참고용)</th><td>약 243만원 (2,425,860원)</td></tr>
+        <tr><th>연금소득세 적용 후 (세후, 참고용)</th><td>약 243만원 (2,432,277원)</td></tr>
       </table>
       <p>같은 30년을 재직하더라도 임용 시기와 소득 수준에 따라 결과가 달라집니다. 위 조건에서 평균기준소득월액만 300만원으로 바꾸면 월 약 200만원(지급률 합계 66.6%), 600만원으로 바꾸면 월 약 309만원(지급률 합계 51.6%)이 됩니다. 소득이 낮을수록 소득재분배로 지급률이 더 높게, 소득이 높을수록 낮게 적용되기 때문입니다.</p>
 
@@ -263,7 +263,7 @@
 </footer>
 
 <script src="../js/supabase-client.js?v=20261005"></script>
-<script src="../js/calculators.js?v=20261105"></script>
+<script src="../js/calculators.js?v=20261115"></script>
 <script src="../js/main.js?v=20261005"></script>
 <script>
 function runCalc() {

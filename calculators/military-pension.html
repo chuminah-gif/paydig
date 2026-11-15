@@ -8,7 +8,7 @@
 <title>군인연금 계산기 | 예상 퇴역연금 수급액 확인 - 페이딕</title>
 <meta name="description" content="복무기간과 평균기준소득월액을 입력하면 군인연금법 산정식을 기반으로 예상 퇴역연금 월 수급액을 계산해주는 무료 군인연금 계산기입니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css" />
-<link rel="stylesheet" href="../css/style.css?v=20261108" />
+<link rel="stylesheet" href="../css/style.css?v=20261115" />
 <link rel="canonical" href="https://www.paydig.co.kr/calculators/military-pension" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="페이딕" />
@@ -102,7 +102,7 @@
     <p class="breadcrumb"><a href="../">홈</a> / 군인연금 계산기</p>
     <h1>군인연금 계산기</h1>
     <p>복무기간과 평균기준소득월액을 입력하면 군인연금법상 퇴역연금 산정 구조를 바탕으로 예상 월 수급액을 계산해 드립니다.</p>
-    <p class="page-updated">2026년 적용 기준 · 최종 확인 2026년 9월</p>
+    <p class="page-updated">2026년 적용 기준 · 최종 확인 2026년 11월</p>
   </div>
 </section>
 
@@ -124,7 +124,7 @@
       <div class="field">
         <label for="retireYear">전역(예정) 연도</label>
         <input type="number" id="retireYear" placeholder="예: 2040" min="1990" max="2080" />
-        <div class="hint">군인연금은 복무 시기와 관계없이 지급률이 같아 연금액에는 영향이 없고, 임관 시기를 추정해 화면에 보여주는 데만 씁니다.</div>
+        <div class="hint">전역 연도에서 복무기간을 빼 임관 시기를 추정하고, 2013년 6월 이전 복무분과 그 이후 복무분을 나눠 지급률을 적용하는 데 씁니다.</div>
       </div>
 
       <div class="field">
@@ -167,7 +167,7 @@
         <li>복무기간은 최대 33년까지만 반영하며, 그 이상 복무해도 연금액이 늘지 않습니다. 이 계산기는 임관연도를 전역 연도에서 복무기간을 빼 역산해 2013년 7월 전후 기간을 나눕니다.</li>
       </ul>
       <div class="info-callout">
-        <strong>2026년 9월 기준</strong>으로 공개된 법령·공단 자료를 반영했으며, 전체 공무원 평균소득(A값)·기준소득월액 상하한·지급률 등은 매년 고시·개정으로 바뀔 수 있습니다. 실제 연금액은 계급·병과별 세부 규정, 재평가율, 명예전역·조기전역 여부 등에 따라 달라질 수 있습니다. 정확한 금액은 <a href="https://www.mps.mil.kr" target="_blank" rel="noopener">군인연금 정보포털(국방부 군인연금과)</a>을 통해 확인하세요.
+        <strong>2026년 9월 기준</strong>으로 공개된 법령·공단 자료를 반영했으며, 기준소득월액 상하한·지급률 등은 고시·법 개정으로 바뀔 수 있습니다. 실제 연금액은 계급·병과별 세부 규정, 재평가율, 명예전역·조기전역 여부 등에 따라 달라질 수 있습니다. 정확한 금액은 <a href="https://www.mps.mil.kr" target="_blank" rel="noopener">군인연금 정보포털(국방부 군인연금과)</a>을 통해 확인하세요.
       </div>
 
       <h2>주의할 점</h2>
@@ -186,7 +186,7 @@
 
       <h2>자주 묻는 질문</h2>
       <h3>Q. 19년 11개월을 복무하고 전역하면 연금을 못 받나요?</h3>
-      <p>네. 군인연금은 다른 직역연금(10년)과 달리 최소 복무기간 20년(240개월)을 채워야 퇴역연금 수급자격이 발생합니다. 단 하루라도 부족하면 퇴역연금이 아닌 퇴역일시금이 지급되므로 복무기간 관리가 중요합니다.</p>
+      <p>받을 수 있습니다. 군인연금의 최소 복무기간은 20년이지만, 복무기간을 계산할 때 19년 6개월 이상 20년 미만은 20년으로 봅니다. 19년 6개월에 하루라도 못 미치면 퇴역연금이 아닌 퇴역일시금이 지급되므로, 전역일을 정하기 전에 인사 부서에서 복무기간을 확인하세요.</p>
       <h3>Q. 부사관과 장교의 연금 산정 방식이 다른가요?</h3>
       <p>산정 공식 자체는 계급과 관계없이 동일하게 적용되며, 평균기준소득월액(계급·호봉에 따른 보수 수준)의 차이가 최종 연금액 차이로 이어집니다.</p>
       <h3>Q. 명예전역수당도 이 계산기에 포함되나요?</h3>
@@ -238,7 +238,7 @@
 </footer>
 
 <script src="../js/supabase-client.js?v=20261005"></script>
-<script src="../js/calculators.js?v=20261105"></script>
+<script src="../js/calculators.js?v=20261115"></script>
 <script src="../js/main.js?v=20261005"></script>
 <script>
 function runCalc() {

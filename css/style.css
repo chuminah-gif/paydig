@@ -718,6 +718,46 @@ h1, h2, h3, h4 {
   margin-bottom: 2px;
 }
 
+/* 360px 이하: 3열을 유지하면 "수령 방식" 칸이 40px 안팎으로 눌려 단어가 여러 줄로 쌓이므로,
+   수령 방식을 항목명 아래로 내려 2열(항목+방식 / 금액)로 바꿈. */
+@media (max-width: 360px) {
+  .breakdown-table,
+  .breakdown-table tbody {
+    display: block;
+  }
+  .breakdown-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 8px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .breakdown-table th,
+  .breakdown-table td {
+    border-bottom: 0;
+  }
+  .breakdown-table th:nth-child(2) {
+    display: none;
+  }
+  .breakdown-table td:first-child {
+    grid-column: 1;
+    grid-row: 1;
+    padding-bottom: 0;
+    font-weight: 600;
+  }
+  .breakdown-table td:nth-child(2) {
+    grid-column: 1;
+    grid-row: 2;
+    padding-top: 2px;
+    min-width: 0;
+    color: var(--color-text-faint);
+  }
+  .breakdown-table th:nth-child(3),
+  .breakdown-table td:nth-child(3) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+}
+
 .disclaimer-box {
   background: var(--color-warning-bg);
   border: 1px solid var(--color-warning-border);
