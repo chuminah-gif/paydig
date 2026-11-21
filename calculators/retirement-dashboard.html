@@ -189,11 +189,11 @@
       </div>
 
       <h2>물가상승률은 왜 따로 안 곱하나요?</h2>
-      <p>"몇십 년 뒤 물가를 반영 안 하면 필요 금액을 너무 적게 잡는 거 아닌가?" 싶을 수 있는데, <strong>국민연금·직역연금은 수급 개시 후 매년 전년도 소비자물가상승률만큼 연금액이 법적으로 자동 인상</strong>됩니다. 그래서 오늘 계산기로 뽑은 예상 수령액은 "은퇴 시점의 명목 금액"이 아니라 이미 "오늘 화폐가치 기준 실질 구매력"에 가깝습니다. 노후 적정생활비도 오늘 기준 금액이므로, 이 둘을 그대로 비교하면 됩니다 — 물가상승률을 따로 곱하면 오히려 한쪽만 부풀려서 부족액을 실제보다 크게 보이게 만드는 오류가 생깁니다.</p>
+      <p>"몇십 년 뒤 물가를 반영 안 하면 필요 금액을 너무 적게 잡는 거 아닌가?" 싶을 수 있는데, <strong>국민연금·직역연금은 수급 개시 후 매년 전년도 소비자물가상승률만큼 연금액이 법적으로 자동 인상</strong>됩니다. 그래서 오늘 계산기로 뽑은 예상 수령액은 "은퇴 시점의 명목 금액"이 아니라 이미 "오늘 화폐가치 기준 실질 구매력"에 가깝습니다. 노후 적정생활비도 오늘 기준 금액이므로, 이 둘을 그대로 비교하면 됩니다. 물가상승률을 따로 곱하면 오히려 한쪽만 부풀려서 부족액을 실제보다 크게 보이게 만드는 오류가 생깁니다.</p>
       <div class="mistake-callout">
-        <h3>⚠ 헷갈리기 쉬운 부분</h3>
+        <h3>헷갈리기 쉬운 부분</h3>
         <ul>
-          <li><strong>연금도 물가 반영 안 하면 미래엔 턱없이 부족한 거 아닌가?</strong> 국민연금·직역연금만 놓고 보면 아닙니다. 매년 자동으로 물가만큼 올라서 실질 가치가 유지되도록 설계돼 있습니다. 다만 <strong>퇴직연금·개인연금은 이런 자동 인상 장치가 없어</strong>, 예상 수령액에서 이 비중이 크다면 시간이 지날수록 실질 구매력이 조금씩 줄어들 수 있습니다 — 이 계산기는 그 세부 구성까지는 구분하지 않습니다.</li>
+          <li><strong>연금도 물가 반영 안 하면 미래엔 턱없이 부족한 거 아닌가?</strong> 국민연금·직역연금만 놓고 보면 아닙니다. 매년 자동으로 물가만큼 올라서 실질 가치가 유지되도록 설계돼 있습니다. 다만 <strong>퇴직연금·개인연금은 이런 자동 인상 장치가 없어</strong>, 예상 수령액에서 이 비중이 크다면 시간이 지날수록 실질 구매력이 조금씩 줄어들 수 있습니다. 이 계산기는 그 세부 구성까지는 구분하지 않습니다.</li>
           <li><strong>소득대체율 40%대면 절반 가까이 되니 괜찮다?</strong> 소득대체율은 "지금 버는 돈 대비 비율"일 뿐, 노후 적정생활비 기준과는 다른 잣대입니다. 소득대체율이 43%여도 적정생활비 기준으로는 매달 수십만원이 부족할 수 있습니다.</li>
           <li><strong>이미 모아둔 돈은 계산에 안 넣어도 된다?</strong> 아닙니다. 이미 모아둔 목돈도 은퇴 시점까지 계속 불어나기 때문에, 넣지 않으면 필요한 월 저축액이 실제보다 크게 나옵니다. "현재까지 모아둔 노후자산" 칸에 꼭 입력하세요.</li>
         </ul>
@@ -323,7 +323,7 @@ function runRetirementGapCalc() {
   html += '<div class="amount">' + result.replacementRatio.toFixed(1) + '%</div>';
   html += '<div class="amount-yearly">현재 월 실수령액 ' + formatWon(result.currentNet) + ' 대비 은퇴 후 ' + formatWon(result.projectedMonthly) + '</div>';
   html += '</div>';
-  html += '<div style="font-size:0.82rem; color:var(--color-text-faint); margin-top:10px; line-height:1.5;">💡 소득대체율 = 지금 버는 돈 대비 은퇴 후 받는 돈의 비율. 자세한 뜻은 아래 "소득대체율과 적정 노후생활비" 설명을 참고하세요.</div>';
+  html += '<div style="font-size:0.82rem; color:var(--color-text-faint); margin-top:10px; line-height:1.5;">참고: 소득대체율 = 지금 버는 돈 대비 은퇴 후 받는 돈의 비율. 자세한 뜻은 아래 "소득대체율과 적정 노후생활비" 설명을 참고하세요.</div>';
 
   html += '<table class="result-table" style="margin-top:14px;">';
   html += '<tr><th>현재 월 실수령액</th><td>' + formatWon(result.currentNet) + '</td></tr>';
@@ -331,7 +331,7 @@ function runRetirementGapCalc() {
   html += '<tr><th>노후 적정생활비 (' + (result.household === "couple" ? "부부" : "1인") + ' 가구 기준)</th><td>' + formatWon(result.livingCostBenchmark) + '</td></tr>';
   html += '</table>';
   html += '<div class="disclaimer-box"><span class="mark">ℹ</span><span>소득대체율 = 은퇴 후 월 수령액 ÷ 현재 월 실수령액 × 100 (' + formatWon(result.projectedMonthly) + ' ÷ ' + formatWon(result.currentNet) + ' × 100 = ' + result.replacementRatio.toFixed(1) + '%)</span></div>';
-  html += '<div style="font-size:0.82rem; color:var(--color-text-faint); margin-top:10px; line-height:1.5;">💡 두 금액 다 물가상승률을 곱하지 않은 값입니다. 국민연금·직역연금은 수급 후 매년 물가상승률만큼 자동으로 올라서, 오늘 계산한 예상 수령액이 은퇴 시점에도 비슷한 실질 구매력을 유지한다고 보고 오늘 기준 적정생활비와 그대로 비교합니다.</div>';
+  html += '<div style="font-size:0.82rem; color:var(--color-text-faint); margin-top:10px; line-height:1.5;">참고: 두 금액 다 물가상승률을 곱하지 않은 값입니다. 국민연금·직역연금은 수급 후 매년 물가상승률만큼 자동으로 올라서, 오늘 계산한 예상 수령액이 은퇴 시점에도 비슷한 실질 구매력을 유지한다고 보고 오늘 기준 적정생활비와 그대로 비교합니다.</div>';
 
   if (result.gapVsBenchmark > 0) {
     html += '<div class="result-headline" style="background:linear-gradient(135deg,#8a2b1f,#c43f32); margin-top:16px;">';
